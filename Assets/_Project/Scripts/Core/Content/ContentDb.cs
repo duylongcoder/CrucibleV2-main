@@ -49,6 +49,9 @@ namespace Crucible.Core.Content
             if (brewing.QualityCap < 0 || brewing.QualityCap > BrewingData.MaxQualityCap)
                 throw new ArgumentOutOfRangeException(nameof(brewing), brewing.QualityCap,
                     $"QualityCap must be in [0, {BrewingData.MaxQualityCap}].");
+            ValidateTierTable(brewing.MagicInheritByTier, nameof(BrewingData.MagicInheritByTier));
+            ValidateTierTable(brewing.MagicCapByTier, nameof(BrewingData.MagicCapByTier));
+            ValidateTierTable(brewing.MagicRetainByTier, nameof(BrewingData.MagicRetainByTier));
 
             var sorted = new ItemData[items.Count];
             for (var i = 0; i < sorted.Length; i++)
@@ -72,6 +75,7 @@ namespace Crucible.Core.Content
             var recipes = new List<Recipe>();
             for (var i = 0; i < sorted.Length; i++)
             {
+                ValidateItem(sorted[i]);
                 if (sorted[i].Kind == ItemKind.Scrap)
                 {
                     if (hasScrap)
@@ -162,6 +166,35 @@ namespace Crucible.Core.Content
                 additives[i] = Resolve(items, itemIds, additiveIds[i], ItemKind.Additive, owner, "allowed additive");
 
             return new Recipe(product, slots, additives, data.BaseEssence);
+        }
+
+        private static void ValidateItem(ItemData item)
+        {
+            var tiered = item.Kind == ItemKind.Mineral || item.Kind == ItemKind.Additive;
+            if (tiered && (item.Tier < 1 || item.Tier > BrewingData.TierCount))
+                throw new ArgumentException($"Item '{item.Id}' ({item.Kind}) must have tier 1–{BrewingData.TierCount}.");
+
+            if (item.Kind == ItemKind.Additive)
+            {
+                if (item.MagicChance < 0 || item.MagicChance > BrewingData.MaxAdditiveMagicChance)
+                    throw new ArgumentException(
+                        $"Additive '{item.Id}' MagicChance must be in [0, {BrewingData.MaxAdditiveMagicChance}].");
+            }
+            else if (item.MagicChance != 0)
+            {
+                throw new ArgumentException($"Only additives carry MagicChance; '{item.Id}' is {item.Kind}.");
+            }
+        }
+
+        private static void ValidateTierTable(IReadOnlyList<int> table, string name)
+        {
+            if (table == null || table.Count != BrewingData.TierCount)
+                throw new ArgumentException($"{name} must have exactly {BrewingData.TierCount} entries (index = tier − 1).");
+            for (var i = 0; i < table.Count; i++)
+            {
+                if (table[i] < 0 || table[i] > BrewingData.MaxPercent)
+                    throw new ArgumentException($"{name}[{i}] = {table[i]} must be in [0, {BrewingData.MaxPercent}].");
+            }
         }
 
         private static ItemId Resolve(ItemData[] items, Dictionary<string, ItemId> itemIds, string id, ItemKind kind,

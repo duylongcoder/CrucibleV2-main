@@ -1,6 +1,6 @@
 # Plan: Kích hoạt ma thuật (F-003)
 
-> **Trạng thái**: Draft · **Cập nhật**: 2026-11-04
+> **Trạng thái**: Implemented (duyệt khi gọi `build magic`) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/brewing.md` §Kích hoạt ma thuật, §Formulas (`MagicChance%`), §Edge Cases; GDD §6.1 (stream `Chance`),
 > §6.2 (`Magic` công khai) · **ADR**: ADR-004 · **Loại**: Logic
 > Xây trên `plans/brewing.md` (F-002 — xanh 160/160, **chưa commit** lúc viết plan).
@@ -144,14 +144,14 @@ R6 → `Create_MagicTable*`; R7 → `Create_AdditiveMagicChance*`, `Create_NonAd
 > `CLAUDE.md` §Git: commit tự động **không**, commit test-first **không**. **Commit F-002 trước khi bắt đầu.**
 > Lệnh test: `CLAUDE.md` §Lệnh (`$UNITY` Linux), **Editor phải đóng**.
 
-- [ ] **Bước 1 — Skeleton**: sửa `BrewingData` / `ItemData`, tạo `MagicChanceFormula` (trả 0); `ContentFactory.CreateBrewing`
+- [x] **Bước 1 — Skeleton**: sửa `BrewingData` / `ItemData`, tạo `MagicChanceFormula` (trả 0); `ContentFactory.CreateBrewing`
   + sửa `ContentDbTest`, `ContentDbRecipeTest` dùng nó; 160 test cũ vẫn xanh.
-- [ ] **Bước 2 — Test first**: viết §3; chạy EditMode → test mới fail đúng lý do (giá trị 0 / không ném / stream không
+- [x] **Bước 2 — Test first**: viết §3; chạy EditMode → test mới fail đúng lý do (giá trị 0 / không ném / stream không
   đổi); test cũ xanh. Dự kiến pass sẵn trên stub: `Compute_NoMagic…_ReturnsZero`, `ForBrew_NonMagic…_ReturnsZero`,
   `Apply_BrewNonMatching_*` (2), `Apply_SameStateSameGrid_*` — ghi §6.
-- [ ] **Bước 3 — Implement**: validate content → `Compute` → `ForBrew` → tung trong `BrewingRules`; EditMode xanh, 0 warning CS.
-- [ ] **Bước 4 — Refactor**: gọn validate bảng (một helper cho 3 bảng); EditMode xanh; `check_unity_project.py` 0 lỗi.
-- [ ] **Bước 5 — Bằng chứng & tài liệu**: LOG; PLAN F-003 → Done; TECH §3.4 thứ tự rút `Chance` trong một lượt nung;
+- [x] **Bước 3 — Implement**: validate content → `Compute` → `ForBrew` → tung trong `BrewingRules`; EditMode xanh, 0 warning CS.
+- [x] **Bước 4 — Refactor**: gọn validate bảng (một helper cho 3 bảng); EditMode xanh; `check_unity_project.py` 0 lỗi.
+- [x] **Bước 5 — Bằng chứng & tài liệu**: LOG; PLAN F-003 → Done; TECH §3.4 thứ tự rút `Chance` trong một lượt nung;
   GDD Systems Index #3 → Implemented; đề xuất commit `feat(brewing): add magic activation roll and tiered magic chance`.
 
 ## 5. Rủi ro & đánh đổi
@@ -165,8 +165,25 @@ R6 → `Create_MagicTable*`; R7 → `Create_AdditiveMagicChance*`, `Create_NonAd
 
 ## 6. Implementation Notes (điền khi làm)
 
-- **Design decisions**: - None
+- **Design decisions**:
+  - Plan ở trạng thái Draft khi gọi `build` → coi lệnh `build magic` là duyệt (gồm các điểm tự quyết §2).
+  - Bước 1 + 2 chạy chung một lần batchmode (như F-002): 160 test cũ xanh với chữ ký `BrewingData` mới, test mới fail đúng.
+  - Content thử nghiệm thêm `add_bone` (Additive tier 2, 20%, được phép ở `Gap` của Gang); `add_ash` có 10%. Test tung
+    dùng hằng `BoneMagicChance` (không gọi `ForBrew` để tính kỳ vọng — tránh test tự xác nhận chính SUT).
+  - `ForBrew` phân biệt theo `Kind`: phụ gia góp `MagicChance` (kể cả không có `Magic`), chỉ `Mineral` có `Magic` góp
+    `Inherit`. Cấp phát 2 `List<int>` mỗi lượt Nung — không phải vòng lặp nóng.
+  - `ContentDb.ValidateItem` chạy cho mọi item trong vòng gom Scrap/Recipe (một vòng duy nhất).
 - **Deviations**: - None
-- **Tradeoffs**: - None
-- **Test changes**: - None
-- **Open questions**: - None
+- **Tradeoffs**:
+  - 6 test pass ngay trên skeleton: 5 đã dự đoán ở plan (`Compute_NoMagic…`, `ForBrew_NonMagic…`, `Apply_BrewNonMatching_*`
+    ×2, `Apply_SameStateSameGrid_*`) + `Apply_BrewMatching_LeavesOtherStreamsUnchanged` (stub không rút stream nào — test
+    có nghĩa khi đi cặp với `Apply_BrewMatching_AdvancesChanceStreamByOneDraw`, fail trên stub).
+  - Với seed của `StateFactory`, lần tung 20% ra `true` → `Apply_BrewMatching_MagicEqualsChanceRollAtComputedPercent`
+    fail trên stub (không tầm thường). Đổi seed mặc định có thể làm test này pass tầm thường trên stub — không ảnh hưởng
+    tính đúng khi code đã cài.
+  - Bước 4: không cần refactor — validate 3 bảng đã dùng chung `ValidateTierTable` từ lúc implement.
+- **Test changes**:
+  - `ContentDbTest`, `ContentDbRecipeTest`: `new BrewingData(cap)` → `ContentFactory.CreateBrewing(cap)` (chữ ký mới, dự
+    kiến trong plan). `ContentFactory`: Gang cho phép thêm `add_bone`; `add_ash` có `MagicChance` 10 — test F-002 vẫn xanh.
+- **Open questions**:
+  - Số liệu thật 3 bảng theo tier → `balance`. Phụ gia field vs Effect `AddMagicChance` → xem lại ở F-007.

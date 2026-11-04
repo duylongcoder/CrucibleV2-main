@@ -59,9 +59,9 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 
 | Hệ thống | Class chính | Assembly | Phụ thuộc | GDD | Trạng thái |
 |---|---|---|---|---|---|
-| Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData`, `ItemKind.Scrap`) |
+| Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`) |
 | Phiên chơi | `GameSession`, `GameHost`, `ISaveStore`, `FileSaveStore`, `SaveMapper`, `IClock` | Runtime | Core | GDD §6.4 | Designed |
@@ -107,6 +107,10 @@ public static class GameRules {
 - `Pcg32` (struct `ulong state, inc`): `uint NextUInt()`, `int NextInt(int max)` (Lemire, không lệch),
   `bool Roll(int percent)`.
 - `RngStreams`: 7 stream, mỗi stream `SplitMix64(seed ^ streamSalt)`. Mỗi lớp luật chỉ nhận stream của mình (`ref`).
+- **Thứ tự rút `Chance` trong một lượt Nung** (hợp đồng giữa F-003/F-007/F-008 — đổi thứ tự = lệch replay):
+  1. tung ma thuật — đúng 1 lần `Roll(MagicChance%)` khi khớp công thức, kể cả 0% (F-003, `BrewingRules`);
+  2. dòng thuộc tính thành phẩm (F-008); 3. điều kiện `Chance` của Xúc tác theo thứ tự Túi (F-007).
+  Phế phẩm: không rút ma thuật / thuộc tính. Command bị từ chối: không rút.
 
 ### 3.5 Log, View, Hash
 - `BrewLog`: tick "nạp X" / "chờ" + một kết quả; **không** chứa `Pattern`.

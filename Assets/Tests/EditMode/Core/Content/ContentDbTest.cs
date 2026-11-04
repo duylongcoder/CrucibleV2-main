@@ -1,5 +1,6 @@
 using System;
 using Crucible.Core.Content;
+using Crucible.Tests.TestUtils;
 using NUnit.Framework;
 
 namespace Crucible.Tests.Core.Content
@@ -7,7 +8,7 @@ namespace Crucible.Tests.Core.Content
     public class ContentDbTest
     {
         private static readonly RunData Run = new RunData(3, 8, 8);
-        private static readonly BrewingData Brewing = new BrewingData(1_000_000_000_000_000);
+        private static readonly BrewingData Brewing = ContentFactory.CreateBrewing();
 
         [Test]
         public void Create_ItemsInReverseOrder_AssignsIdsByOrdinalSort()

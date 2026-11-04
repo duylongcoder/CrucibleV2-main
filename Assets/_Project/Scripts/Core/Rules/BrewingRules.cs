@@ -1,13 +1,15 @@
 using System;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
+using Crucible.Core.Random;
 using Crucible.Core.State;
 
 namespace Crucible.Core.Rules
 {
     /// <summary>
-    /// Luật <see cref="Commands.Brew"/> (brewing.md §Thành phẩm & tiêu hao). F-002: chưa tung ma thuật (F-003), chưa
-    /// chạy Xúc tác (F-007) — <c>Quality</c> = <c>BaseEssence</c> qua <see cref="QualityFormula"/> với 0 / ∅.
+    /// Luật <see cref="Commands.Brew"/> (brewing.md §Thành phẩm & tiêu hao, §Kích hoạt ma thuật). Khớp → tung ma thuật
+    /// (stream <c>Chance</c>); phế phẩm → không rút random. Chưa chạy Xúc tác (F-007) — <c>Quality</c> =
+    /// <c>BaseEssence</c> qua <see cref="QualityFormula"/> với 0 / ∅.
     /// </summary>
     public static class BrewingRules
     {
@@ -31,7 +33,10 @@ namespace Crucible.Core.Rules
             if (recipe != null)
             {
                 var quality = QualityFormula.Compute(recipe.BaseEssence, 0, NoMultipliers, content.Brewing.QualityCap);
-                result = new ItemInstance(run.NextUid, recipe.Product, magic: false, quality: quality);
+                // Lần rút Chance đầu tiên của lượt nung khớp; luôn rút đúng 1 lần, kể cả 0% (TECH §3.4).
+                var magicChance = MagicChanceFormula.ForBrew(run.Grid, recipe, content);
+                var magic = run.Rng.Get(RngStream.Chance).Roll(magicChance);
+                result = new ItemInstance(run.NextUid, recipe.Product, magic, quality);
             }
             else
             {

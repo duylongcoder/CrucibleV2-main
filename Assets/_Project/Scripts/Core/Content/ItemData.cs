@@ -1,14 +1,15 @@
 namespace Crucible.Core.Content
 {
-    /// <summary>Dữ liệu vật phẩm bất biến cho luật (Id, Kind, Tier, công thức nếu là thành phẩm).</summary>
+    /// <summary>Dữ liệu vật phẩm bất biến cho luật (Id, Kind, Tier, công thức nếu là thành phẩm, % ma thuật nếu là phụ gia).</summary>
     public sealed class ItemData
     {
-        public ItemData(string id, ItemKind kind, int tier, RecipeData recipe = null)
+        public ItemData(string id, ItemKind kind, int tier, RecipeData recipe = null, int magicChance = 0)
         {
             Id = id;
             Kind = kind;
             Tier = tier;
             Recipe = recipe;
+            MagicChance = magicChance;
         }
 
         public string Id { get; }
@@ -16,5 +17,7 @@ namespace Crucible.Core.Content
         public int Tier { get; }
         /// <summary>null = nguyên liệu gốc (chỉ từ Chợ / bộ khởi đầu / chiến lợi phẩm).</summary>
         public RecipeData Recipe { get; }
+        /// <summary>% ma thuật phụ gia góp khi nằm trong khoảng trống (0–50); 0 với mọi loại khác.</summary>
+        public int MagicChance { get; }
     }
 }

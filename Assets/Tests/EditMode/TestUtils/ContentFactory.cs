@@ -19,6 +19,7 @@ namespace Crucible.Tests.TestUtils
         public const string CastIron = "ore_cast_iron";
         public const string Starsteel = "ore_starsteel";
         public const string Ash = "add_ash";
+        public const string Bone = "add_bone";
         public const string Sand = "add_sand";
         public const string Lens = "lens_basic";
         public const string Bellows = "cat_bellows";
@@ -26,13 +27,16 @@ namespace Crucible.Tests.TestUtils
 
         public const long SteelEssence = 18;
         public const long CastIronEssence = 12;
+        public const int AshMagicChance = 10;
+        public const int BoneMagicChance = 20;
+        public const int DefaultMagicCap = 90;
         public const long StarsteelEssence = 40;
 
         /// <summary>Thứ tự vật phẩm trong bộ khởi đầu — cố ý không theo thứ tự sắp.</summary>
         public static readonly string[] StarterKitItems = { Iron, Ash, Copper, Iron };
 
         /// <summary>
-        /// Nhóm Sắt → Than (brewing.md AC-3b): <c>[Sắt, Than]</c> → Thép, <c>[Sắt, Gap, Than]</c> → Gang (cho phép Tro);
+        /// Nhóm Sắt → Than (brewing.md AC-3b): <c>[Sắt, Than]</c> → Thép, <c>[Sắt, Gap, Than]</c> → Gang (cho phép Tro 10%, Xương 20%);
         /// <c>[Thép(ma thuật), Than]</c> → Sao thép.
         /// </summary>
         public static ContentDb Create()
@@ -48,11 +52,12 @@ namespace Crucible.Tests.TestUtils
                         new string[0], SteelEssence)),
                     new ItemData(CastIron, ItemKind.Mineral, 2, new RecipeData(
                         new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Gap, RecipeSlotData.Ingredient(Coal) },
-                        new[] { Ash }, CastIronEssence)),
+                        new[] { Ash, Bone }, CastIronEssence)),
                     new ItemData(Starsteel, ItemKind.Mineral, 3, new RecipeData(
                         new[] { RecipeSlotData.Ingredient(Steel, requiresMagic: true), RecipeSlotData.Ingredient(Coal) },
                         new string[0], StarsteelEssence)),
-                    new ItemData(Ash, ItemKind.Additive, 1),
+                    new ItemData(Ash, ItemKind.Additive, 1, magicChance: AshMagicChance),
+                    new ItemData(Bone, ItemKind.Additive, 2, magicChance: BoneMagicChance),
                     new ItemData(Sand, ItemKind.Additive, 1),
                     new ItemData(Lens, ItemKind.Lens, 1),
                     new ItemData(Bellows, ItemKind.Catalyst, 1),
@@ -61,7 +66,27 @@ namespace Crucible.Tests.TestUtils
                 new[] { new DifficultyData(Difficulty) },
                 new[] { new StarterKitData(StarterKit, StarterKitItems) },
                 new RunData(StartingReputation, StartingBagCapacity, SeasonCount),
-                new BrewingData(QualityCap));
+                CreateBrewing());
+        }
+
+        /// <summary>Bảng ma thuật mặc định = công thức GDD gốc: Inherit[t] = 5t, Cap = 90, Retain = 100.</summary>
+        public static BrewingData CreateBrewing(long qualityCap = QualityCap) =>
+            new BrewingData(qualityCap, DefaultInherit(), Fill(DefaultMagicCap), Fill(100));
+
+        public static int[] DefaultInherit()
+        {
+            var table = new int[BrewingData.TierCount];
+            for (var i = 0; i < table.Length; i++)
+                table[i] = 5 * (i + 1);
+            return table;
+        }
+
+        public static int[] Fill(int value)
+        {
+            var table = new int[BrewingData.TierCount];
+            for (var i = 0; i < table.Length; i++)
+                table[i] = value;
+            return table;
         }
 
         public static ItemId IdOf(ContentDb content, string id)

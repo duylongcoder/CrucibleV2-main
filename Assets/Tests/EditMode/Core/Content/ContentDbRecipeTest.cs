@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Crucible.Core.Content;
+using Crucible.Tests.TestUtils;
 using NUnit.Framework;
 
 namespace Crucible.Tests.Core.Content
@@ -102,7 +103,7 @@ namespace Crucible.Tests.Core.Content
 
         private static ContentDb Create(IEnumerable<ItemData> items, long cap = Cap) =>
             ContentDb.Create(items.ToArray(), Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run,
-                new BrewingData(cap));
+                ContentFactory.CreateBrewing(cap));
 
         private static string Describe(RecipeSlot slot) => slot.IsGap ? "gap" : $"item {slot.Item.Index}";
     }

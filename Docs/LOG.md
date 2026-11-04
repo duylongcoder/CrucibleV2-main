@@ -10,14 +10,28 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: `plan magic` — `Docs/plans/magic.md` (F-003) Draft, chờ duyệt; F-002 xanh 160/160 nhưng **chưa commit**
-**Bước tiếp theo**: commit F-002 → duyệt plan → `build magic` → F-004 BrewLog hoặc F-005/F-006 Túi/Chợ
+**Đang làm**: `plan brewlog` (F-004) — plan Draft, **chờ người dùng duyệt**; F-003 vẫn **chưa commit**
+**Bước tiếp theo**: người dùng commit F-002/F-003 → duyệt `Docs/plans/brewlog.md` → `build brewlog`
 **Đang kẹt**: không
-**File đang dở**: Docs/plans/magic.md (Draft)
-**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (xem lại ở F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**File đang dở**: không
+**Câu hỏi mở**: F-004 tách view phát lại sang F-014 (chờ xác nhận khi duyệt); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — plan brewlog
+- **Command**: /unity-game-studio plan brewlog
+- **Đã làm**: plan F-004 — 8 yêu cầu; Core `BrewLog` (`FirstCell`, `Ticks` nạp/chờ từ vật phẩm đầu → cuối, `Result`; không chứa `Recipe`), `RunState.LastBrew` + `BrewCompleted.Log` + hash; `MetaState.Timescale` (1–3, mặc định 1) + Command `SetTimescale` (`SettingsRules`); Runtime `BrewReplayTimeline` (đồng hồ phát lại thuần C#, đổi timescale giữa chừng, `Skip`); ~50 test EditMode
+- **Quyết định (đề xuất, chờ duyệt)**: view phát lại → F-014 (Runtime chưa có màn); `SkipReplay` không là Command Core (chỉ Presentation; state sau tua ≡ xem hết); giữ `LastBrewResultUid` (không trộn refactor)
+- **File**: Docs/plans/brewlog.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
+
+### 2026-11-04 — build magic
+- **Command**: /unity-game-studio build magic
+- **Đã làm**: Core — `MagicChanceFormula.Compute/ForBrew` (3 bảng theo tier), `BrewingData` 3 bảng + hằng tier/%, `ItemData.MagicChance`, validate content (bảng 10 phần tử 0–100, phụ gia 0–50, chỉ phụ gia có MagicChance, Mineral/Additive tier 1–10), `BrewingRules` tung 1 lần `Chance` khi khớp; TECH §3.4 thứ tự rút `Chance`
+- **File**: Assets/_Project/Scripts/Core/** (1 mới, 4 sửa), Assets/Tests/EditMode/** (3 mới, 3 sửa), Docs/plans/magic.md, Docs/PLAN.md, Docs/TECH.md, Docs/GDD.md, Docs/LOG.md
+- **Test**: skeleton + test → 196: 160 cũ xanh, 30 mới fail đúng, 6 pass tầm thường (5 đã dự đoán); implement → **196/196 xanh** lần đầu; 0 warning CS; `check_unity_project.py` 0 lỗi
+- **Còn lại**: F-008 dòng thuộc tính rút `Chance` sau ma thuật; F-007 Xúc tác
 
 ### 2026-11-04 — plan magic
 - **Command**: /unity-game-studio plan magic
