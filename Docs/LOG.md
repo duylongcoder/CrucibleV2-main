@@ -10,14 +10,21 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build brewing` — F-002 Done; 160/160 EditMode xanh; **chưa commit** (đề xuất message trong báo cáo)
-**Bước tiếp theo**: người dùng commit → `plan magic` (F-003: tung `Chance`, `MagicChance`, truyền thừa) hoặc `plan bag`/`market` (F-005/F-006)
+**Đang làm**: `plan magic` — `Docs/plans/magic.md` (F-003) Draft, chờ duyệt; F-002 xanh 160/160 nhưng **chưa commit**
+**Bước tiếp theo**: commit F-002 → duyệt plan → `build magic` → F-004 BrewLog hoặc F-005/F-006 Túi/Chợ
 **Đang kẹt**: không
-**File đang dở**: không
-**Câu hỏi mở**: bộ khởi đầu > sức chứa Túi?; cân bằng ma thuật theo tier (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**File đang dở**: Docs/plans/magic.md (Draft)
+**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (xem lại ở F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — plan magic
+- **Command**: /unity-game-studio plan magic
+- **Đã làm**: plan F-003 — 7 yêu cầu; `MagicChanceFormula.Compute/ForBrew`, tung đúng 1 lần `Chance` khi khớp (kể cả 0%), phế phẩm không rút; `BrewingData` 3 bảng theo tier + `ItemData.MagicChance`; ~33 test EditMode
+- **Quyết định**: công thức ma thuật tham số hóa `min(Cap[tierSP], ⌊(Σ Inherit[tier] + Σ phụ gia) × Retain[tierSP]/100⌋)`, mặc định = công thức gốc (người dùng chốt) → sửa brewing.md §Formulas + Open Questions; tung ma thuật là lần rút `Chance` đầu tiên của lượt nung
+- **File**: Docs/plans/magic.md (mới), Docs/design/brewing.md, Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
 
 ### 2026-11-04 — build brewing
 - **Command**: /unity-game-studio build brewing

@@ -129,7 +129,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 | Tên | Công thức | Biến (khoảng) | Ví dụ |
 |---|---|---|---|
 | `Quality` | `Q₀ = Σ Essence × (1 + Σ AddPotency)`; rồi với từng `MulPotency%` **sắp tăng dần**: `Q = ⌊Q × MulPotency% / 100⌋`; mỗi bước `min(QualityCap, Q)` — số nguyên `long` (ADR-004, chốt 2026-11-04) | Essence ≥ 0; AddPotency ≥ 0; MulPotency% 100–500 mỗi lần; `QualityCap` 10¹⁵ (config) | Essence 18, +3 Potency, ×150% → 18 × 4 = 72 → ⌊72 × 150 / 100⌋ = **108** |
-| `MagicChance%` | `min(Cap, Σ_{ngl ma thuật} tier×5 + Σ_{phụ gia} MagicChance)` | Cap 90; tier 1–10; MagicChance phụ gia 1–50 | 1 ngl ma thuật tier 4 (20) + phụ gia tier 2 (20) + tier 1 (10) = **50%** |
+| `MagicChance%` | `min(Cap[tierSP], ⌊(Σ_{ngl ma thuật} Inherit[tier] + Σ_{phụ gia} MagicChance) × Retain[tierSP] / 100⌋)` — tierSP = tier thành phẩm; 3 bảng 10 phần tử trong config (tham số hóa 2026-11-04; số liệu chốt ở `balance`) | Mặc định `Inherit[t]` = 5t, `Cap` = 90, `Retain` = 100 (= công thức gốc); tier 1–10; MagicChance phụ gia 0–50 | 1 ngl ma thuật tier 4 (20) + phụ gia tier 2 (20) + tier 1 (10) = **50%** |
 | Thời lượng phát lại | `(iCuối − iĐầu + 1) × BrewTickSeconds / timescale` | i 0–8; timescale 1–3 | Lưới đầy ở 1× = 27 s; ở 3× = 9 s |
 
 - Essence khởi đầu = `BaseEssence`; chỉ Xúc tác (và Thuốc thử sau MVP) cộng thêm. **Phụ gia không cộng
@@ -220,7 +220,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 - **Cân bằng nhánh ma thuật sau khi `Magic` công khai** (hướng A, chốt 2026-11-04): ma thuật là tài nguyên có kế
   hoạch. **Yêu cầu thiết kế (người dùng)**: xác suất giữ được `Magic` khi nung lên tier cao hơn phải **giảm dần
   theo tier thành phẩm** → tier 10 vẫn khó. ⚠ Công thức hiện tại ngược lại (truyền thừa `tier × 5%` → tier càng
-  cao càng dễ). Cách làm (trần theo tier / hệ số giữ theo tier / truyền thừa giảm theo tier) **chốt ở `balance`**
+  cao càng dễ). Cách làm (trần theo tier / hệ số giữ theo tier / truyền thừa giảm theo tier) **chốt ở `balance`** — code đã tham số hóa cả 3 (bảng `Cap` / `Retain` / `Inherit`, 2026-11-04), balance chỉ đổi số
   (mô phỏng riêng, ngoài M0), cùng số slot `RequiresMagic` trong chuỗi tier 10 và giá Kính soi.
 - AC trải nghiệm bổ sung cần đo ở M0: ≥ 80% người chơi mới mô tả đúng thứ tự đọc lưới (trái→phải, trên→dưới)
   sau Mùa 1 — nếu không đạt, xem lại quyết định này.
