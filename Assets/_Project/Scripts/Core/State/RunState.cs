@@ -22,5 +22,11 @@ namespace Crucible.Core.State
         /// <summary>Thứ tự list = thứ tự Xúc tác.</summary>
         public List<ItemInstance> Bag { get; } = new List<ItemInstance>();
         public int NextUid { get; set; }
+
+        /// <summary>Lưới 3×3 theo thứ tự quét hàng = 9 tick; null = ô trống. Vật phẩm trên lưới không nằm trong <see cref="Bag"/>.</summary>
+        public ItemInstance[] Grid { get; } = new ItemInstance[9];
+        public WorkbenchStep WorkbenchStep { get; set; }
+        /// <summary>Uid kết quả lượt Nung gần nhất; 0 = chưa có.</summary>
+        public int LastBrewResultUid { get; set; }
     }
 }

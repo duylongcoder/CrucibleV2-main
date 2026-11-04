@@ -18,6 +18,11 @@ namespace Crucible.Tests.Core.State
             ["bag order"] = run => run.Bag.Reverse(),
             ["item uid"] = run => run.Bag[0] = new ItemInstance(99, run.Bag[0].ItemId),
             ["rng draw"] = run => run.Rng.Get(RngStream.Shop).NextUInt(),
+            ["grid cell"] = run => run.Grid[4] = new ItemInstance(50, new ItemId(0)),
+            ["workbench step"] = run => run.WorkbenchStep = WorkbenchStep.ResultPending,
+            ["last brew uid"] = run => run.LastBrewResultUid = 3,
+            ["item magic"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, magic: true),
+            ["item quality"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, quality: 7),
         };
 
         private static IEnumerable<string> MutationNames => Mutations.Keys;

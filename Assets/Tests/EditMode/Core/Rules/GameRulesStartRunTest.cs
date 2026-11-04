@@ -75,6 +75,21 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_ValidStartRun_StartsWithEmptyGridInEditing()
+        {
+            // Run cũ đã kết thúc để lại lưới / bước / kết quả lượt nung.
+            _run.Grid[0] = new ItemInstance(7, new ItemId(0));
+            _run.WorkbenchStep = WorkbenchStep.ResultPending;
+            _run.LastBrewResultUid = 7;
+
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(_run.Grid, Has.All.Null);
+            Assert.That(_run.WorkbenchStep, Is.EqualTo(WorkbenchStep.Editing));
+            Assert.That(_run.LastBrewResultUid, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Apply_UnknownDifficulty_RejectsWithUnknownContent()
         {
             var command = new StartRun("diff_missing", ContentFactory.StarterKit, Seed, NowUnix);

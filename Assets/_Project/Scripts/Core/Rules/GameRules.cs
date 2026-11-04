@@ -22,6 +22,14 @@ namespace Crucible.Core.Rules
             {
                 case StartRun startRun:
                     return RunStartRules.Apply(run, content, startRun);
+                case PlaceItem placeItem:
+                    return GridRules.Place(run, content, placeItem);
+                case RemoveFromGrid removeFromGrid:
+                    return GridRules.Remove(run, removeFromGrid);
+                case MoveCell moveCell:
+                    return GridRules.Move(run, moveCell);
+                case Brew brew:
+                    return BrewingRules.Brew(run, content, brew);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

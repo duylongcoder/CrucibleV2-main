@@ -1,6 +1,6 @@
 # Plan: Lò nung — lưới, chuỗi nạp, khớp công thức, `Quality` (F-002)
 
-> **Trạng thái**: Draft · **Cập nhật**: 2026-11-04
+> **Trạng thái**: Implemented (duyệt khi gọi `build brewing`) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/brewing.md` §Luật cốt lõi, §Formulas, §Edge Cases · **ADR**: ADR-001, ADR-004, ADR-005 · **Loại**: Logic
 > **TECH**: §3.1 (Recipe trong ContentDb), §3.2 (`Grid`, `WorkbenchStep`), §3.3 (`PlaceItem · MoveCell · RemoveFromGrid ·
 > Brew`). Xây trên `plans/core-foundation.md` (F-000/F-001 — đã xanh, chưa commit).
@@ -246,16 +246,16 @@ AC-10 (Bỏ qua) → F-009.
 > khi xanh. **Nên commit F-000/F-001 trước khi bắt đầu** (đang chưa commit). Lệnh test: `CLAUDE.md` §Lệnh
 > (`$UNITY` Linux = `~/Unity/Hub/Editor/6000.6.7f1/Editor/Unity`), **Editor phải đóng**.
 
-- [ ] **Bước 1 — Skeleton**: thêm/sửa mọi type §2 (method mới trả mặc định / ném `NotImplementedException`); cập nhật
+- [x] **Bước 1 — Skeleton**: thêm/sửa mọi type §2 (method mới trả mặc định / ném `NotImplementedException`); cập nhật
   `ContentFactory`, `ContentDbTest.CreateWithItems` theo chữ ký `ContentDb.Create` mới; 69 test cũ vẫn xanh
   (`-runTests -testPlatform EditMode`, đọc `Logs/editmode.xml`).
-- [ ] **Bước 2 — Test first**: viết test §3 (+ `StateFactory.CreateWorkbenchRun`, content thử nghiệm); chạy EditMode →
+- [x] **Bước 2 — Test first**: viết test §3 (+ `StateFactory.CreateWorkbenchRun`, content thử nghiệm); chạy EditMode →
   test mới **fail đúng lý do**; test cũ vẫn xanh. Test "Rejected → không đổi" có thể pass sẵn trên stub — ghi §6.
-- [ ] **Bước 3 — Implement**: `QualityFormula` → content (`RecipeData`/`Recipe`/validate) → `RecipeMatcher` → state + hash
+- [x] **Bước 3 — Implement**: `QualityFormula` → content (`RecipeData`/`Recipe`/validate) → `RecipeMatcher` → state + hash
   → `GridRules` → `BrewingRules` → dispatch `GameRules`; EditMode xanh (0 failed), không warning CS mới.
-- [ ] **Bước 4 — Refactor**: gộp test cùng phân vùng; gọn validate dùng chung lưới/Brew; EditMode xanh;
+- [x] **Bước 4 — Refactor**: gộp test cùng phân vùng; gọn validate dùng chung lưới/Brew; EditMode xanh;
   `python3 .claude/skills/unity-game-studio/scripts/check_unity_project.py .` 0 lỗi.
-- [ ] **Bước 5 — Bằng chứng & tài liệu**: LOG (số test); PLAN F-002 → Done (AC lưới/khớp/Quality) hoặc In Test; TECH
+- [x] **Bước 5 — Bằng chứng & tài liệu**: LOG (số test); PLAN F-002 → Done (AC lưới/khớp/Quality) hoặc In Test; TECH
   §3.1–3.3 cập nhật API thật; GDD Systems Index #2 → Implemented; đề xuất commit
   `feat(brewing): add grid commands, recipe matcher and quality formula`.
 
@@ -271,8 +271,29 @@ AC-10 (Bỏ qua) → F-009.
 
 ## 6. Implementation Notes (điền khi làm)
 
-- **Design decisions**: - None
+- **Design decisions**:
+  - Plan ở trạng thái Draft khi gọi `build` → coi lệnh `build brewing` là duyệt (gồm các điểm tự quyết ở §2).
+  - Bước 1 + 2 chạy chung một lần batchmode (skeleton + test) để tiết kiệm lượt chạy Editor; kết quả vẫn tách được:
+    69 test cũ xanh (chữ ký `ContentDb.Create` mới không phá gì), test mới fail đúng lý do.
+  - `BrewingData.MaxQualityCap = long.MaxValue / 500` là nơi duy nhất giữ giới hạn trần; `QualityFormula` và
+    `ContentDb` cùng đọc nó (Bước 4: bỏ phụ thuộc ngược `Content → Rules`).
+  - `QualityFormula`: `essence × (1 + add)` so với `cap / (1 + add)` trước khi nhân (không tràn); `addPotency =
+    long.MaxValue` → hệ số giữ `long.MaxValue`.
+  - `ContentDb` validate thêm `BaseEssence < 0` → `ArgumentException` (ngoài bảng test, cùng nhóm R9).
+  - `RecipeMatcher` kiểm phụ gia trong `Gap` bằng **cả** `Kind == Additive` và `AllowedAdditives` (validator đã bảo đảm
+    danh sách chỉ chứa Additive — kiểm kép, không tốn).
+  - `GridChanged` dùng chung một mảng sự kiện tĩnh (không alloc mỗi lệnh lưới); `Brew` cấp phát 1 `BrewCompleted`.
+  - `StateHasher` ghi lưới theo ô (cờ có/không + item) và `Magic`/`Quality` cho mọi item ở Túi lẫn lưới.
 - **Deviations**: - None
-- **Tradeoffs**: - None
-- **Test changes**: - None
-- **Open questions**: - None
+- **Tradeoffs**:
+  - 11 test pass ngay trên skeleton vì stub trả null / từ chối mặc định: 8 `RecipeMatcherTest.Match_*_ReturnsNull` và 3
+    `Apply_RejectedGridCommand_LeavesStateHashUnchanged`. Đã dự đoán (plan §4 bước 2); các test dương tương ứng
+    (`Match_*_ReturnsRecipe/Variant`, `Apply_*_Rejects*`) fail trên stub nên cặp test có nghĩa.
+  - Bước 4: không gộp test — `Compute_MultipliersInDifferentOrder_*` và `Compute_MultipliersFlooredAscending_*` khác
+    assertion; test khớp ở `RecipeMatcherTest` và `GameRulesBrewTest` khác lớp (unit / qua `GameRules`).
+- **Test changes**:
+  - `ContentFactory` / `ContentDbTest.CreateWithItems`: thêm tham số `BrewingData` theo chữ ký mới (dự kiến trong plan).
+  - `GameRulesBrewTest.Apply_Brew_RemovesConsumedItemsFromRun`: `Has.None.AnyOf(...)` không có trong NUnit 3.5 của Unity
+    (CS1061) → `remaining.Intersect(...)` + `Is.Empty`. Sửa trước lần chạy đầu, chưa commit.
+- **Open questions**:
+  - Bộ khởi đầu > sức chứa Túi (từ F-000) — vẫn mở.

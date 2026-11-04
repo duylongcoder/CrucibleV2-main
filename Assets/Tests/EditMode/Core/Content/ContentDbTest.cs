@@ -7,6 +7,7 @@ namespace Crucible.Tests.Core.Content
     public class ContentDbTest
     {
         private static readonly RunData Run = new RunData(3, 8, 8);
+        private static readonly BrewingData Brewing = new BrewingData(1_000_000_000_000_000);
 
         [Test]
         public void Create_ItemsInReverseOrder_AssignsIdsByOrdinalSort()
@@ -51,7 +52,7 @@ namespace Crucible.Tests.Core.Content
         private static ContentDb CreateWithItems(params string[] ids)
         {
             var items = Array.ConvertAll(ids, id => new ItemData(id, ItemKind.Mineral, 1));
-            return ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run);
+            return ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, Brewing);
         }
     }
 }

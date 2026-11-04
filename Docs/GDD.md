@@ -123,7 +123,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | # | Hệ thống | Loại | Ưu tiên | Trạng thái | Tài liệu | Phụ thuộc |
 |---|---|---|---|---|---|---|
 | 1 | Seed & RNG streams | Core | MVP | Implemented | §6.1 | — |
-| 2 | Lò nung: lưới, chuỗi nạp, khớp công thức, thành phẩm, `Quality` | Core | MVP | In Review | [design/brewing.md](design/brewing.md) | 1 |
+| 2 | Lò nung: lưới, chuỗi nạp, khớp công thức, thành phẩm, `Quality` | Core | MVP | Implemented | [design/brewing.md](design/brewing.md) | 1 |
 | 3 | Kích hoạt ma thuật | Core | MVP | In Review | [design/brewing.md](design/brewing.md) §Ma thuật | 1, 2 |
 | 4 | Nhật ký lượt nung & phát lại (timescale, tua) | Core / UI | MVP | In Review | [design/brewing.md](design/brewing.md) §BrewLog | 2 |
 | 5 | Túi | Core | MVP | In Review | [design/economy.md](design/economy.md) §Túi | — |

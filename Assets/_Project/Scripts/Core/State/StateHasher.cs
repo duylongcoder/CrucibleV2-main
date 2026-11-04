@@ -36,11 +36,18 @@ namespace Crucible.Core.State
 
             writer.Write(run.Bag.Count);
             for (var i = 0; i < run.Bag.Count; i++)
+                WriteItem(writer, run.Bag[i]);
+
+            writer.Write(run.Grid.Length);
+            for (var i = 0; i < run.Grid.Length; i++)
             {
-                var item = run.Bag[i];
-                writer.Write(item.Uid);
-                writer.Write(item.ItemId.Index);
+                writer.Write(run.Grid[i] != null);
+                if (run.Grid[i] != null)
+                    WriteItem(writer, run.Grid[i]);
             }
+
+            writer.Write((int)run.WorkbenchStep);
+            writer.Write(run.LastBrewResultUid);
 
             writer.Write(run.Rng != null);
             if (run.Rng != null)
@@ -52,6 +59,14 @@ namespace Crucible.Core.State
                     writer.Write(state.Inc);
                 }
             }
+        }
+
+        private static void WriteItem(CanonicalWriter writer, ItemInstance item)
+        {
+            writer.Write(item.Uid);
+            writer.Write(item.ItemId.Index);
+            writer.Write(item.Magic);
+            writer.Write(item.Quality);
         }
 
         private static void WriteMeta(CanonicalWriter writer, MetaState meta)

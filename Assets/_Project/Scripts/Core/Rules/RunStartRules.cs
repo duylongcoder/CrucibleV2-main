@@ -47,6 +47,10 @@ namespace Crucible.Core.Rules
                 run.Bag.Add(new ItemInstance(uid++, kitItems[i]));
             run.NextUid = uid;
 
+            System.Array.Clear(run.Grid, 0, run.Grid.Length);
+            run.WorkbenchStep = WorkbenchStep.Editing;
+            run.LastBrewResultUid = 0;
+
             return CommandResult.Accept(new GameEvent[] { new RunStarted(command.Seed) });
         }
     }

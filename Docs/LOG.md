@@ -10,14 +10,22 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: `plan brewing` — `Docs/plans/brewing.md` (F-002) Draft, chờ duyệt; F-000/F-001 xanh nhưng **chưa commit**
-**Bước tiếp theo**: commit F-000/F-001 → duyệt plan → `build brewing` → `plan magic` (F-003)
+**Đang làm**: xong `build brewing` — F-002 Done; 160/160 EditMode xanh; **chưa commit** (đề xuất message trong báo cáo)
+**Bước tiếp theo**: người dùng commit → `plan magic` (F-003: tung `Chance`, `MagicChance`, truyền thừa) hoặc `plan bag`/`market` (F-005/F-006)
 **Đang kẹt**: không
-**File đang dở**: Docs/plans/brewing.md (Draft)
-**Câu hỏi mở**: bộ khởi đầu > sức chứa Túi?; `ProjectSettings.asset` mất define `SENTIS_ANALYTICS_ENABLED` sau batchmode (không commit); cân bằng ma thuật theo tier (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**File đang dở**: không
+**Câu hỏi mở**: bộ khởi đầu > sức chứa Túi?; cân bằng ma thuật theo tier (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build brewing
+- **Command**: /unity-game-studio build brewing
+- **Đã làm**: Core — `RecipeData/RecipeSlotData` → `Recipe/RecipeSlot` (validate: 1–9 slot, đầu/cuối nguyên liệu, nguyên liệu Mineral, phụ gia Additive, không trùng hình, ≤ 1 Scrap), `BrewingData` (`QualityCap`), `QualityFormula` (long, Mul% tăng dần + floor), `RecipeMatcher`, `GridRules` (Place/Remove/Move + `ValidateEditable`), `BrewingRules` (tiêu hao lưới, 1 kết quả, `ResultPending`), state `Grid/WorkbenchStep/LastBrewResultUid`, `ItemInstance.Magic/Quality`, hash field mới; 5 class test mới + sửa 4
+- **File**: Assets/_Project/Scripts/Core/** (14 mới, 9 sửa), Assets/Tests/EditMode/** (5 mới, 5 sửa), Docs/plans/brewing.md, Docs/PLAN.md, Docs/TECH.md, Docs/GDD.md, Docs/LOG.md
+- **Test**: skeleton + test → 160: 69 cũ xanh, 80 mới fail đúng lý do, 11 pass tầm thường (đã dự đoán); implement → **160/160 xanh** lần đầu; refactor → 160/160; 0 warning CS; `check_unity_project.py` 0 lỗi
+- **Vấn đề gặp & cách xử lý**: `Has.None.AnyOf` không có trong NUnit 3.5 → đổi assertion; `ContentDb` phụ thuộc `Rules` → dời hằng trần sang `BrewingData`
+- **Còn lại**: F-003 ma thuật (Brew sẽ rút 1 lần `Chance`); F-004 BrewLog; F-007 Effect Xúc tác vào `QualityFormula`
 
 ### 2026-11-04 — plan brewing
 - **Command**: /unity-game-studio plan brewing
