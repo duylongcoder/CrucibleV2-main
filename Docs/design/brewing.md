@@ -86,9 +86,10 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
   - *Truyền thừa*: mỗi nguyên liệu trên lưới **đã kích hoạt ma thuật** góp `tier × 5%`.
   - *Phụ gia*: tổng `MagicChance` của mọi phụ gia trong khoảng trống (tier 1/2/3 = 10/20/30%).
   - Không có cả hai → 0%.
-- `Magic` là dòng thuộc tính ẩn — chỉ thấy bằng Kính soi. MVP: không cộng sức mạnh trang bị.
+- `Magic` là thuộc tính **công khai** (sửa 2026-11-04, GDD §6.2): thấy ngay khi ra lò qua hiệu ứng ma thuật trên
+  sprite, không qua Kính soi. MVP: không cộng sức mạnh trang bị.
 - Nhánh Khoáng Tối thượng dùng slot `RequiresMagic`; nguyên liệu chưa kích hoạt ở slot đó → phế phẩm, không
-  báo lý do.
+  báo lý do (người chơi tự thấy nguyên liệu nào có/không có hiệu ứng ma thuật).
 
 ### Nhật ký lượt nung (`BrewLog`) & phát lại
 
@@ -111,7 +112,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 | Editing | Nung (lưới ≥ 1 vật phẩm) | Brewing | Khóa lưới; kết quả đã tính + đã lưu |
 | Editing | Nung (lưới trống) | Editing | Từ chối |
 | Editing | Bỏ qua lượt | TurnEnd | Vật phẩm trên lưới về Túi |
-| Brewing | Phát lại xong / chạm để tua | Result | Hiện thành phẩm/phế phẩm, ghi Sổ thí nghiệm |
+| Brewing | Phát lại xong / chạm để tua | Result | Hiện thành phẩm/phế phẩm; thành phẩm mới → Sổ công thức |
 | Brewing | Lệnh chỉnh lưới / soi / mua bán | Brewing | Từ chối |
 | Result | Tiếp tục | TurnEnd | |
 | TurnEnd | — | Editing (lượt kế) hoặc Dâng (sau lượt 3) | Xem run-flow.md |
@@ -121,7 +122,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 - Xúc tác (economy.md): Effect chạy ở `OnBrewStart`, `OnRecipeMatch`, `OnBrewFail`, `OnBrewEnd`.
 - Thuộc tính & Kính soi (GDD §6.2): Lò tạo dòng thuộc tính; Kính soi lộ chúng.
 - Meta (GDD §6.3): nung ra → mở `ItemUnlocked` + `RecipeUnlocked`, thêm thành phẩm vào mục nhóm của Sổ công
-  thức; mỗi lượt → tạo/gộp 1 mục Sổ thí nghiệm (chuỗi nguyên liệu, tập phụ gia, kết quả — không khoảng cách).
+  thức. Không có nhật ký lượt nung (Sổ thí nghiệm đã bỏ 2026-11-04).
 
 ## Formulas
 
@@ -160,7 +161,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 | Xúc tác & Effect | cần | chạy Effect theo trigger lượt nung |
 | Thuộc tính & Kính soi | cung cấp | dòng thuộc tính của `Product` |
 | Vòng Mùa | cung cấp | sự kiện kết thúc lượt; đếm lượt (nung + bỏ qua ≤ 3) |
-| Meta | cung cấp | sự kiện "nung ra X" (kèm nhóm); dữ liệu Sổ thí nghiệm **không** chứa vị trí ô / khoảng cách |
+| Meta | cung cấp | sự kiện "nung ra X" (kèm nhóm) — **không** chứa vị trí ô / khoảng cách |
 | UI | cung cấp | `BrewLog` (không rò rỉ) để phát lại |
 
 ## Tuning Knobs
@@ -189,6 +190,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 - Nút Nung (vô hiệu khi lưới trống), Bỏ qua lượt (luôn bật, có xác nhận nếu lưới có vật phẩm).
 - Khi phát lại: highlight tick hiện tại; nút timescale; gợi ý "chạm để tua".
 - Phế phẩm: chỉ ghi "Phế phẩm" — không "gần đúng", không chỉ ô sai.
+- Thành phẩm có `Magic`: hiệu ứng ma thuật trên sprite ở mọi nơi vật phẩm xuất hiện (lưới, Túi, Chợ, Bàn soi).
 
 ## Acceptance Criteria
 
@@ -215,5 +217,10 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 - Nút Nung khi lưới chỉ có phụ gia: cho phép (ra phế phẩm) hay chặn như lưới trống? Đề xuất: cho phép — chặn sẽ
   lộ luật "slot đầu phải là nguyên liệu" (thực ra đã là luật công khai, cân nhắc).
 - ~~Hiện số nhịp 1–9 trên ô?~~ Chốt 2026-11-03: không.
+- **Cân bằng nhánh ma thuật sau khi `Magic` công khai** (hướng A, chốt 2026-11-04): ma thuật là tài nguyên có kế
+  hoạch. **Yêu cầu thiết kế (người dùng)**: xác suất giữ được `Magic` khi nung lên tier cao hơn phải **giảm dần
+  theo tier thành phẩm** → tier 10 vẫn khó. ⚠ Công thức hiện tại ngược lại (truyền thừa `tier × 5%` → tier càng
+  cao càng dễ). Cách làm (trần theo tier / hệ số giữ theo tier / truyền thừa giảm theo tier) **chốt ở `balance`**
+  (mô phỏng riêng, ngoài M0), cùng số slot `RequiresMagic` trong chuỗi tier 10 và giá Kính soi.
 - AC trải nghiệm bổ sung cần đo ở M0: ≥ 80% người chơi mới mô tả đúng thứ tự đọc lưới (trái→phải, trên→dưới)
   sau Mùa 1 — nếu không đạt, xem lại quyết định này.

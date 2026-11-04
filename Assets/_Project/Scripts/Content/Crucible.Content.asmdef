@@ -1,0 +1,16 @@
+{
+    "name": "Crucible.Content",
+    "rootNamespace": "Crucible.Content",
+    "references": [
+        "Crucible.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

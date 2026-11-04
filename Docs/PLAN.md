@@ -55,9 +55,10 @@ Thay đổi nhỏ (tuning số, chỉnh luật nhỏ) có thể đi tắt: `bala
 | F-009 | Vòng Mùa (state machine) | #9 | Logic | MVP | M | Designed | — | design/run-flow.md |
 | F-010 | Rèn, Trận, Uy tín | #10 | Logic | MVP | S | Designed | — | design/run-flow.md |
 | F-011 | Chiến lợi phẩm & modifier Mùa | #11 | Logic/Data | MVP | M | Designed | — | design/run-flow.md |
-| F-012 | Meta: Sổ công thức, Sổ thí nghiệm, Danh vọng, bậc khó, bộ khởi đầu | #12 | Logic/UI | MVP | M | Designed | — | GDD §6.3 |
+| F-012 | Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu | #12 | Logic/UI | MVP | M | Designed | — | GDD §6.3 |
 | F-013 | Lưu & tiếp tục | #13 | Integration | MVP | M | Designed | — | GDD §6.4 |
-| F-014 | UI/UX greybox các màn | #14 | UI | MVP | L | Backlog | — | GDD §7 — cần `ui` |
+| F-014 | UI/UX greybox các màn | #14 | UI | MVP | L | Designed | — | design/ui-ban-luyen.md, ui-season.md, ui-meta.md; còn: màn Kết thúc run, Trận (#17) |
+| F-017 | Trận — mô phỏng tất định + phát lại 6 nhịp | #17 | Logic/UI | MVP | M | Designed | — | design/battle.md |
 
 Trạng thái: Backlog → Designed → Planned → In Progress → In Test → Done (hoặc Blocked: lý do).
 Ước lượng: S = một phiên, M = 2–3 phiên, L = 4+ phiên (L nên chia nhỏ).
@@ -71,6 +72,14 @@ Trạng thái: Backlog → Designed → Planned → In Progress → In Test → 
 - [ ] `/unity-game-studio plan prototype-brewing`
 
 **Rủi ro**: giải mã khoảng cách có thể thành đoán mò tốn tài nguyên (P1/P3) — kiểm ở M0.
+**Rủi ro (2026-11-04)**: đối thủ ẩn ở Chiếu chỉ → người mới mất quyết định "dâng hay giữ" (theo dõi AC-10).
+**Đã chấp nhận có chủ đích** (người dùng 2026-11-04):
+- Bỏ Sổ thí nghiệm → người chơi tự nhớ / tự ghi — **mục tiêu**: nuôi nội dung ngoài game và cộng đồng chia sẻ
+  công thức (GDD §1 USP).
+- Vàng từ chiến lợi phẩm → vẫn khan hiếm vì Chợ chỉ bán tier ≤ 3; lên tier cao phải nung nhiều tầng và tích
+  nhiều khoáng → tốn nhiều vàng.
+- `Magic` công khai → mở route tier 10 cần Magic, nhưng **giữ Magic qua các tầng phải khó dần theo tier** →
+  tier 10 vẫn khó. ⚠ Công thức truyền thừa hiện tại (`tier × 5%`) đi ngược ý này → `balance` phải sửa.
 
 ## 5. Đã cắt / hoãn
 

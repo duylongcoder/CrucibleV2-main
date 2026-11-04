@@ -21,14 +21,14 @@
 | Scripting backend | IL2CPP (WebGL bắt buộc IL2CPP; Android cấu hình sẵn từ template) |
 | Input | Input System package 1.20.1 (`Assets/Settings/InputSystem_Actions.inputactions`) |
 | UI | uGUI 2.6.0 (+ TextMeshPro tích hợp) |
-| Kiến trúc chính | ScriptableObject data + event channel, không DI (giả định — chốt bằng `arch`) |
+| Kiến trúc chính | Lõi C# thuần (`Crucible.Core`) + Command/Reducer; SO `*Def` → `ContentDb`; Boot + 1 scene Game; không DI — TECH ADR-001…007 |
 | Async | Awaitable (Unity 6) |
 | Test framework | Unity Test Framework 1.8.0 (NUnit) — EditMode + PlayMode |
-| Assembly definitions | `Assets/Welcome/Unity.2D.Welcome.asmdef` (của template, không phải code game) — chưa có asmdef game |
-| Test assemblies | Chưa có — tạo bằng `/unity-game-studio setup` |
-| Package đáng chú ý | 2D Tilemap Extras 9.0.1 |
-| Đường dẫn Unity Editor | `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity` |
-| Backend điều khiển Editor | CLI batchmode (chưa có Unity MCP); Unity CLI có tại `~/.unity/bin/unity` |
+| Assembly definitions | `Crucible.Core` (noEngineReferences) · `Crucible.Content` · `Crucible.Runtime` · `Crucible.Editor` — `Assets/_Project/Scripts/<Core\|Content\|Runtime\|Editor>/` (TECH §2); `Unity.2D.Welcome` của template |
+| Test assemblies | `Crucible.Tests.EditMode` (`Assets/Tests/EditMode`, ref Core/Content/Runtime + Newtonsoft) · `Crucible.Tests.PlayMode` (`Assets/Tests/PlayMode`) |
+| Package đáng chú ý | 2D Tilemap Extras 9.0.1 · **sẽ thêm** `com.unity.nuget.newtonsoft-json` (ADR-003, đã duyệt) |
+| Đường dẫn Unity Editor | macOS: `/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity` · Linux: `~/Unity/Hub/Editor/6000.6.7f1/Editor/Unity` (⚠ 2026-11-04 máy Linux mới có 6000.6.8f1 — cần cài 6000.6.7f1 + WebGL module qua Hub) |
+| Backend điều khiển Editor | CLI batchmode (chưa có Unity MCP); Unity CLI `~/.unity/bin/unity` (chỉ trên macOS) |
 
 ## Cấu trúc thư mục
 
@@ -54,10 +54,13 @@ CrucibleV2/
 ## Lệnh
 
 ```bash
+# Chọn đường dẫn Editor theo máy
+UNITY="/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity"   # macOS
+UNITY="$HOME/Unity/Hub/Editor/6000.6.7f1/Editor/Unity"                              # Linux
 # EditMode test (Editor phải đóng)
-"/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity" -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testResults Logs/editmode.xml -logFile -
+"$UNITY" -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testResults Logs/editmode.xml -logFile -
 # PlayMode test
-"/Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents/MacOS/Unity" -batchmode -nographics -projectPath . -runTests -testPlatform PlayMode -testResults Logs/playmode.xml -logFile -
+"$UNITY" -batchmode -nographics -projectPath . -runTests -testPlatform PlayMode -testResults Logs/playmode.xml -logFile -
 # Một test cụ thể: thêm  -testFilter <Namespace.Class.Method>
 # Kiểm tra .meta/GUID
 python3 .claude/skills/unity-game-studio/scripts/check_unity_project.py .
@@ -111,8 +114,8 @@ TBD — xem Docs/BUILD.md (tạo bằng /unity-game-studio setup hoặc release)
 
 ## Ghi chú riêng của dự án
 
-- Giả định khi init (2026-11-03): tên game tạm = `CrucibleV2`; namespace `Crucible`; kiến trúc SO event channel,
-  không DI; Async = Awaitable — cần xác nhận ở `concept`/`arch`.
+- Giả định khi init (2026-11-03): tên game tạm = `CrucibleV2`; namespace `Crucible`. Kiến trúc đã chốt 2026-11-04
+  (TECH ADR-001…007): lõi C# thuần + Command, Async = Awaitable.
 - Version Control mode bị Unity Hub đổi thành **Unity Version Control** khi tạo project; phải là **Visible Meta Files**
   (xem Docs/BUILD.md §1). Kiểm tra lại sau mỗi lần mở project qua Hub.
 - `Assets/Welcome/` là nội dung hướng dẫn của template; có thể xóa khi dọn dự án (hỏi trước).

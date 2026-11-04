@@ -1,0 +1,20 @@
+{
+    "name": "Crucible.Runtime",
+    "rootNamespace": "Crucible.Runtime",
+    "references": [
+        "Crucible.Core",
+        "Crucible.Content",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

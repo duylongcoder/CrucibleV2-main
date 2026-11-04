@@ -29,7 +29,11 @@ Nhà giả kim tháo vát: bán bớt khoáng thừa lấy vốn, săn đúng m�
 ### Chợ
 - Là ngăn kéo trong Bàn luyện; dùng được trong trạng thái Editing của mỗi lượt (không trong Brewing, không ở
   Chiếu chỉ, Dâng, Rèn & Trận, Chiến lợi phẩm).
-- **Hàng làm mới đầu mỗi lượt Bàn luyện** (3 lần/Mùa, stream `Shop`). Số ô hàng mỗi lượt: TBD (config).
+- **Hàng làm mới đầu mỗi lượt Bàn luyện** (3 lần/Mùa, stream `Shop`). **5 ô cố định** cả run (chốt 2026-11-04):
+  - **4 ô nguyên liệu**: khoáng / phụ gia gốc (quy tắc bên dưới); **được trùng** món trong cùng lượt.
+  - **1 ô tiện ích**: Kính soi hoặc Xúc tác (trọng số `UtilitySlotWeights`, TBD); đã đủ `CatalystSlots` → chỉ rút
+    Kính soi.
+  - Reroll làm mới cả 5 ô. Danh vọng / modifier **không** thêm ô (MVP).
 - **Bán**: khoáng & phụ gia **gốc** (không có `Recipe`) tier ≤ `ShopMaxTier` (3), tỉ lệ tier 1/2/3 = 70/25/5;
   Kính soi; Xúc tác. **Không bao giờ** bán tier 4+ hay item có `Recipe`.
 - **Mua**: giá = `MarketPrice × HệSốMùa% × Modifier%`, ≥ 1. Mỗi món mua một lần (ô hàng biến mất).
@@ -37,7 +41,8 @@ Nhà giả kim tháo vát: bán bớt khoáng thừa lấy vốn, săn đúng m�
   Phế phẩm giá cố định thấp. Giá **không** phụ thuộc thuộc tính.
 - **Reroll**: 2 vàng, +1 mỗi lần trong cùng lượt, reset mỗi lượt.
 - **Hệ số giá Mùa**: rút ở Chiếu chỉ (stream `Market`), số nguyên % trong 70–130, áp cho cả Mùa.
-- Vàng giữ qua các lượt và Mùa; mất khi run kết thúc. Không thưởng vàng, không lãi. Bán hết vốn là lựa chọn
+- Vàng giữ qua các lượt và Mùa; mất khi run kết thúc. Nguồn vàng: **bán** + **phần thưởng trận thắng** (Chiến lợi
+  phẩm, run-flow.md — sửa 2026-11-04). Không lãi. Bán hết vốn là lựa chọn
   hợp lệ.
 
 ### Xúc tác & Effect primitive
@@ -98,7 +103,8 @@ Không có state machine riêng; Chợ sống trong trạng thái Editing của 
 | Sức chứa Túi / trần | gate | 14 / 24 | 10–30 | Đủ chỗ cho ~3 lượt nung + dự trữ | `RunDef` |
 | `ShopMaxTier` | gate | 3 | cố định | Tier cao phải tự nung | `RunDef` |
 | Tỉ lệ tier Chợ | curve | 70/25/5 | — | | `RunDef` |
-| Số ô hàng / lượt | gate | TBD | 4–8 | | `RunDef` |
+| Số ô hàng / lượt | gate | 5 (4 nguyên liệu + 1 tiện ích) | 4–6 (layout tối đa 6) | Đủ lựa chọn mà vẫn khan hiếm; kiểm ở M0 | `RunDef` |
+| `UtilitySlotWeights` Kính / Xúc tác | curve | TBD | — | | `RunDef` |
 | Biên độ giá Mùa | curve | 70–130 % | 50–150 | Tạo cơ hội buôn giữa Mùa | `RunDef` |
 | SellRate | curve | 75 % | 50–90 | < 100 để chặn mua-bán sinh lời | `RunDef` |
 | Reroll base / bước | gate | 2 / +1 | — | | `RunDef` |
@@ -125,6 +131,7 @@ Tiếng xu khi bán/mua; ô hàng mới "lật" khi làm mới/reroll; Túi đ�
 - [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
 - [ ] AC-4: Giá mua ≥ 1, giá bán ≥ 0, vàng ≥ 0 sau mọi hành động.
 - [ ] AC-5: Reroll lần 1/2/3 trong một lượt có giá 2/3/4; lượt sau về 2.
+- [ ] AC-6: Mỗi lần làm mới / reroll → đúng 5 ô: 4 ô nguyên liệu gốc + 1 ô Kính soi hoặc Xúc tác; đủ 5 Xúc tác → ô tiện ích luôn là Kính soi.
 - [ ] AC-6: Mua Xúc tác thứ 6 bị từ chối.
 - [ ] AC-7: Mua rồi bán ngay cùng món → vàng giảm (không có vòng sinh lời trong một lượt).
 - [ ] AC-8 (cân bằng): GreedyAgent "chỉ nung để bán, dâng thứ rẻ nhất" có tỉ lệ thắng run thấp hơn agent cân bằng.

@@ -41,7 +41,7 @@
 | P1 | **Hiểu biết là tiến bộ** | Thứ người chơi mang qua các run là kiến thức (công thức, chiến lược), không phải chỉ số | Khi phân vân giữa thưởng *chỉ số* và thưởng *lựa chọn/thông tin* → chọn lựa chọn/thông tin. Công thức **không bao giờ** random. |
 | P2 | **Bí mật công bằng** | Chỉ công thức là bí mật; mọi luật còn lại đọc được, tất định, học được | Khi một thông tin *không phải công thức* làm người chơi thua mà không hiểu vì sao → lộ ra (ít nhất ở dạng định tính). Khi thông tin *là* công thức → giữ kín. |
 | P3 | **Áp lực có tính toán** | Tài nguyên khan hiếm, mỗi Mùa buộc đánh đổi: bán để mua, thử nghiệm hay chơi chắc, dâng hay giữ | Khi phân vân cho thêm tài nguyên hay buộc đánh đổi → buộc đánh đổi (nhưng luôn có đường đi tiếp — không kẹt). |
-| P4 | **Tôn trọng thời gian** | Nhịp liền mạch, dừng là dừng, không bắt xem lại thứ đã biết | Khi phân vân giữa trình diễn và nhịp độ → nhịp độ (trình diễn phải tua được). |
+| P4 | **Tôn trọng thời gian** | Nhịp liền mạch, dừng là dừng, không bắt xem lại thứ đã biết | Khi phân vân giữa trình diễn và nhịp độ → nhịp độ (trình diễn phải tua được, **hoặc** ≤ 3 s ở timescale tối đa 3× — vd cutscene Rèn & Trận). |
 
 **Không phải game này** (anti-pillars): không phản xạ/hành động thời gian thực; không online/PvP; không gacha,
 không tiền thật; không công thức ngẫu nhiên theo seed; không grind chỉ số meta để thắng thay kỹ năng; không
@@ -56,14 +56,14 @@ mô phỏng vật lý/hóa học (fiction chỉ để dễ hình dung).
 
 ```
 ┌─ CHIẾU CHỈ ─────────────────────────────────────────────────────────────┐
-│ Đối thủ Mùa này (tên, loại trận, ★ khó) · LOẠI TRANG BỊ sẽ rèn ·         │
-│ Modifier Mùa sau                                                        │
+│ Popup: "Nhà Vua cần rèn một thanh <LOẠI TRANG BỊ> <thuộc tính ưa>"      │
+│ · Modifier Mùa sau (nếu có). Đối thủ CHƯA lộ (lộ trong Rèn & Trận)      │
 └──────────────┬──────────────────────────────────────────────────────────┘
                ▼
 ┌─ BÀN LUYỆN  (lượt 1 → 2 → 3) ───────────────────────────────────────────┐
 │ [Ngăn Chợ: mua / bán / reroll / Kính soi]   [Lưới 3×3]   [Túi]          │
 │ Xếp tự do → NUNG (khóa lưới) → phát lại theo nhịp (chạm để tua)         │
-│            → thành phẩm / phế phẩm vào Túi → ghi Sổ thí nghiệm          │
+│            → thành phẩm / phế phẩm vào Túi (+ Sổ công thức nếu mới)     │
 │ hoặc BỎ QUA lượt                                                        │
 └──────────────┬──────────────────────────────────────────────────────────┘
                ▼
@@ -72,32 +72,32 @@ mô phỏng vật lý/hóa học (fiction chỉ để dễ hình dung).
 │ Không mua bán. Không có gì để dâng → tự động Thua                       │
 └──────────────┬──────────────────────────────────────────────────────────┘
                ▼
-┌─ RÈN & TRẬN (một cảnh liền) ────────────────────────────────────────────┐
-│ Khoáng → trang bị (loại đã biết từ Chiếu chỉ) → Thắng / Thua            │
+┌─ RÈN & TRẬN (cutscene ≤ 9 s ở 1×, không tua, theo timescale) ───────────┐
+│ Cận thần → thợ rèn rèn trang bị → dũng sĩ nhận → lộ đối thủ → Thắng/Thua│
 └──────────────┬──────────────────────────────────────────────────────────┘
        Thắng ──┤── Thua: Uy tín −1 (về 0 → TRỤC XUẤT, hết run)
                ▼
-   CHIẾN LỢI PHẨM (chọn 1/3, trừ Mùa 8) → Chiếu chỉ Mùa sau | KẾT THÚC RUN sau Mùa 8
+   CHIẾN LỢI PHẨM (vàng tặng thẳng + chọn 1/3, trừ Mùa 8) → Chiếu chỉ Mùa sau | KẾT THÚC RUN sau Mùa 8
 ```
 
 ### Ba vòng lặp
 
 | Vòng | Thời lượng | Người chơi làm gì | Phần thưởng / phản hồi |
 |---|---|---|---|
-| Micro | ~30–60 giây (một lượt nung) | Chọn nguyên liệu, xếp lên lưới theo nhịp → Nung → xem/tua phát lại | Thành phẩm mới (khoảnh khắc "ra rồi!"), hoặc phế phẩm = dữ kiện mới cho suy luận; Sổ thí nghiệm ghi lại |
+| Micro | ~30–60 giây (một lượt nung) | Chọn nguyên liệu, xếp lên lưới theo nhịp → Nung → xem/tua phát lại | Thành phẩm mới (khoảnh khắc "ra rồi!"), hoặc phế phẩm = dữ kiện mới cho suy luận (người chơi tự nhớ / tự ghi) |
 | Meso | ~4–5 phút (một Mùa) | Đọc Chiếu chỉ → đặt mục tiêu (khoáng đủ mạnh, hợp loại trang bị) → 3 lượt Bàn luyện (mua/bán/nung) → soi & chọn khoáng dâng → Trận | Thắng trận + chiến lợi phẩm (Xúc tác, nới Túi, khoáng hiếm); hoặc mất Uy tín |
 | Macro | 35–40 phút (một run 8 Mùa; chấp nhận 30–45) | Leo chuỗi tầng công thức, xây bộ Xúc tác, giữ Uy tín qua 8 trận; với tay: nhánh ma thuật → Khoáng Tối thượng | Thắng run → mở bậc khó kế; Danh vọng → mở bộ khởi đầu / nguyên liệu Chợ / Xúc tác mới; Sổ công thức dày thêm. **Điểm dừng tự nhiên**: cuối mỗi Mùa và cuối run. **Lý do quay lại**: công thức chưa giải, bậc khó mới, Khoáng Tối thượng. |
 
 ```
 Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bán ▸ Mua) ─▶ Xếp tầng cao hơn ─┐
-      ▲                          │ ghi Sổ thí nghiệm                                   │
+      ▲                          │ thành phẩm mới → Sổ công thức                       │
       └──────────────────────────┴─────────────────────────────────────────────────┘
    ×3 lượt ─▶ Dâng khoáng tốt nhất ─▶ Rèn (loại đã biết) ─▶ Trận ─▶ Chiến lợi phẩm ─▶ Mùa sau
    ×8 Mùa  ─▶ Kết thúc run ─▶ Danh vọng + Sổ công thức ─▶ Run mới (bộ khởi đầu / bậc khó mới)
 ```
 
 **Tiến trình (progression)**
-- *Trong run*: vàng (chỉ từ bán), Túi lớn dần (Nới Túi), bộ Xúc tác (≤ 5), leo tier qua **chuỗi tầng** (thành
+- *Trong run*: vàng (từ bán + phần thưởng trận thắng), Túi lớn dần (Nới Túi), bộ Xúc tác (≤ 5), leo tier qua **chuỗi tầng** (thành
   phẩm làm nguyên liệu cho công thức sau; Chợ chỉ bán tier 1–3), nhánh ma thuật dẫn tới tier 10.
 - *Giữa các run (meta)*: Sổ công thức (nguyên liệu + thứ tự, **không** có khoảng cách), Danh vọng mở **lựa
   chọn** (bộ khởi đầu, nguyên liệu vào bể Chợ, Xúc tác mới), thắng run mở bậc khó kế. Không tăng chỉ số.
@@ -114,7 +114,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | Mùa 1, lượt 1 | Kéo/chạm đặt nguyên liệu, Nung, phát lại theo nhịp | Bộ khởi đầu ghi sẵn nhóm nhập môn `A → B`; xếp liền A, B ra thành phẩm thứ nhất; Túi đủ nguyên liệu |
 | Mùa 1, lượt 2–3 | Chợ: bán để có vàng, mua để nung tiếp; Bỏ qua lượt | Túi khởi đầu không đủ cho lượt 3 nếu không bán |
 | Mùa 1, cuối | Dâng → Rèn → Trận | Đối thủ ★1 gần như chắc thắng với khoáng nhập môn |
-| Mùa 2 | **Khoảng cách là dữ liệu ẩn**: cùng nhóm, nhịp khác → kết quả khác; phế phẩm; Sổ thí nghiệm | Chiếu chỉ Mùa 2 yêu cầu loại trang bị hợp với thành phẩm thứ hai của nhóm `A → B` (cách 1 nhịp); một dòng gợi ý duy nhất "Cùng nguyên liệu, nhịp khác — kết quả khác"; Sổ thí nghiệm hiện "A → B" với nhiều kết quả |
+| Mùa 2 | **Khoảng cách là dữ liệu ẩn**: cùng nhóm, nhịp khác → kết quả khác; phế phẩm; Sổ công thức | Chiếu chỉ Mùa 2 yêu cầu loại trang bị hợp với thành phẩm thứ hai của nhóm `A → B` (cách 1 nhịp); một dòng gợi ý duy nhất "Cùng nguyên liệu, nhịp khác — kết quả khác"; Sổ công thức hiện nhóm "A → B" có 2 thành phẩm (cùng chuỗi, khác kết quả) |
 | Mùa 2–3 | Thuộc tính ẩn + Kính soi; loại trang bị ở Chiếu chỉ | Chiếu chỉ Mùa 3 yêu cầu loại trang bị cần thuộc tính cụ thể; Chợ có Kính soi giá rẻ |
 | Mùa 3–4 | Phụ gia & Kích hoạt ma thuật; Xúc tác | Chiến lợi phẩm Mùa 2–3 đảm bảo có 1 Xúc tác (run-flow.md §Chiến lợi phẩm); phụ gia tier 1 xuất hiện ở Chợ |
 
@@ -133,11 +133,12 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | In Review | [design/run-flow.md](design/run-flow.md) | 1–8 |
 | 10 | Rèn, Trận, Uy tín | Gameplay | MVP | In Review | [design/run-flow.md](design/run-flow.md) §Rèn & Trận | 8, 9 |
 | 11 | Chiến lợi phẩm & modifier Mùa | Gameplay | MVP | In Review | [design/run-flow.md](design/run-flow.md) §Chiến lợi phẩm | 1, 9 |
-| 12 | Meta: Sổ công thức, Sổ thí nghiệm, Danh vọng, bậc khó, bộ khởi đầu | Progression / Meta | MVP | In Review | §6.3 | 2, 9 |
+| 12 | Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu | Progression / Meta | MVP | In Review | §6.3 | 2, 9 |
 | 13 | Lưu & tiếp tục (dừng là dừng) | Persistence | MVP | In Review | §6.4 | 1, 9 |
 | 14 | UI/UX tổng thể | UI | MVP | In Review | §7 | 2–12 |
 | 15 | Audio | Audio | Vertical Slice | Not Started | §8 | 4, 10 |
 | 16 | Thuốc thử (Reagent) | Gameplay | Full Vision | Not Started | — | 7, 8 |
+| 17 | Trận — mô phỏng tất định theo lượt + phát lại 6 nhịp (thay luật so `Power`) | Gameplay | MVP | In Review | [design/battle.md](design/battle.md) | 8, 10 |
 | 17 | Endless, modifier đổi luật | Meta | Full Vision | Not Started | — | 9, 11 |
 
 **Thứ tự thiết kế** (theo phụ thuộc): Foundation (1, 13) → Core (2, 3, 5, 9) → Feature (4, 6, 7, 8, 10, 11, 12) →
@@ -229,6 +230,10 @@ chọn đúng khoáng để dâng → Kính soi là một quyết định kinh t
 **Detailed Rules**
 - Thuộc tính MVP: `Quality` (luôn có, = Essence × Potency — xem brewing), `Magic` (có/không), Phản đòn, Hấp
   thụ, Sắc bén. Danh sách là content.
+- **`Magic` là thuộc tính công khai** (sửa 2026-11-04): không phải dòng ẩn — thấy ngay khi thành phẩm ra lò qua
+  hiệu ứng ma thuật trên sprite (cùng loại khoáng, bề ngoài giống nhau, chỉ khác hiệu ứng) + nhãn trong thẻ vật
+  phẩm. Kính soi **không** tính `Magic`; "dòng ẩn" chỉ gồm `Quality` và các thuộc tính phụ (Phản đòn, Hấp thụ,
+  Sắc bén...).
 - Dòng thuộc tính sinh lúc tạo thành phẩm (stream `Chance`) theo dòng khởi đầu của công thức; Xúc tác sửa qua
   Effect (`AddStat`); phụ gia chỉ tác động `Magic`.
 - Thuộc tính **không** ảnh hưởng giá bán.
@@ -242,8 +247,7 @@ chọn đúng khoáng để dâng → Kính soi là một quyết định kinh t
 
 **Edge Cases** — Thành phẩm chỉ có `Quality` (1 dòng) → Kính thường lộ hết. Dùng Kính tốt lên thành phẩm còn
 1 dòng chưa lộ → lộ 1, vẫn tiêu hao Kính. Soi thành phẩm đã lộ hết → bị từ chối (không tiêu hao) — người chơi
-suy ra "không còn dòng ẩn, tức không có `Magic`" mà không tốn Kính; chấp nhận vì họ đã trả Kính để lộ các dòng
-còn lại.
+suy ra "không còn dòng ẩn" mà không tốn Kính; chấp nhận vì họ đã trả Kính để lộ các dòng còn lại.
 
 **Dependencies** — Cần Lò (2) tạo dòng thuộc tính, Túi (5), RNG `Inspect`. Cung cấp tập dòng đã lộ cho UI; Rèn
 (10) đọc **toàn bộ** dòng (kể cả chưa lộ).
@@ -256,23 +260,28 @@ còn lại.
 | Giá Kính | curve | TBD | — | Cân với giá khoáng tier 1–2 | `ItemDef.MarketPrice` |
 
 **UI Requirements** — Chỉ hiện các dòng đã lộ. **Không** hiện số dòng còn ẩn, cũng không có ký hiệu "còn dòng
-chưa soi" — vì `Magic` là dòng chỉ tồn tại khi kích hoạt, mọi chỉ báo về dòng ẩn đều lộ ma thuật. Không bao
-giờ hiện con số `Power`.
+chưa soi" — số/chỉ báo dòng ẩn lộ việc thành phẩm có thuộc tính phụ hay không, đúng thứ Kính soi bán cho người
+chơi. `Magic` luôn hiển thị (hiệu ứng sprite + nhãn), không qua Kính soi. **Ngoại lệ có chủ đích** (2026-11-04):
+biểu cảm thợ rèn trong cutscene lộ `Quality` của khoáng **đã dâng** ở 3 mức định tính — chỉ sau khi dâng (không
+đổi được quyết định Mùa đó), không phản ánh đối thủ / kết quả trận. Thuộc tính ẩn còn lộ khi kích hoạt trong Trận (battle.md) — cũng chỉ sau khi dâng.
 
 **Acceptance Criteria**
 - [ ] AC-1: Thành phẩm có 4 dòng, Kính `RevealLines` 1 → lộ đúng 1 dòng chưa lộ; dùng lần 2 → lộ dòng khác.
 - [ ] AC-2: Thành phẩm đã lộ hết → lệnh soi bị từ chối, Kính không bị tiêu hao.
 - [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
 - [ ] AC-4: Không thông tin dòng chưa lộ nào xuất hiện ở UI/log release.
+- [ ] AC-5: Thành phẩm kích hoạt ma thuật → hiệu ứng ma thuật hiện ngay khi ra lò, không cần soi; Kính soi lên
+  thành phẩm đó không lộ/tiêu tốn lượt cho `Magic`.
 
 **Open Questions** — Không còn (chốt 2026-11-03: không hiện số dòng / chỉ báo dòng ẩn).
 
-### 6.3 Meta: Sổ công thức, Sổ thí nghiệm, Danh vọng, bậc khó, bộ khởi đầu
+### 6.3 Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu
 
 > Trạng thái: In Review · Pillar: P1, P2 · Ưu tiên: MVP · Lớp: Feature
 
-**Overview** — Thứ giữ lại giữa các run: Sổ công thức (theo **nhóm công thức**, không có khoảng cách), Sổ thí
-nghiệm (mọi lượt nung đã làm, **không có khoảng cách**), Danh vọng (XP meta mở thêm lựa chọn), bậc khó đã mở.
+**Overview** — Thứ giữ lại giữa các run: Sổ công thức (theo **nhóm công thức**, không có khoảng cách), Danh vọng
+(XP meta mở thêm lựa chọn), bậc khó đã mở. (Sổ thí nghiệm đã **bỏ** 2026-11-04 — lượt nung hỏng không được ghi
+lại; người chơi tự nhớ / tự ghi.)
 **Khoảng cách là dữ liệu ẩn duy nhất người chơi phải tự kiểm nghiệm và tự ghi nhớ** — không màn hình, sổ,
 tooltip hay save nào hiển thị lại khoảng cách cho người chơi (P2).
 
@@ -284,21 +293,18 @@ tooltip hay save nào hiển thị lại khoảng cách cho người chơi (P2).
 - **Nguồn biết nhóm công thức** (chốt 2026-11-03): chỉ có (a) bộ khởi đầu cấp sẵn (`StarterKitDef.KnownFamilies`
   — cho biết nguyên liệu + thứ tự của nhóm, **không** cho biết nhóm có những thành phẩm nào hay khoảng cách nào)
   và (b) tự nung ra. **Không** có Chiếu chỉ gợi ý hay vật phẩm lộ công thức.
-- **Sổ công thức** (meta, vĩnh viễn): **mỗi nhóm một mục** — chuỗi nguyên liệu theo thứ tự + danh sách thành
-  phẩm **đã nung ra** thuộc nhóm. Không ghi khoảng cách, phụ gia, thuộc tính; **không** cho biết nhóm còn bao
-  nhiêu biến thể chưa tìm. Nhóm do bộ khởi đầu cấp mà chưa nung ra biến thể nào → mục chỉ có chuỗi nguyên
-  liệu, danh sách thành phẩm trống.
-- **Sổ thí nghiệm** (meta, vĩnh viễn — chốt 2026-11-03): tự động ghi mỗi lượt nung:
-  - **Ghi**: chuỗi nguyên liệu theo thứ tự (bỏ mọi ô trống — **không** có khoảng cách, không có vị trí ô), tập
-    phụ gia đã dùng (không thứ tự, không vị trí — vì phụ gia chỉ hợp lệ ở khoảng trống, vị trí của nó lộ nhịp),
-    kết quả (tên thành phẩm hoặc "Phế phẩm"), run, Mùa/lượt, bậc khó.
-  - **Không ghi**: lưới, vị trí ô, số nhịp chờ, độ dài phát lại.
-  - Cùng (chuỗi nguyên liệu, tập phụ gia, kết quả) đã có → **gộp** (tăng bộ đếm, cập nhật lần gần nhất).
-    Vì không có khoảng cách, cùng chuỗi có thể có nhiều dòng kết quả khác nhau (vd "A → B: Thép ×2, Gang ×1,
-    Phế phẩm ×4") — đó chính là dữ kiện cho thấy khoảng cách quyết định kết quả, còn khoảng cách nào thì người
-    chơi tự nhớ / tự ghi.
-  - Giới hạn `LabLogCap` mục (mặc định 500); vượt → xóa mục **hỏng** cũ nhất trước; mục thành công không bao giờ
-    tự bị xóa.
+- **Sổ công thức** (meta, vĩnh viễn — sửa 2026-11-04, spec `design/ui-meta.md` §I): **mỗi khoáng một mục**, liệt kê
+  **mọi** khoáng trong content (nguyên liệu gốc + thành phẩm), gom theo nhóm công thức, sắp theo tier, **vị trí
+  cố định**. Khoáng chưa mở → mọi trường "???" (người chơi thấy được tổng số khoáng và số biến thể của mỗi nhóm —
+  chấp nhận có chủ đích). Mục đã mở gồm: tên, icon, thời điểm mở, công thức (chuỗi nguyên liệu theo thứ tự, **chỉ
+  khi đã nung ra**, không khoảng cách), thuộc tính có thể nhận (đã khám phá → tên; còn chưa khám phá → một ô ???).
+  Header nhóm hiện chuỗi nguyên liệu khi nhóm đã biết (bộ khởi đầu cấp hoặc đã nung ra một biến thể). Không ghi
+  khoảng cách, phụ gia.
+- **Thuộc tính đã khám phá** (meta, mới): mỗi khoáng lưu tập thuộc tính phụ người chơi đã soi ra trên một viên cùng
+  loại (trong `ItemDef.PossibleStats`).
+- **Không có Sổ thí nghiệm** (bỏ 2026-11-04, quyết định người dùng): game không ghi lại lượt nung hỏng hay chuỗi
+  đã thử. Dữ kiện "cùng chuỗi, khác nhịp → khác kết quả" đến từ Sổ công thức (một nhóm liệt kê nhiều thành phẩm)
+  và trí nhớ / ghi chép của người chơi.
 - **Danh vọng**: quy đổi cuối run (thắng hay thua):
   `Renown = (Thắng × 10 + TierCaoNhất × 5 + (thắng run ? 30 : 0)) × HệSốBậcKhó%` (làm tròn xuống).
   Tự mở khi đạt mốc (không tiêu Danh vọng): mốc tạm 40 / 80 / 100 / 120 / 150 → bộ khởi đầu, nguyên liệu mới
@@ -317,8 +323,7 @@ tooltip hay save nào hiển thị lại khoảng cách cho người chơi (P2).
 
 **Edge Cases**
 - Thua ngay Mùa 3 không thắng trận nào, tier 2 → 10 × D% Danh vọng (vẫn > 0, khuyến khích thử).
-- Mua khoáng tier 3 → không mở công thức. Nung thành phẩm đã mở → chỉ tăng bộ đếm Sổ thí nghiệm.
-- Lưới chỉ có phụ gia → mục Sổ thí nghiệm có chuỗi nguyên liệu rỗng + tập phụ gia + "Phế phẩm".
+- Mua khoáng tier 3 → không mở công thức. Nung thành phẩm đã có trong Sổ → Sổ không đổi.
 - Người chơi tự ghi khoảng cách ra ngoài game / cộng đồng chia sẻ → chấp nhận (là "tự kiểm nghiệm").
 
 **Dependencies** — Đọc sự kiện nung (2), mua/nhận (6, 11), kết quả run (9). Lưu file meta riêng (§6.4).
@@ -329,31 +334,29 @@ tooltip hay save nào hiển thị lại khoảng cách cho người chơi (P2).
 |---|---|---|---|---|
 | Hệ số Danh vọng bậc 1/2/3 | curve | 100 / 150 / 200 % | 100–300 | `DifficultyDef` |
 | Mốc mở khóa | gate | 40/80/100/120/150 | — | `UnlockRenown` trên từng def |
-| `LabLogCap` | gate | 500 mục | 200–2000 (giới hạn dung lượng lưu WebGL) | config meta |
 
 **UI Requirements**
-- Sổ công thức: mỗi nhóm một mục — chuỗi icon nguyên liệu theo thứ tự, **khoảng cách đều nhau giữa icon**
-  (không gợi ý nhịp), bên dưới là các thành phẩm đã tìm. Không có "?/N", không có ô trống chờ điền.
-- Sổ thí nghiệm: danh sách dòng "chuỗi icon nguyên liệu · phụ gia đã dùng · kết quả × số lần", lọc "thành /
-  hỏng" và theo nhóm; **không** vẽ lưới thu nhỏ. Mở được trong Bàn luyện.
+- Sổ công thức: xem `design/ui-meta.md` §I — chuỗi icon nguyên liệu **cách đều nhau** (không gợi ý nhịp); mục
+  ??? và bộ đếm "Đã mở x/N" được phép (sửa 2026-11-04); thứ tự biến thể trong nhóm không suy ra từ khoảng cách.
+- Sổ công thức mở được trong Bàn luyện (trừ lúc phát lại) và từ Menu chính.
 
 **Acceptance Criteria**
 - [ ] AC-1: Nung ra khoáng X lần đầu → Sổ công thức có mục nhóm của X (đúng chuỗi nguyên liệu) với X trong danh sách thành phẩm; không có dữ liệu khoảng cách.
-- [ ] AC-1b: Nung ra 2 biến thể khác khoảng cách của cùng nhóm → **một** mục nhóm liệt kê cả 2 thành phẩm.
+- [ ] AC-1b: Nung ra 2 biến thể khác khoảng cách của cùng nhóm → cả 2 mục trong cùng nhóm có cùng chuỗi công thức; vị trí các mục không đổi.
+- [ ] AC-1c: Soi ra thuộc tính S trên một viên khoáng X → Sổ mục X hiện S; còn thuộc tính chưa khám phá → đúng 1 ô ???.
 - [ ] AC-2: Mua khoáng Y → `ItemUnlocked(Y)` = true, `RecipeUnlocked(Y)` = false.
-- [ ] AC-3: Mỗi lượt nung tạo/gộp đúng 1 mục Sổ thí nghiệm theo (chuỗi nguyên liệu, tập phụ gia, kết quả); hai lưới cùng chuỗi khác khoảng cách, cùng kết quả → cùng một mục.
-- [ ] AC-3b: Kết thúc run (thắng/thua) → Sổ thí nghiệm còn nguyên ở run mới.
-- [ ] AC-3c: Vượt `LabLogCap` → mục bị xóa là mục hỏng cũ nhất; mục thành công còn nguyên.
+- [ ] AC-3: Lượt nung ra phế phẩm → meta không đổi (không có nhật ký lượt nung).
+- [ ] AC-3b: Kết thúc run (thắng/thua) → Sổ công thức còn nguyên ở run mới.
 - [ ] AC-3d: Dữ liệu meta đã lưu không chứa vị trí ô hay khoảng cách (kiểm bằng test đọc file save).
 - [ ] AC-4: Thắng run bậc 1 → bậc 2 mở; Danh vọng tính đúng ví dụ 115.
-- [ ] AC-5 (trải nghiệm): ≥ 70% người playtest dùng Sổ thí nghiệm ít nhất 1 lần trong run đầu.
+- [ ] AC-5 (trải nghiệm): ≥ 70% người playtest mở Sổ công thức ít nhất 1 lần trong run đầu; ghi nhận bao nhiêu người tự ghi chép ngoài game (đo gánh nhớ sau khi bỏ Sổ thí nghiệm).
 - [ ] AC-6: Chọn bộ khởi đầu 1 → Sổ có đúng các nhóm `KnownFamilies` của bộ (chuỗi nguyên liệu, danh sách thành phẩm trống).
 - [ ] AC-7 (trải nghiệm, M0): ≥ 50% người chơi tự khám phá ≥ 1 thành phẩm **ngoài** biến thể nhập môn trong 2 run đầu; nếu không đạt → kích hoạt phương án gợi ý dự phòng.
 - [ ] AC-8 (trải nghiệm, M0): ≥ 70% người chơi, sau Mùa 2, phát biểu được "cùng nguyên liệu, nhịp khác → kết quả khác".
 
 **Open Questions**
 - Khám phá công thức mù có đủ vui không (rủi ro cao, xem §4)? Đo bằng AC-7, AC-8 ở M0.
-- Có cần một "ghi chú tay" trong Sổ thí nghiệm để người chơi tự ghi nhịp không? (Do người chơi tự viết → không
+- (Bỏ Sổ thí nghiệm 2026-11-04 → gánh nhớ tăng, AC-7/AC-8 rủi ro hơn; xem lại sau M0.) Có cần một "ghi chú tay" trong Sổ công thức để người chơi tự ghi nhịp không? (Do người chơi tự viết → không
   vi phạm "game không hiển thị khoảng cách"; nhưng làm giảm thử thách ghi nhớ.) Đề xuất: không ở MVP, xem lại
   sau playtest.
 
@@ -370,8 +373,8 @@ Có hai vùng lưu tách biệt: **save run** (một run dở, xóa khi run kế
 - Đóng tab giữa lúc đang phát lại lượt nung → mở lại thấy kết quả lượt nung (lượt đã được tính ngay khi Nung).
 - **Save run gồm**: seed, bậc khó, bộ khởi đầu, toàn bộ trạng thái run (Mùa, lượt, Túi, lưới, vàng, Uy tín, hàng
   Chợ hiện tại, Chiếu chỉ đã rút, dòng thuộc tính đã lộ).
-- **Meta gồm**: Sổ công thức + cờ mở khóa, **Sổ thí nghiệm**, Danh vọng, bậc khó đã mở, bộ khởi đầu đã mở, timescale ưa thích.
-- Có run dở → menu chính hiện "Tiếp tục"; run kết thúc → xóa save run (meta, gồm Sổ thí nghiệm, giữ nguyên).
+- **Meta gồm**: Sổ công thức + cờ mở khóa (kèm thời điểm mở), thuộc tính đã khám phá theo khoáng, Danh vọng, bậc khó đã mở, bộ khởi đầu đã mở, timescale ưa thích.
+- Có run dở → menu chính hiện "Tiếp tục"; run kết thúc → xóa save run (meta giữ nguyên).
 - Không có "save scum": không có nút tải lại lượt trước.
 
 **Edge Cases**
@@ -387,8 +390,8 @@ Cung cấp "Tiếp tục" cho menu chính (§7).
 
 **Acceptance Criteria**
 - [ ] AC-1: Đóng tab trình duyệt ở mỗi màn (Chiếu chỉ, Bàn luyện đang xếp, đang phát lại, Dâng, Chiến lợi phẩm) → mở lại đúng trạng thái, cùng state hash.
-- [ ] AC-2: Run kết thúc → không còn nút "Tiếp tục"; meta (gồm Sổ thí nghiệm) còn nguyên.
-- [ ] AC-3: Đóng tab ngay sau Nung → mở lại → Sổ thí nghiệm có mục của lượt nung đó.
+- [ ] AC-2: Run kết thúc → không còn nút "Tiếp tục"; meta còn nguyên.
+- [ ] AC-3: Đóng tab ngay sau Nung ra thành phẩm mới → mở lại → Sổ công thức đã có thành phẩm đó.
 - [ ] AC-4: Save run bị sửa hỏng bằng tay → game mở được, báo lỗi, meta không mất.
 
 ## 7. UI / UX tổng thể
@@ -397,26 +400,27 @@ Cung cấp "Tiếp tục" cho menu chính (§7).
 ```
 Menu chính ─▶ Run mới (chọn bậc khó, bộ khởi đầu) ─▶ [Mùa ×8: Chiếu chỉ ▸ Bàn luyện ×3 ▸ Dâng ▸
 Rèn & Trận ▸ Chiến lợi phẩm] ─▶ Kết thúc run (Thắng / Trục xuất + Danh vọng) ─▶ Menu chính
-Menu chính ─▶ Sổ công thức · Cài đặt · Tiếp tục (nếu có run dở)
+Menu chính: Run mới · Tiếp tục (tắt nếu không có run dở) · Sổ công thức · Cài đặt · Giới thiệu
+(Run mới khi đang có run dở → xác nhận ghi đè; không có nút Thoát — WebGL)
 ```
 
-**HUD cố định trong run**: Mùa x/8 · lượt nung y/3 · Uy tín (3 biểu tượng) · Vàng · nút Sổ công thức / Sổ thí
-nghiệm · đối thủ & loại trang bị Mùa này (thu gọn).
+**HUD cố định trong run**: Mùa x/8 · lượt nung y/3 · Uy tín (3 biểu tượng) · Vàng · nút Sổ công thức · loại
+trang bị + thuộc tính ưa của Mùa này (thu gọn; **không** có đối thủ — lộ ở Rèn & Trận).
 
 **Màn Bàn luyện** (màn chính, dùng ~80% thời gian): Lưới 3×3 ở giữa; Túi một bên; ngăn Chợ trượt ra từ
 bên kia (mở sẵn đầu lượt, thu gọn được); nút Nung / Bỏ qua lượt; điều khiển timescale 1×/2×/3× và "chạm để
 tua" khi đang phát lại.
 
 **Nguyên tắc tương tác** (WebGL trước, Mobile sau): kéo-thả **và** chạm-chọn → chạm-ô; tooltip mở bằng chạm /
-nhấn giữ, không hover; vùng chạm ≥ 64 px ở 1920×1080. Chi tiết: `/unity-game-studio ui`, `Docs/ART.md` §7.
+nhấn giữ, không hover; vùng chạm ≥ 64 px ở 1920×1080. Chi tiết: [design/ui-ban-luyen.md](design/ui-ban-luyen.md) (Bàn luyện), `Docs/ART.md` §7.
 
 **Không rò rỉ**: không UI nào (tooltip, Sổ, thông báo lỗi, animation) để lộ khoảng cách công thức, ô sai, dòng
-thuộc tính chưa soi hay con số `Power`.
+hay thuộc tính chưa soi (trừ hai ngoại lệ sau khi dâng: biểu cảm thợ rèn, thuộc tính kích hoạt trong Trận).
 
 ## 8. Audio
 
 TBD — chạy `/unity-game-studio gdd audio` ở Vertical Slice. Sự kiện cần âm thanh (nháp): đặt nguyên liệu, nhịp
-nạp từng tick, nhịp chờ, thành phẩm / phế phẩm (khác hẳn nhau), ma thuật kích hoạt (chỉ khi soi lộ?), mua/bán,
+nạp từng tick, nhịp chờ, thành phẩm / phế phẩm (khác hẳn nhau), ma thuật kích hoạt (khi ra lò), mua/bán,
 Chiếu chỉ, Rèn, Thắng/Thua trận, trục xuất.
 
 ## 9. Lịch sử thay đổi thiết kế
@@ -438,3 +442,15 @@ Chiếu chỉ, Rèn, Thắng/Thua trận, trục xuất.
 | 2026-11-03 | MVP không nhập seed (seed tự sinh, vẫn lưu) | Quyết định người dùng | 1, 9 |
 | 2026-11-03 | Không hiện số nhịp 1–9 trên ô lưới | Quyết định người dùng; thứ tự quét dạy qua phát lại | 2, 14 |
 | 2026-11-03 | Kính thường / Kính tốt; thời lượng run 35–40 (chấp nhận 30–45); §6.4 bổ sung mục | L1–L3 | 8, 13 |
+| 2026-11-04 | Chợ **5 ô cố định**: 4 nguyên liệu gốc (được trùng) + 1 ô tiện ích (Kính soi / Xúc tác) | Q1–Q5 người dùng | 6 |
+| 2026-11-04 | **Đối thủ ẩn ở Chiếu chỉ**, lộ trong cutscene sau khi dũng sĩ nhận trang bị; Chiếu chỉ = popup một câu | Q6 người dùng; đối thủ cố định theo `RunDef` → người chơi quen vẫn biết trước (P1) | 9, 10, 14 |
+| 2026-11-04 | **Rèn & Trận = cutscene** ≤ 9 nhịp × 1 s ở 1×, **không tua**, chỉ timescale (tối đa 3× → ≤ 3 s); timeline chung, vật phẩm gắn động; P4 bổ sung ngoại lệ "≤ 3 s ở 3×" | Q7–Q8 người dùng | 10, 14 |
+| 2026-11-04 | **Chiến lợi phẩm = vàng tặng thẳng + chọn 1/3** (trước: không có vàng) | Q9 người dùng | 6, 11 |
+| 2026-11-04 | **Bỏ Sổ thí nghiệm**, chỉ giữ Sổ công thức | Q10 người dùng; gánh nhớ tăng — theo dõi AC-5/7/8 | 12, 13, 14 |
+| 2026-11-04 | Menu chính: Run mới · Tiếp tục · Sổ công thức · Cài đặt · Giới thiệu | Q11 | 14 |
+| 2026-11-04 | Nhánh ma thuật theo hướng A "tài nguyên có kế hoạch" — chỉnh trần/truyền thừa/`RequiresMagic`/giá Kính ở `balance` | Q12, hệ quả `Magic` công khai | 3, 8 |
+| 2026-11-04 | **Trận = mô phỏng tất định theo lượt** (HP/ATK/SB/PD/HT, quy đổi theo loại trang bị) thay luật so `Power`; phát lại luôn 6 nhịp; thanh máu + số sát thương; thuộc tính ẩn lộ khi kích hoạt và ghi Sổ | Người dùng (`gdd battle`) | 8, 10, 12, 17 |
+| 2026-11-04 | **Sổ công thức theo khoáng**: liệt kê mọi khoáng (??? khi chưa mở), gom theo nhóm, sắp theo tier, vị trí cố định, bộ đếm x/N; thêm thời điểm mở + thuộc tính đã khám phá vào meta | Người dùng (`ui`) | 12, 13, 14 |
+| 2026-11-04 | Chiếu chỉ hiện tên vương quốc đối thủ (★/loại trận lộ ở Trận); cutscene Rèn 8 nhịp, thợ rèn có biểu cảm theo `Quality`; **Trận** là hệ thống combat riêng (TBD); Dâng = đặt lên khay cận thần | Người dùng (`ui`) | 8, 9, 10, 14 |
+| 2026-11-04 | Chấp nhận có chủ đích: bỏ Sổ thí nghiệm (nuôi cộng đồng / nội dung ngoài game); vàng thưởng (vẫn khan hiếm vì Chợ ≤ tier 3); giữ `Magic` khó dần theo tier (công thức chốt ở `balance`) | Người dùng | 3, 6, 12 |
+| 2026-11-04 | **`Magic` công khai** (trước: dòng ẩn chỉ thấy bằng Kính soi); thuộc tính phụ vẫn ẩn, vẫn không có chỉ báo dòng ẩn | Người dùng (khi làm `ui` Bàn luyện): ma thuật nhận ra được bằng hiệu ứng; còn giúp slot `RequiresMagic` công bằng (P2) | 3, 8, 14 |

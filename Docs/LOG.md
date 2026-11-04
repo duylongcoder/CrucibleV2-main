@@ -8,16 +8,99 @@
 -->
 
 <!-- CHECKPOINT -->
-**Cập nhật**: 2026-11-03
+**Cập nhật**: 2026-11-04
 **Nhánh git**: `main`
-**Đang làm**: chỉnh concept — khoảng cách là dữ liệu ẩn tuyệt đối, thêm nhóm công thức; Sổ thí nghiệm không ghi khoảng cách
-**Bước tiếp theo**: người dùng duyệt `Docs/GDD.md` + `Docs/design/{brewing,economy,run-flow}.md` → `/unity-game-studio arch`
-**Đang kẹt**: không
+**Đang làm**: `setup` xong (ghi file, chưa mở Editor) — 6 asmdef, Newtonsoft 3.2.1 trong manifest, `.gitattributes`, CLAUDE.md lệnh macOS + Linux, BUILD.md
+**Bước tiếp theo**: người dùng cài Unity 6000.6.7f1 + WebGL trên Linux → mở project (import, tạo .meta, tải Newtonsoft) → chạy lại `check_unity_project.py` + test EditMode rỗng → `plan core`
+**Đang kẹt**: chưa compile được trên máy Linux (thiếu 6000.6.7f1)
 **File đang dở**: none
-**Câu hỏi mở**: khám phá công thức mù (rủi ro cao — M0, AC-7/AC-8 §6.3); Version Control mode vẫn sai (đã commit sai ở e12665c; nghi collab-proxy); nguồn lực TBD
+**Câu hỏi mở**: Newtonsoft 3.2.1 có tương thích 6000.6 không (kiểm khi mở); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; số liệu balance; khám phá công thức mù (M0); GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — setup
+- **Command**: /unity-game-studio setup (check + apply)
+- **Đã làm**: check: Visible Meta Files đã OK; thiếu asmdef, Newtonsoft, `.gitattributes`; máy Linux chỉ có Unity 6000.6.8f1. Apply: 6 asmdef (Core noEngineReferences, Content, Runtime, Editor, Tests.EditMode + Newtonsoft, Tests.PlayMode); manifest +1 dòng Newtonsoft 3.2.1; `.gitattributes` UnityYAMLMerge; CLAUDE.md lệnh test theo `$UNITY` macOS/Linux; BUILD.md kết quả + lệnh cấu hình merge driver
+- **File**: Assets/_Project/Scripts/*/Crucible.*.asmdef, Assets/Tests/{EditMode,PlayMode}/*.asmdef, Packages/manifest.json, .gitattributes, CLAUDE.md, Docs/BUILD.md, Docs/TECH.md, Docs/LOG.md
+- **Test**: không chạy được — máy thiếu Unity 6000.6.7f1, chưa có Library
+- **Vấn đề gặp & cách xử lý**: lần ghi manifest đầu sắp xếp lại toàn file → khôi phục, chỉ chèn 1 dòng; 29 cảnh báo GUID do thiếu PackageCache (chưa xác nhận lỗi)
+- **Còn lại**: mở Editor để xác nhận compile + import package
+
+### 2026-11-04 — arch core
+- **Command**: /unity-game-studio arch core
+- **Đã làm**: TECH §3.1–3.7 — ContentDb (Id chuỗi → ItemId), RunState/MetaState mutable, 20 Command + GameRules (validate trước), Pcg32 + 7 stream, BrewLog/BattleLog, RunViewBuilder, StateHasher, GameSession + ISaveStore/IClock; §2 EditMode tham chiếu Runtime
+- **File**: Docs/TECH.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+
+### 2026-11-04 — arch overview
+- **Command**: /unity-game-studio arch
+- **Đã làm**: kiến trúc tổng (TECH §1 sơ đồ lớp + luồng Command, §2 asmdef, §4 lưu, §5 quy ước, §6 ngân sách, §7 ADR-001…007)
+- **File**: Docs/TECH.md, CLAUDE.md, Docs/ART.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: giả định init "SO event channel" thay bằng lõi C# thuần (ADR-001); Newtonsoft là package mới — người dùng đã duyệt, cài ở `setup`
+- **Còn lại**: thiết kế kỹ thuật từng hệ thống; kiểm đồng bộ IndexedDB WebGL
+
+### 2026-11-04 — art 6
+- **Command**: /unity-game-studio art 6
+- **Đã làm**: ART §6 — 3 địa điểm (Xưởng dùng cho Menu/Chiếu chỉ/Bàn luyện/Dâng; Lò rèn chung nền, 4 bộ đạo cụ đúc; Nơi giao đấu: Đấu trường/Chiến trường chung nền đất) + Đại chiến cảnh riêng; ngoại lệ value ngoài trời ≤ 55; cửa sổ theo Mùa (4 cảnh); sửa §1/§4 tham chiếu ngoại lệ
+- **File**: Docs/ART.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+
+### 2026-11-04 — art 5
+- **Command**: /unity-game-studio art 5
+- **Đã làm**: ART §5 — chibi ~3 đầu 64 px; silhouette cận thần / thợ rèn / dũng sĩ / đối thủ; 8 vương quốc + giáp theo bậc; biểu cảm thợ rèn 3 kênh (mặt, dáng, bong bóng); trang bị vẽ ramp xám → `EquipmentRamp` của khoáng; chùy gỗ mặc định cho Giáp/Khiên; ~150 frame
+- **File**: Docs/ART.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Còn lại**: shader palette-swap (arch); §6 môi trường (A7)
+
+### 2026-11-04 — gdd battle
+- **Command**: /unity-game-studio gdd battle
+- **Đã làm**: design/battle.md đủ mục — 1-đấu-1, mô phỏng tất định không RNG (HP/ATK/SB/PD/HT, quy đổi theo loại trang bị, OffAffinity 50%), ta đánh trước, MaxRounds 10 → tie-break tổng sát thương; phát lại luôn 6 nhịp; thanh máu không số + số sát thương; thuộc tính lộ khi kích hoạt → Sổ
+- **File**: Docs/design/battle.md (mới), Docs/design/run-flow.md, Docs/design/ui-season.md, Docs/GDD.md, Docs/PLAN.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: thay luật so `Power` → dọn mọi tham chiếu `Power`; ràng buộc "không rò rỉ `Power`" bỏ (luật trận công khai, sau khi dâng); lối phòng thủ thuần → tie-break tổng sát thương
+- **Còn lại**: balance Trận; ART đấu trường / NPC
+
+### 2026-11-04 — ui các màn còn lại
+- **Command**: /unity-game-studio ui
+- **Đã làm**: spec Chiếu chỉ (tên vương quốc, câu yêu cầu), Dâng (khay cận thần), cutscene Rèn 8 nhịp (biểu cảm thợ rèn theo `Quality`, cảnh đúc theo loại), ràng buộc Trận, Kết quả & Chiến lợi phẩm (vàng + 1/3), Menu chính / trong run, Sổ công thức theo khoáng; "Kiếm" thống nhất; giữ "Mùa"
+- **File**: Docs/design/ui-season.md (mới), Docs/design/ui-meta.md (mới), Docs/design/run-flow.md, Docs/GDD.md, Docs/PLAN.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: Sổ ??? mâu thuẫn GDD "không ?/N" → người dùng chấp nhận lộ tổng số + biến thể/nhóm; biểu cảm thợ rèn lộ `Quality` → ngoại lệ có chủ đích (chỉ sau khi dâng, không theo `Power`); thứ tự mục Sổ không được suy ra từ khoảng cách
+- **Còn lại**: Trận (#17), màn Kết thúc run, ART §5 NPC
+
+### 2026-11-04 — chốt Q1–Q12 (thiết kế các màn)
+- **Command**: /unity-game-studio (tiếp `ui`)
+- **Đã làm**: Chợ 5 ô (4 nguyên liệu + 1 tiện ích); đối thủ ẩn ở Chiếu chỉ, lộ trong cutscene; Rèn & Trận = cutscene ≤ 9 × 1 s, không tua, timescale ≤ 3×, timeline chung + vật phẩm gắn động; Chiến lợi phẩm = vàng + chọn 1/3; bỏ Sổ thí nghiệm; Menu chính; ma thuật hướng A; P4 thêm ngoại lệ "≤ 3 s ở 3×"
+- **File**: Docs/GDD.md, Docs/design/{economy,run-flow,brewing,ui-ban-luyen}.md, Docs/ART.md, Docs/PLAN.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: các quyết định va chạm P3 (đối thủ ẩn, vàng thưởng), P4 (cutscene không tua), P1 (bỏ Sổ thí nghiệm) → ghi rủi ro + AC theo dõi ở PLAN/GDD
+- **Còn lại**: spec UI các màn mới; ART §5 NPC. Người dùng chấp nhận 3 rủi ro kèm lý do (ghi PLAN §4); công thức giữ Magic theo tier → `balance`
+
+### 2026-11-04 — ui Bàn luyện
+- **Command**: /unity-game-studio ui
+- **Đã làm**: spec Bàn luyện §1–8 (mục đích, element & trạng thái, bố cục 3 cột + anchor, tương tác, văn bản, chuyển động, accessibility, tiêu chí QA); ART §7; mockup artifact
+- **File**: Docs/design/ui-ban-luyen.md (mới), Docs/GDD.md (§6.2, §8, §9), Docs/design/brewing.md, Docs/ART.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: ART §1 (khói cho dòng chưa soi) mâu thuẫn GDD §6.2 → người dùng quyết: `Magic` công khai, thuộc tính phụ vẫn ẩn và không có chỉ báo; nút Soi luôn bật để không thành chỉ báo
+- **Còn lại**: spec các màn khác; kiểm glyph font; arch
+
+### 2026-11-04 — art 8
+- **Command**: /unity-game-studio art 8
+- **Đã làm**: viết §8 Asset Standards — đặt tên/thư mục, kích thước, import settings, Sprite Atlas V2, hiển thị (Pixel Perfect Camera + Canvas Scaler), checklist nhận asset, ngân sách tạm
+- **File**: Docs/ART.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: người dùng chọn Scale With Screen Size cho UI thay vì scale nguyên → ghi hệ quả pixel không đều ở độ phân giải lẻ + điểm kiểm tra 1366×768
+- **Còn lại**: ngân sách chờ TECH §6 (`arch`); script kiểm palette ở `asset`
+
+### 2026-11-04 — art (khảo sát phong cách)
+- **Command**: /unity-game-studio art
+- **Đã làm**: khung §0 (pixel art, 640×360 ×3, PPU 32, chữ hi-res, AI + chỉnh tay); §1 chọn hướng A "Lò là mặt trời" trong 3 hướng; §2 mood 8 trạng thái; §3 shape language theo loại vật phẩm; nháp §4 + trang swatch có grayscale/mô phỏng mù màu
+- **File**: Docs/ART.md, Docs/LOG.md
+- **Test**: không (thiết kế)
+- **Vấn đề gặp & cách xử lý**: AI tạo pixel art "giả" → quy trình downscale nearest + ép palette khóa; font pixel thiếu dấu tiếng Việt → chữ UI dùng font hi-res
+- **Còn lại**: §4 đã tạm chốt; người dùng muốn cập nhật bố cục/mật độ màn hình sau (ART A1); viết §8
 
 ### 2026-11-03 — concept (khoảng cách) + setup check
 - **Command**: /unity-game-studio concept, setup
@@ -71,6 +154,7 @@
 
 | Ngày | Quyết định | Lý do / phương án bị loại | Ai quyết | Tài liệu liên quan |
 |---|---|---|---|---|
+| 2026-11-04 | Kiến trúc: lõi C# thuần + Command/Reducer; Boot + 1 scene Game; save Newtonsoft JSON (thêm package); PCG32 + số nguyên; SO → ContentDb; ánh sáng sprite overlay; RunView lọc thông tin ẩn | Loại: SO event channel (khó tất định/lưu), scene additive, JsonUtility, URP 2D Light | Người dùng | TECH ADR-001…007 |
 | 2026-11-03 | Nền tảng: Mobile, input touch | — | Người dùng | CLAUDE.md |
 | 2026-11-03 | Rigor `standard`; Claude chỉ đề xuất commit message, không commit test-first | Mặc định khuyến nghị | Người dùng | CLAUDE.md §Git |
 | 2026-11-03 | Kiến trúc tạm: SO event channel, không DI | Giả định mặc định, chờ `arch` | Claude (giả định) | TECH.md §1 |

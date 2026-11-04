@@ -1,0 +1,20 @@
+{
+    "name": "Crucible.Editor",
+    "rootNamespace": "Crucible.Editor",
+    "references": [
+        "Crucible.Core",
+        "Crucible.Content",
+        "Crucible.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

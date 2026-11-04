@@ -1,17 +1,30 @@
 # Build & Release — CrucibleV2 (tên tạm)
 
-> Chủ sở hữu: DevOps · **Cập nhật**: 2026-11-03
+> Chủ sở hữu: DevOps · **Cập nhật**: 2026-11-04
 
 ## 1. Môi trường
 
 | Mục | Giá trị |
 |---|---|
-| Unity | 6000.6.7f1 — module nền tảng cần: WebGL (chính), macOS Standalone (dev/test); Android/iOS sau |
+| Unity | 6000.6.7f1 — module nền tảng cần: WebGL (chính), macOS / Linux Standalone (dev/test); Android/iOS sau. Máy dev: macOS + Linux (Linux cần cài 6000.6.7f1 — hiện chỉ có 6000.6.8f1) |
 | Asset Serialization | Force Text |
-| Version Control mode | Visible Meta Files (⚠️ 2026-11-03: Hub đổi thành Unity Version Control — đang chờ đổi lại trong Editor) |
+| Version Control mode | Visible Meta Files (✅ đã sửa — kiểm 2026-11-04) |
 | Git LFS | không (git-lfs chưa cài; chưa có binary lớn — xem lại khi thêm art/audio) |
-| Merge tool scene/prefab | không (chưa có `.gitattributes`) |
+| Merge tool scene/prefab | UnityYAMLMerge qua `.gitattributes` (`merge=unityyamlmerge`) — mỗi máy cấu hình driver, xem §3 |
 | Nhánh | trunk-based: `main` luôn build được; nhánh ngắn; release = tag; `hotfix/*` từ tag |
+
+### Kết quả setup check — 2026-11-04
+
+| Mục | Trạng thái |
+|---|---|
+| Git repo, `.gitignore` | OK (scanner báo thiếu UserSettings là báo nhầm — có `/[Uu]ser[Ss]ettings/`) |
+| Force Text / Visible Meta Files | OK / OK |
+| Render pipeline | OK — URP gán qua QualitySettings |
+| `.gitattributes` | ✅ tạo mới — UnityYAMLMerge, eol, binary; không LFS |
+| asmdef game + test | ✅ tạo 6 asmdef (TECH §2) |
+| Newtonsoft JSON | ✅ thêm `com.unity.nuget.newtonsoft-json` 3.2.1 vào manifest (ADR-003) — xác nhận khi mở Editor |
+| `check_unity_project.py` | 0 lỗi, 29 cảnh báo — tất cả do máy Linux chưa có `Library/PackageCache`; chạy lại sau khi mở Editor |
+| Unity trên máy Linux | ⚠ chỉ có 6000.6.8f1 → người dùng cài 6000.6.7f1 + WebGL qua Hub |
 
 ### Kết quả setup check — 2026-11-03
 
@@ -36,6 +49,14 @@
 - Addressables: {{có — build content trước player build}}
 
 ## 3. Lệnh
+
+```bash
+# Cấu hình merge driver UnityYAMLMerge (một lần mỗi máy, git config cục bộ)
+git config merge.unityyamlmerge.name "Unity SmartMerge"
+git config merge.unityyamlmerge.driver "'<UNITY_EDITOR_DIR>/Data/Tools/UnityYAMLMerge' merge -p %O %B %A %A"
+# macOS: <UNITY_EDITOR_DIR> = /Applications/Unity/Hub/Editor/6000.6.7f1/Unity.app/Contents
+# Linux: <UNITY_EDITOR_DIR> = ~/Unity/Hub/Editor/6000.6.7f1/Editor
+```
 
 ```bash
 # Build bằng script (Editor đóng)

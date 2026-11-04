@@ -1,0 +1,37 @@
+# Unity — CrucibleV2 (setup 2026-11-04). Không dùng Git LFS (chưa cài, chưa có binary lớn — xem Docs/BUILD.md §1).
+* text=auto
+
+# YAML của Unity: merge bằng UnityYAMLMerge (cấu hình merge driver "unityyamlmerge" trong git config cục bộ — Docs/BUILD.md §3)
+*.unity     merge=unityyamlmerge eol=lf
+*.prefab    merge=unityyamlmerge eol=lf
+*.asset     merge=unityyamlmerge eol=lf
+*.mat       merge=unityyamlmerge eol=lf
+*.anim      merge=unityyamlmerge eol=lf
+*.controller merge=unityyamlmerge eol=lf
+*.overrideController merge=unityyamlmerge eol=lf
+*.meta      merge=unityyamlmerge eol=lf
+*.physicsMaterial2D merge=unityyamlmerge eol=lf
+*.spriteatlasv2 merge=unityyamlmerge eol=lf
+
+# Code / text
+*.cs        text diff=csharp eol=lf
+*.asmdef    text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.shader    text eol=lf
+*.shadergraph text eol=lf
+*.uss       text eol=lf
+*.uxml      text eol=lf
+
+# Binary
+*.png  binary
+*.jpg  binary
+*.webp binary
+*.psd  binary
+*.aseprite binary
+*.wav  binary
+*.ogg  binary
+*.mp3  binary
+*.ttf  binary
+*.otf  binary
+*.dll  binary
