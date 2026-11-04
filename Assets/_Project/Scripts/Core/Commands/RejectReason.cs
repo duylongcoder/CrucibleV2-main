@@ -29,5 +29,9 @@ namespace Crucible.Core.Commands
         ItemNotOfferable = 21,
         /// <summary><c>DismissCourtier</c> khi Túi còn thành phẩm đạt chuẩn.</summary>
         HasOfferableItem = 22,
+        /// <summary><c>ChooseReward</c> ngoài khoảng <c>SpoilsOptions</c>.</summary>
+        InvalidRewardIndex = 23,
+        /// <summary>Nới Túi khi Túi đã ở trần <c>MaxBagCapacity</c>.</summary>
+        BagAtMaxCapacity = 24,
     }
 }

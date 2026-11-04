@@ -182,6 +182,77 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(events.OfType<ReputationLost>().Select(e => e.Remaining), Is.EqualTo(new[] { 2, 1, 0 }));
         }
 
+        [Test]
+        public void Apply_WinEverySeason_ReachesRunEndWonThroughSpoils([Values(1, 2, 3)] int seed)
+        {
+            var content = CreateWeakOpponentsWithSpoils();
+            var run = StartRun(content, (ulong)seed);
+            var events = new List<GameEvent>();
+
+            for (var season = 1; season <= SeasonCount; season++)
+            {
+                Assert.That(run.Season, Is.EqualTo(season), "season");
+                WinSeason(run, content, events);
+                if (season == SeasonCount)
+                    break;
+
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Spoils), $"season {season}");
+                ICommand leave = season % 2 == 1 && run.SpoilsOptions.Count > 0 ? new ChooseReward(0) : new SkipReward();
+                Record(events, Apply(run, content, leave));
+            }
+
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Ended));
+            Assert.That(run.Outcome, Is.EqualTo(RunOutcome.Won));
+            Assert.That(events.OfType<SpoilsStarted>().Count(), Is.EqualTo(SeasonCount - 1));
+            Assert.That(events.OfType<SeasonStarted>().Count(), Is.EqualTo(SeasonCount - 1));
+        }
+
+        [Test]
+        public void Apply_SameSeedThroughSpoils_SameHash()
+        {
+            var content = CreateWeakOpponentsWithSpoils();
+            var first = StartRun(content, 11);
+            var second = StartRun(content, 11);
+
+            for (var season = 1; season <= 3; season++)
+            {
+                WinSeason(first, content, new List<GameEvent>());
+                WinSeason(second, content, new List<GameEvent>());
+                Apply(first, content, new ChooseReward(0));
+                Apply(second, content, new ChooseReward(0));
+            }
+
+            Assert.That(StateHasher.Hash(second, _meta), Is.EqualTo(StateHasher.Hash(first, _meta)));
+        }
+
+        /// <summary>Đối thủ HP 1 / ATK 0 mọi Mùa + Chiến lợi phẩm mặc định.</summary>
+        private static ContentDb CreateWeakOpponentsWithSpoils()
+        {
+            var opponents = CreateOpponents()
+                .Select(o => new OpponentData(o.Id, o.Stars, o.Kind, 1, 0, 0, 0, 0)).ToArray();
+            return ContentFactory.Create(battle: CreateBattle(CreateSpoilsSeasons(), opponents));
+        }
+
+        /// <summary>Chiếu chỉ → lượt 1 nung Thép [Sắt, Than] (thêm tay 2 nguyên liệu) → bỏ qua phần còn lại → Dâng Thép → xem Trận.</summary>
+        private void WinSeason(RunState run, ContentDb content, List<GameEvent> events)
+        {
+            Record(events, Apply(run, content, new AcceptDecree()));
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Iron)));
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Coal)));
+            run.BagCapacity = System.Math.Max(run.BagCapacity, BagRules.UsedSlots(run));
+            PlaceFromBag(run, content, Iron, 0);
+            PlaceFromBag(run, content, Coal, 1);
+            Assert.That(Apply(run, content, new Brew(NowUnix)).Accepted, Is.True, "arrange: brew");
+            var steel = run.Bag.Last();
+            Assert.That(content.GetItem(steel.ItemId).Id, Is.EqualTo(Steel), "arrange: recipe");
+            Record(events, Apply(run, content, new AckBrewResult()));
+            for (var turn = 1; turn < TurnsPerSeason; turn++)
+                Record(events, Apply(run, content, new SkipTurn()));
+            Record(events, Apply(run, content, new Offer(steel.Uid)));
+            Assert.That(run.LastBattle.HeroWon, Is.True, "arrange: win");
+            Record(events, Apply(run, content, new AckBattle()));
+        }
+
         /// <summary>Mùa 1: (reroll ×n) → Bỏ qua ×3 → ra về → Thua → Chiếu chỉ Mùa 2.</summary>
         private RunState LoseSeasonOne(ContentDb content, ulong seed, int rerolls)
         {
@@ -234,7 +305,11 @@ namespace Crucible.Tests.Core.Rules
             return run;
         }
 
-        private static void Record(List<GameEvent> events, CommandResult result) => events.AddRange(result.Events);
+        private static void Record(List<GameEvent> events, CommandResult result)
+        {
+            Assert.That(result.Accepted, Is.True, $"arrange: rejected {result.Reason}");
+            events.AddRange(result.Events);
+        }
 
         private CommandResult Apply(RunState run, ContentDb content, ICommand command) =>
             GameRules.Apply(run, _meta, content, command);

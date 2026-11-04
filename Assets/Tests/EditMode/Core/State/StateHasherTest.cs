@@ -34,6 +34,7 @@ namespace Crucible.Tests.Core.State
             ["decree equipment"] = run => run.DecreeEquipment = new EquipmentId(2),
             ["outcome"] = run => run.Outcome = RunOutcome.Won,
             ["last battle"] = run => run.LastBattle = BattleLog.Forfeit(1, default, default, default),
+            ["spoils options"] = run => run.SpoilsOptions.Add(new RewardId(1)),
         };
 
         private static IEnumerable<string> MutationNames => Mutations.Keys;

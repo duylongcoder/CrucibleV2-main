@@ -50,6 +50,10 @@ namespace Crucible.Core.Rules
                     return OfferingRules.DismissCourtier(run, content, dismissCourtier);
                 case AckBattle ackBattle:
                     return SeasonRules.AckBattle(run, content, ackBattle);
+                case ChooseReward chooseReward:
+                    return SpoilsRules.ChooseReward(run, content, chooseReward);
+                case SkipReward skipReward:
+                    return SpoilsRules.SkipReward(run, content, skipReward);
                 case SetTimescale setTimescale:
                     return SettingsRules.SetTimescale(meta, setTimescale);
                 default:

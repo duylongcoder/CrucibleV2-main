@@ -61,7 +61,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`/`AckBattle` → `SeasonRules`, rút trang bị → `ForgeRules`, `Offer`/`DismissCourtier` → `OfferingRules` + `BattleStats` + `BattleSimulator` + `BattleMath`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`/`AckBattle` → `SeasonRules`, `ChooseReward`/`SkipReward` → `SpoilsRules`, rút trang bị → `ForgeRules`, `Offer`/`DismissCourtier` → `OfferingRules` + `BattleStats` + `BattleSimulator` + `BattleMath`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`, `BattleLog` + `RunState.LastBattle`) |
 | Phát lại (Presentation) | `BrewReplayTimeline` (C# thuần) | Runtime | Core | brewing.md §Phát lại | Implemented (đồng hồ; view ở F-014) |
@@ -85,7 +85,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
   `Phase` (`Decree · Workbench · Offering · Battle · Spoils · Ended`); `Turn` (1…`RunData.TurnsPerSeason` ở Workbench, 0 ở phase khác); `WorkbenchStep` (`Editing ·
   ResultPending`); vàng, Uy tín, sức chứa Túi; `Bag: List<ItemInstance>` (thứ tự list = thứ tự Xúc tác); `Grid:
   ItemInstance?[9]`; `SeasonPricePercent` (S, 100 tới khi rút ở Decree); `Shop` (`ShopState`: `List<ShopSlot>` 4 nguyên liệu + 1
-  tiện ích, `ShopSlot.None` = rỗng/đã bán; `RerollCount`); `DecreeEquipment` (`EquipmentId`, rút ở Decree); `LastBrew`, `LastBattle` (giữ sau `AckBattle`), `Spoils`; `Outcome` (`None · Won · Exiled`; run `Ended` giữ `IsActive = true`);
+  tiện ích, `ShopSlot.None` = rỗng/đã bán; `RerollCount`); `DecreeEquipment` (`EquipmentId`, rút ở Decree); `LastBrew`, `LastBattle` (giữ sau `AckBattle`), `SpoilsOptions` (`List<RewardId>`, thứ tự khai báo bể, rỗng ngoài Spoils); `Outcome` (`None · Won · Exiled`; run `Ended` giữ `IsActive = true`);
   `NextUid`.
 - **`ItemInstance`**: `Uid` (tăng dần, không tái dùng), `ItemId`, `Magic`, `Quality`, `Lines: StatLine[]`,
   `RevealedMask`.
@@ -126,8 +126,17 @@ public static class GameRules {
   `ForOpponent(đối thủ Mùa, % bậc khó)` → `BattleSimulator.Simulate` (không RNG) → `LastBattle`, `Phase = Battle`,
   `ItemOffered` + `BattleStarted`. `DismissCourtier` chỉ khi Túi không có món đạt chuẩn (`HasOfferableItem`) →
   `BattleLog.Forfeit`. `AckBattle` (chỉ `Battle`): Thua → Uy tín −1 (`ReputationLost`), 0 → `Ended·Exiled`; Mùa cuối →
-  `Ended·Won`; Thắng → `Spoils` (`SpoilsStarted`, lệnh ở F-011); Thua còn Uy tín → `Season + 1`, `EnterDecree`,
-  `SeasonStarted`. `StateHasher` ghi `DecreeEquipment`, `Outcome`, `LastBattle`.
+  `Ended·Won`; Thắng → `SpoilsRules.Enter`; Thua còn Uy tín → `SeasonRules.StartNextSeason` (`Season + 1`, `EnterDecree`,
+  `SeasonStarted`). `StateHasher` ghi `DecreeEquipment`, `Outcome`, `LastBattle`.
+- **Chiến lợi phẩm** (F-011 Phần A): content `RewardData` (`Item` nguyên liệu gốc không phế phẩm | `ExpandBag` `Amount ≥ 1`) — danh
+  sách toàn cục (`ContentDb.Create(..., rewards)`, `GetReward`/`TryFindReward`); `SeasonData.SpoilsGold` (0…1 000 000),
+  `RewardPool` (`RewardOptionData` có trọng số), `GuaranteeCatalyst`; Mùa cuối không khai báo được. `SpoilsRules.Enter`:
+  `Gold += SpoilsGold`, ứng viên = trọng số > 0 **và** nhận được (Item: chỗ Túi + suất Xúc tác; ExpandBag: chưa trần), đảm
+  bảo → lượt đầu chỉ Xúc tác; mỗi lượt 1 `NextInt(Σ)` stream `Reward`, không lặp, tối đa `MaxSpoilsOptions = 3`; kết quả theo
+  thứ tự khai báo bể; `SpoilsStarted(season, gold, options)`. `ChooseReward(i)` từ chối `RunNotActive` → `WrongPhase` →
+  `InvalidRewardIndex` → `CatalystSlotsFull`/`BagFull`/`BagAtMaxCapacity`; Item → cuối Túi (`NextUid++`), ExpandBag →
+  `BagRules.Expand`; `RewardChosen`. `SkipReward` luôn hợp lệ ở Spoils (`RewardSkipped`). Cả hai → `StartNextSeason`.
+  `StateHasher` ghi `SpoilsOptions`.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.

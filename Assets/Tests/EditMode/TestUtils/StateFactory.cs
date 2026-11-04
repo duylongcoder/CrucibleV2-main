@@ -99,6 +99,27 @@ namespace Crucible.Tests.TestUtils
             return run;
         }
 
+        /// <summary>Run ở Trận Mùa <paramref name="season"/> đã Thắng chắc (dũng sĩ 1000/1000 vs đối thủ 1/0). Túi = <paramref name="bagItemIds"/>.</summary>
+        public static RunState CreateWonBattleRun(ContentDb content, int season = 1, string[] bagItemIds = null)
+        {
+            var run = CreateOfferingRun(content, bagItemIds ?? new string[0], season);
+            run.Phase = RunPhase.Battle;
+            run.LastBattle = BattleSimulator.Simulate(season, run.DecreeEquipment,
+                new ItemInstance(90, ContentFactory.IdOf(content, ContentFactory.Steel), quality: 40),
+                new Combatant(1000, 1000, 0, 0, 0), new Combatant(1, 0, 0, 0, 0), content.Battle);
+            return run;
+        }
+
+        /// <summary>Run ở Chiến lợi phẩm Mùa <paramref name="season"/>, lựa chọn đặt tay theo <paramref name="rewardIds"/>.</summary>
+        public static RunState CreateSpoilsRun(ContentDb content, string[] bagItemIds, int season, params string[] rewardIds)
+        {
+            var run = CreateOfferingRun(content, bagItemIds, season);
+            run.Phase = RunPhase.Spoils;
+            foreach (var id in rewardIds)
+                run.SpoilsOptions.Add(ContentFactory.RewardOf(content, id));
+            return run;
+        }
+
         /// <summary>Dựng hàng Chợ tay theo thứ tự ô; null = ô rỗng. Số reroll = 0.</summary>
         public static void StockShop(RunState run, ContentDb content, params string[] slotItemIds)
         {

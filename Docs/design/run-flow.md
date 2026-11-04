@@ -98,7 +98,7 @@ mua, giá bán, giá Kính soi, giá reroll, chỉ số đối thủ (`OpponentS
 | Resolution | Thua, Uy tín −1 = 0 | RunEnd(Trục xuất) | |
 | Resolution | Thua, Uy tín > 0, Mùa < 8 | Decree (Mùa + 1) | |
 | Resolution | Thua, Uy tín > 0, Mùa = 8 | RunEnd(Thắng) | |
-| Spoils | Nhận vàng + chọn 1/3 | Decree (Mùa + 1) | Vàng cộng khi vào Spoils |
+| Spoils | Chọn 1 lựa chọn (`ChooseReward`) hoặc Bỏ qua (`SkipReward`) | Decree (Mùa + 1) | Vàng cộng khi vào Spoils |
 
 ### Tương tác với hệ thống khác
 - Lò nung (brewing.md) chạy trong Workbench; Chợ/Túi (economy.md) trong Workbench Editing.
@@ -122,7 +122,7 @@ Phản đòn, Hấp thụ. `Magic` không tác dụng trong Trận (MVP).
   *Đối chiếu demo*: "hoàn thành Mùa 8 còn Uy tín = thắng run (kể cả khi thua Đại chiến)" → chỉ đúng khi Uy tín
   ≥ 2 trước trận. Ghi rõ ở đây để nhất quán.
 - **Hòa trong Trận** (cùng gục / bằng % máu) → Thắng (battle.md).
-- **Chiến lợi phẩm cả 3 không hợp lệ** (Túi đầy, đủ 5 Xúc tác, Túi ở trần) → cho phép "Bỏ qua" (nhận không gì).
+- **Chiến lợi phẩm cả 3 không hợp lệ** (Túi đầy, đủ 5 Xúc tác, Túi ở trần) → không bày lựa chọn nào; "Bỏ qua" (nhận không gì). Bỏ qua luôn dùng được kể cả khi còn lựa chọn (chốt 2026-11-04).
 - **Đóng tab ở bất kỳ trạng thái nào** → mở lại đúng trạng thái (GDD §6.4); Decree đã rút thì không rút lại.
 - **Chiến lược áp đảo**: biết loại trang bị sớm → người chơi "chuyên" 1 thuộc tính? Bể trang bị mỗi Mùa ≥ 2
   loại có trọng số khác nhau + modifier trọng số bể → cần đa dạng. Kiểm bằng GreedyAgent.
@@ -178,8 +178,8 @@ Phản đòn, Hấp thụ. `Magic` không tác dụng trong Trận (MVP).
 - [ ] AC-3: Mỗi Mùa đúng 1 lần Dâng (0–1 khoáng tiêu hao) và đúng 1 kết quả Thắng/Thua.
 - [ ] AC-4: Hòa trong Trận → Thắng (battle.md).
 - [ ] AC-5: Uy tín 0 → RunEnd(Trục xuất) ngay; Uy tín không bao giờ tăng (MVP).
-- [ ] AC-6b: Thắng ở Mùa 2 và Mùa 3 (còn chỗ Xúc tác) → luôn có ≥ 1 lựa chọn Xúc tác.
-- [ ] AC-6: Chiến lợi phẩm chỉ sau Thắng và không ở Mùa 8; vàng `SpoilsGold` cộng đúng 1 lần; tối đa 3 lựa chọn; nhận đúng 1 (hoặc Bỏ qua khi không lựa chọn nào hợp lệ).
+- [x] AC-6b (logic, F-011 `Enter_GuaranteeCatalystWithRoom_AlwaysOffersCatalyst`): Thắng ở Mùa 2 và Mùa 3 (còn chỗ Xúc tác) → luôn có ≥ 1 lựa chọn Xúc tác.
+- [x] AC-6 (logic, F-011): Chiến lợi phẩm chỉ sau Thắng và không ở Mùa 8; vàng `SpoilsGold` cộng đúng 1 lần; tối đa 3 lựa chọn; nhận đúng 1 hoặc Bỏ qua (Bỏ qua luôn dùng được — chốt 2026-11-04).
 - [ ] AC-6c: Cutscene Rèn & Trận cùng thời lượng cho mọi trận ở cùng timescale (Thắng sát nút = Thắng áp đảo); ≤ 9 s ở 1×, ≤ 3 s ở 3×.
 - [ ] AC-6d: Không chuỗi / hình ảnh nào của đối thủ Mùa hiện tại xuất hiện trước nhịp lộ đối thủ.
 - [ ] AC-7: Không có gì để dâng → tự động Thua.
@@ -192,5 +192,5 @@ Phản đòn, Hấp thụ. `Magic` không tác dụng trong Trận (MVP).
 ## Open Questions
 
 - Mức khó hiển thị ★1–5 theo bảng khoảng — chốt ở `balance`.
-- Chiến lợi phẩm có nút Bỏ qua chủ động (khi vẫn có lựa chọn hợp lệ) không? Đề xuất: không (MVP).
+- ~~Chiến lợi phẩm có nút Bỏ qua chủ động không?~~ → **Có** (người dùng chốt 2026-11-04: có thể không muốn phần thưởng nào).
 - Người chơi có được xem trước *bể* trang bị Mùa sau (chứ không phải loại) để lên kế hoạch không?

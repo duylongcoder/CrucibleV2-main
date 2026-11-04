@@ -46,5 +46,7 @@ namespace Crucible.Core.State
         public BattleLog LastBattle { get; set; }
         /// <summary>Kết cục run; <see cref="RunOutcome.None"/> tới khi <see cref="Phase"/> = Ended.</summary>
         public RunOutcome Outcome { get; set; }
+        /// <summary>Lựa chọn Chiến lợi phẩm đang bày (thứ tự = thứ tự khai báo bể); rỗng ngoài <see cref="RunPhase.Spoils"/>.</summary>
+        public List<RewardId> SpoilsOptions { get; } = new List<RewardId>(ContentDb.MaxSpoilsOptions);
     }
 }

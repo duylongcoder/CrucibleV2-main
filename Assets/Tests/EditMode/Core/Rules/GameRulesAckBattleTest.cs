@@ -126,6 +126,33 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_AckLoss_GivesNoSpoilsGold()
+        {
+            var content = CreateWithSpoils();
+            var run = StateFactory.CreateBattleRun(content, LossLog(3), season: 3, reputation: 2);
+            run.Gold = 4;
+
+            GameRules.Apply(run, _meta, content, new AckBattle());
+
+            Assert.That(run.Gold, Is.EqualTo(4));
+        }
+
+        [Test]
+        public void Apply_AckWinInLastSeason_DoesNotDrawReward()
+        {
+            var content = CreateWithSpoils();
+            var run = StateFactory.CreateBattleRun(content, WinLog(SeasonCount), season: SeasonCount, reputation: 1);
+            var before = run.Rng.Get(RngStream.Reward).State;
+            run.Gold = 4;
+
+            GameRules.Apply(run, _meta, content, new AckBattle());
+
+            Assert.That(run.Rng.Get(RngStream.Reward).State, Is.EqualTo(before));
+            Assert.That(run.Gold, Is.EqualTo(4));
+            Assert.That(run.SpoilsOptions, Is.Empty);
+        }
+
+        [Test]
         public void Apply_AckWin_KeepsReputation()
         {
             var run = StateFactory.CreateBattleRun(_content, WinLog(1), season: 1, reputation: 3);
@@ -187,6 +214,8 @@ namespace Crucible.Tests.Core.Rules
         [TestCase("Offer")]
         [TestCase("DismissCourtier")]
         [TestCase("AckBattle")]
+        [TestCase("ChooseReward")]
+        [TestCase("SkipReward")]
         public void Apply_AnyRunCommandAfterEnded_RejectsWrongPhase(string commandName)
         {
             var run = StateFactory.CreateBattleRun(_content, LossLog(2), season: 2, reputation: 1);
@@ -198,6 +227,8 @@ namespace Crucible.Tests.Core.Rules
                 "SkipTurn" => new SkipTurn(),
                 "Offer" => new Offer(1),
                 "DismissCourtier" => new DismissCourtier(),
+                "ChooseReward" => new ChooseReward(0),
+                "SkipReward" => new SkipReward(),
                 _ => new AckBattle(),
             };
 

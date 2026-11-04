@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
 using Crucible.Core.Rules;
@@ -146,6 +147,48 @@ namespace Crucible.Tests.Core.Rules
 
                 Assert.That(IsResolved(run), Is.True, $"seed {seed}: stuck in {run.Phase}, season {run.Season}");
             }
+        }
+
+        [Test]
+        public void Spoils_EveryOfferedOptionIsClaimable()
+        {
+            var content = CreateWithSpoils();
+            for (ulong seed = 0; seed < 1000; seed++)
+            {
+                var optionCount = WonSpoilsRun(content, seed).SpoilsOptions.Count;
+                for (var i = 0; i < optionCount; i++)
+                {
+                    var run = WonSpoilsRun(content, seed);
+                    var result = GameRules.Apply(run, _meta, content, new ChooseReward(i));
+
+                    Assert.That(result.Accepted, Is.True, $"seed {seed}, option {i}: {result.Reason}");
+                    Assert.That(BagRules.UsedSlots(run), Is.LessThanOrEqualTo(run.BagCapacity), $"seed {seed}");
+                    Assert.That(BagRules.CountCatalysts(run, content), Is.LessThanOrEqualTo(CatalystSlots), $"seed {seed}");
+                    Assert.That(run.BagCapacity, Is.LessThanOrEqualTo(MaxBagCapacity), $"seed {seed}");
+                }
+            }
+        }
+
+        /// <summary>Thắng Mùa 1…7 (theo seed) với Túi ngẫu nhiên: đầy/không, 0–5 Xúc tác, sức chứa tới trần → đã vào Spoils.</summary>
+        private RunState WonSpoilsRun(ContentDb content, ulong seed)
+        {
+            var random = new System.Random((int)seed);
+            var catalysts = new[] { Bellows, Mortar, Tongs };
+            var bag = new List<string>();
+            var catalystCount = random.Next(CatalystSlots + 1);
+            for (var i = 0; i < catalystCount; i++)
+                bag.Add(catalysts[random.Next(catalysts.Length)]);
+            var capacity = random.Next(System.Math.Max(1, bag.Count), MaxBagCapacity + 1);
+            var fill = random.Next(capacity - bag.Count + 1);
+            for (var i = 0; i < fill; i++)
+                bag.Add(Iron);
+
+            var run = StateFactory.CreateWonBattleRun(content, 1 + random.Next(SeasonCount - 1), bag.ToArray());
+            run.BagCapacity = capacity;
+            run.Rng = Crucible.Core.Random.RngStreams.Create(seed);
+            Assert.That(GameRules.Apply(run, _meta, content, new AckBattle()).Accepted, Is.True, "arrange: ack");
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Spoils), "arrange: spoils");
+            return run;
         }
 
         private const int MaxStepsToResolution = 20000;

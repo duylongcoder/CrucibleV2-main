@@ -11,6 +11,10 @@ namespace Crucible.Core.Content
         /// <summary>Trần hệ số chỉ số đối thủ của bậc khó (%).</summary>
         public const int MaxOpponentStatPercent = 1000;
         private const int MaxStars = 5;
+        /// <summary>Số lựa chọn Chiến lợi phẩm tối đa ("chọn 1/3" — run-flow).</summary>
+        public const int MaxSpoilsOptions = 3;
+        /// <summary>Trần <c>SpoilsGold</c> mỗi Mùa — chặn tràn vàng.</summary>
+        public const int MaxSpoilsGold = 1_000_000;
 
         private readonly ItemData[] _items;
         private readonly Dictionary<string, ItemId> _itemIds;
@@ -20,6 +24,8 @@ namespace Crucible.Core.Content
         private readonly EquipmentData[] _equipment;
         private readonly Dictionary<string, EquipmentId> _equipmentIds;
         private readonly SeasonContent[] _seasons;
+        private readonly Reward[] _rewards;
+        private readonly Dictionary<string, RewardId> _rewardIds;
 
         private ContentDb(ItemData[] items, Dictionary<string, ItemId> itemIds,
                           Dictionary<string, DifficultyData> difficulties,
@@ -27,8 +33,10 @@ namespace Crucible.Core.Content
                           Recipe[] recipes, bool hasScrap, ItemId scrapItemId, MarketData market,
                           ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts, BattleData battle,
                           EquipmentData[] equipment, Dictionary<string, EquipmentId> equipmentIds,
-                          SeasonContent[] seasons)
+                          SeasonContent[] seasons, Reward[] rewards, Dictionary<string, RewardId> rewardIds)
         {
+            _rewards = rewards;
+            _rewardIds = rewardIds;
             Battle = battle;
             _equipment = equipment;
             _equipmentIds = equipmentIds;
@@ -60,7 +68,8 @@ namespace Crucible.Core.Content
 
         public static ContentDb Create(IReadOnlyList<ItemData> items, IReadOnlyList<DifficultyData> difficulties,
                                        IReadOnlyList<StarterKitData> kits, RunData run, BrewingData brewing,
-                                       MarketData market, BattleData battle)
+                                       MarketData market, BattleData battle,
+                                       IReadOnlyList<RewardData> rewards = null)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
             if (difficulties == null) throw new ArgumentNullException(nameof(difficulties));
@@ -141,11 +150,13 @@ namespace Crucible.Core.Content
                 ValidateEquipment(equipment[i]);
             }
 
-            var seasons = ResolveSeasons(battle, run, equipmentIds);
+            var resolvedRewards = ResolveRewards(rewards ?? Array.Empty<RewardData>(), sorted, itemIds, out var rewardIds);
+            var seasons = ResolveSeasons(battle, run, equipmentIds, resolvedRewards, rewardIds);
 
             return new ContentDb(sorted, itemIds, difficultyById, kitById, run, brewing, recipes.ToArray(), hasScrap,
                 scrapItemId, market, BuildShopPools(sorted, market), CollectKind(sorted, ItemKind.Lens),
-                CollectKind(sorted, ItemKind.Catalyst), battle, equipment, equipmentIds, seasons);
+                CollectKind(sorted, ItemKind.Catalyst), battle, equipment, equipmentIds, seasons, resolvedRewards,
+                rewardIds);
         }
 
         /// <summary>Nguyên liệu gốc (khoáng + phụ gia, không <c>Recipe</c>) tier <paramref name="tier"/> mà Chợ bày được, tăng dần <see cref="ItemId"/>; rỗng khi tier ngoài <c>1…ShopMaxTier</c>.</summary>
@@ -181,6 +192,20 @@ namespace Crucible.Core.Content
             if (season < 1 || season > _seasons.Length)
                 throw new ArgumentOutOfRangeException(nameof(season), season, $"Must be in [1, {_seasons.Length}].");
             return _seasons[season - 1];
+        }
+
+        public Reward GetReward(RewardId id)
+        {
+            return _rewards[id.Index];
+        }
+
+        public bool TryFindReward(string id, out RewardId rewardId)
+        {
+            if (id != null)
+                return _rewardIds.TryGetValue(id, out rewardId);
+
+            rewardId = default;
+            return false;
         }
 
         public ItemData GetItem(ItemId id)
@@ -419,7 +444,8 @@ namespace Crucible.Core.Content
 
         /// <summary>Đối thủ + bể trang bị theo thứ tự khai báo; <c>Dictionary</c> chỉ để tra Id (không lặp).</summary>
         private static SeasonContent[] ResolveSeasons(BattleData battle, RunData run,
-                                                      Dictionary<string, EquipmentId> equipmentIds)
+                                                      Dictionary<string, EquipmentId> equipmentIds, Reward[] rewards,
+                                                      Dictionary<string, RewardId> rewardIds)
         {
             var opponentById = new Dictionary<string, OpponentData>(battle.Opponents.Count, StringComparer.Ordinal);
             for (var i = 0; i < battle.Opponents.Count; i++)
@@ -464,10 +490,93 @@ namespace Crucible.Core.Content
 
                 if (total < 1 || total > int.MaxValue)
                     throw new ArgumentException($"Season {number}: forge weights sum {total} must be in [1, {int.MaxValue}].");
-                seasons[s] = new SeasonContent(opponent, pool, (int)total);
+                var rewardPool = ResolveRewardPool(data, number, number == seasons.Length, rewards, rewardIds);
+                seasons[s] = new SeasonContent(opponent, pool, (int)total, data.SpoilsGold, rewardPool,
+                    data.GuaranteeCatalyst);
             }
 
             return seasons;
+        }
+
+        /// <summary>Phần thưởng sắp ordinal theo Id (spoils R1, D2): Item = nguyên liệu gốc không phải phế phẩm; ExpandBag ≥ 1.</summary>
+        private static Reward[] ResolveRewards(IReadOnlyList<RewardData> rewards, ItemData[] items,
+                                               Dictionary<string, ItemId> itemIds,
+                                               out Dictionary<string, RewardId> rewardIds)
+        {
+            var sorted = new RewardData[rewards.Count];
+            for (var i = 0; i < sorted.Length; i++)
+                sorted[i] = rewards[i] ?? throw new ArgumentException($"Rewards[{i}] is null.");
+            Array.Sort(sorted, (a, b) => string.CompareOrdinal(a.Id, b.Id));
+
+            rewardIds = new Dictionary<string, RewardId>(sorted.Length, StringComparer.Ordinal);
+            var resolved = new Reward[sorted.Length];
+            for (var i = 0; i < sorted.Length; i++)
+            {
+                var data = sorted[i];
+                AddUnique(rewardIds, data.Id, new RewardId(i), "reward");
+                switch (data.Kind)
+                {
+                    case RewardKind.Item:
+                        if (data.ItemId == null || !itemIds.TryGetValue(data.ItemId, out var item))
+                            throw new ArgumentException($"Reward '{data.Id}': unknown item '{data.ItemId}'.");
+                        var itemData = items[item.Index];
+                        if (itemData.Recipe != null || itemData.Kind == ItemKind.Scrap)
+                            throw new ArgumentException(
+                                $"Reward '{data.Id}': item '{data.ItemId}' must be a raw ingredient (no recipe, not scrap).");
+                        if (data.Amount != 0)
+                            throw new ArgumentException($"Reward '{data.Id}': item rewards must have Amount 0.");
+                        resolved[i] = new Reward(data.Id, data.Kind, item, 0, itemData.Kind == ItemKind.Catalyst);
+                        break;
+                    case RewardKind.ExpandBag:
+                        if (data.ItemId != null || data.Amount < 1)
+                            throw new ArgumentException($"Reward '{data.Id}': ExpandBag needs no item and Amount >= 1.");
+                        resolved[i] = new Reward(data.Id, data.Kind, default, data.Amount, false);
+                        break;
+                    default:
+                        throw new ArgumentException($"Reward '{data.Id}': unknown kind {data.Kind}.");
+                }
+            }
+
+            return resolved;
+        }
+
+        /// <summary>Chiến lợi phẩm của Mùa <paramref name="number"/> theo thứ tự khai báo; Mùa cuối không được khai báo (spoils D5).</summary>
+        private static RewardOption[] ResolveRewardPool(SeasonData data, int number, bool isLast, Reward[] rewards,
+                                                        Dictionary<string, RewardId> rewardIds)
+        {
+            if (data.SpoilsGold < 0 || data.SpoilsGold > MaxSpoilsGold)
+                throw new ArgumentException($"Season {number}: SpoilsGold {data.SpoilsGold} must be in [0, {MaxSpoilsGold}].");
+
+            var source = data.RewardPool;
+            if (isLast && (data.SpoilsGold != 0 || source.Count != 0 || data.GuaranteeCatalyst))
+                throw new ArgumentException($"Season {number} is the last season and cannot declare spoils.");
+
+            var pool = new RewardOption[source.Count];
+            var total = 0L;
+            var hasCatalyst = false;
+            for (var i = 0; i < pool.Length; i++)
+            {
+                var option = source[i] ?? throw new ArgumentException($"Season {number}: reward pool[{i}] is null.");
+                if (option.RewardId == null || !rewardIds.TryGetValue(option.RewardId, out var reward))
+                    throw new ArgumentException($"Season {number}: unknown reward '{option.RewardId}'.");
+                for (var j = 0; j < i; j++)
+                {
+                    if (pool[j].Reward == reward)
+                        throw new ArgumentException($"Season {number}: reward '{option.RewardId}' listed twice.");
+                }
+
+                if (option.Weight < 0)
+                    throw new ArgumentException($"Season {number}: weight of reward '{option.RewardId}' must not be negative.");
+                pool[i] = new RewardOption(reward, option.Weight);
+                total += option.Weight;
+                hasCatalyst |= option.Weight > 0 && rewards[reward.Index].IsCatalyst;
+            }
+
+            if (total > int.MaxValue)
+                throw new ArgumentException($"Season {number}: reward weights sum {total} exceeds {int.MaxValue}.");
+            if (data.GuaranteeCatalyst && !hasCatalyst)
+                throw new ArgumentException($"Season {number}: GuaranteeCatalyst needs a catalyst reward with weight > 0.");
+            return pool;
         }
 
         private static void ValidateTierTable(IReadOnlyList<int> table, string name)

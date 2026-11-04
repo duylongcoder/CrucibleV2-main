@@ -86,7 +86,7 @@ namespace Crucible.Core.Rules
 
         /// <summary>
         /// Resolution sau Trận (run-flow §Trạng thái; xét Uy tín trước Mùa): Thua → Uy tín −1, về 0 → Trục xuất; Mùa cuối →
-        /// Thắng run; Thắng → Spoils; Thua còn Uy tín → Chiếu chỉ Mùa kế. Giữ <c>LastBattle</c> (forge-battle D11).
+        /// Thắng run; Thắng → Spoils (<see cref="SpoilsRules.Enter"/>); Thua còn Uy tín → Chiếu chỉ Mùa kế. Giữ <c>LastBattle</c> (forge-battle D11).
         /// </summary>
         public static CommandResult AckBattle(RunState run, ContentDb content, AckBattle command)
         {
@@ -111,17 +111,18 @@ namespace Crucible.Core.Rules
                 return EndRun(run, RunOutcome.Won, events);
 
             if (won)
-            {
-                // F-011: SpoilsGold + 3 lựa chọn; hiện chưa có lệnh rời Spoils (D7).
-                run.Phase = RunPhase.Spoils;
-                events.Add(new SpoilsStarted(run.Season));
-                return CommandResult.Accept(events);
-            }
+                SpoilsRules.Enter(run, content, events);
+            else
+                StartNextSeason(run, content, events);
+            return CommandResult.Accept(events);
+        }
 
+        /// <summary>Sang Chiếu chỉ Mùa kế + <see cref="SeasonStarted"/> — sau Thua còn Uy tín hoặc rời Chiến lợi phẩm.</summary>
+        public static void StartNextSeason(RunState run, ContentDb content, List<GameEvent> events)
+        {
             run.Season++;
             EnterDecree(run, content);
             events.Add(new SeasonStarted(run.Season));
-            return CommandResult.Accept(events);
         }
 
         /// <summary>Kết thúc run: giữ <c>IsActive</c> (D6) — mọi lệnh run sau đó bị <c>WrongPhase</c>.</summary>

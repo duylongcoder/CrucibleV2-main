@@ -1,6 +1,6 @@
 # Plan: Chiến lợi phẩm & modifier Mùa (F-011)
 
-> **Trạng thái**: Draft (chờ duyệt D1–D12) · **Cập nhật**: 2026-11-04
+> **Trạng thái**: In Progress — **Phần A Done** (741/741 EditMode xanh), Phần B chưa làm (D1–D12 duyệt 2026-11-04; D4 sửa: Bỏ qua chủ động) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/run-flow.md` §Chiến lợi phẩm, §Modifier Mùa, §Chiếu chỉ (modifier Mùa sau), §Trạng thái (hàng Spoils),
 > Edge Cases (cả 3 không hợp lệ), Tuning Knobs (`SpoilsGold`), AC-6/AC-6b; `design/economy.md` §Túi (Nới Túi), §Formulas
 > (M modifier), Edge Cases (chiến lợi phẩm khi Túi đầy, 6 Xúc tác); `design/battle.md` Tuning (`OpponentStatScale`);
@@ -43,9 +43,9 @@ onboarding GDD §3 (Mùa 2–3 đảm bảo có Xúc tác).
   mới — phòng thủ, bình thường không xảy ra vì state không đổi trong Spoils). Hợp lệ: Item → `ItemInstance(NextUid++,
   item)` thêm cuối Túi (`Magic = false`, `Quality = 0`); ExpandBag → `BagRules.Expand(amount)`. Phát
   `RewardChosen(index, rewardId, itemUid | 0, bagAdded)` rồi rời Spoils (R7). Không rút RNG.
-- R6 — `SkipReward`: chỉ ở `Spoils` **và** `SpoilsOptions` rỗng (còn lựa chọn → `HasRewardOption`, mới — D4). Phát
-  `RewardSkipped(season)` rồi rời Spoils (R7). (run-flow Edge Cases "cả 3 không hợp lệ"; Open Question → không có Bỏ qua
-  chủ động ở MVP.)
+- R6 — `SkipReward`: hợp lệ ở `Spoils` **bất kể còn lựa chọn hay không** — người chơi có thể không muốn phần thưởng nào
+  (D4, người dùng chốt 2026-11-04; đóng Open Question run-flow). Vàng `SpoilsGold` đã cộng lúc vào Spoils vẫn giữ. Phát
+  `RewardSkipped(season)` rồi rời Spoils (R7). Từ chối: `RunNotActive` → `WrongPhase`.
 - R7 — **Rời Spoils**: xóa `SpoilsOptions`, `Season + 1`, `EnterDecree`, `SeasonStarted(season + 1)` — dùng chung với
   nhánh Thua-còn-Uy-tín của `AckBattle` (`SeasonRules.StartNextSeason`).
 - R8 — `RunState.SpoilsOptions: List<RewardId>` (rỗng ngoài Spoils); `StateHasher` ghi (sau `LastBattle`).
@@ -99,7 +99,7 @@ hiếm theo Mùa (do content quyết qua bể từng Mùa), danh sách modifier 
 | `Core/Commands/ChooseReward.cs`, `SkipReward.cs` | Command | Core | Mới |
 | `Core/Commands/RewardChosen.cs`, `RewardSkipped.cs` | Event | Core | Mới |
 | `Core/Commands/SpoilsStarted.cs` | + `Gold`, `Options` (`IReadOnlyList<RewardId>`, bản sao) | Core | Sửa |
-| `Core/Commands/RejectReason.cs` | + `InvalidRewardIndex = 23`, `HasRewardOption = 24`, `BagAtMaxCapacity = 25` | Core | Sửa |
+| `Core/Commands/RejectReason.cs` | + `InvalidRewardIndex = 23`, `BagAtMaxCapacity = 24` | Core | Sửa |
 | `Core/State/RunState.cs` | + `SpoilsOptions: List<RewardId>` | Core | Sửa |
 | `Core/State/StateHasher.cs` | ghi `SpoilsOptions` (count + index) | Core | Sửa |
 
@@ -199,10 +199,9 @@ public static class BattleStats
   tránh câu hỏi "`Quality` của khoáng thành phẩm từ phần thưởng" và tránh dâng thẳng phần thưởng. Khớp chú thích
   `ItemData.Recipe` ("nguyên liệu gốc chỉ từ Chợ / bộ khởi đầu / chiến lợi phẩm").
 - **D3 — Thứ tự thẻ = thứ tự khai báo bể**, không phải thứ tự rút: không lộ thẻ nào là "bắt buộc", ổn định cho test/UI.
-- **D4 — `SkipReward` chỉ khi không có lựa chọn** (theo đề xuất ở run-flow Open Questions). **Mâu thuẫn tài liệu**:
-  `ui-season.md` §E mô tả thẻ "mờ + lý do (Túi đầy…)", còn `run-flow.md` §Chiến lợi phẩm nói *lọc bỏ trước khi rút*
-  → plan theo run-flow (lọc trước; thẻ hiện ra luôn nhận được; bể còn < 3 thì hiện ít hơn) và sửa `ui-season.md` §E
-  cho khớp ở Bước 5. Cần người dùng xác nhận.
+- **D4 — `SkipReward` luôn dùng được ở Spoils** (người dùng chốt 2026-11-04: có thể không muốn nhận phần thưởng nào).
+  Lựa chọn lọc trước khi rút theo run-flow (thẻ hiện ra luôn nhận được; bể còn < 3 thì hiện ít hơn); sửa `ui-season.md`
+  §E (bỏ thẻ mờ, nút Bỏ qua luôn có) và run-flow Open Questions ở Bước A5.
 - **D5 — Mùa cuối không khai báo Spoils** (validator chặn `SpoilsGold ≠ 0` / bể ≠ rỗng): ui-season §E "Thắng Mùa 8 +
   vàng (nếu có)" bỏ phần vàng — vàng mất khi run kết thúc, không có nghĩa.
 - **D6 — Mùa 1 không modifier**: modifier "biết trước 1 Mùa" mà Mùa 1 không có Chiếu chỉ trước → không công bố được;
@@ -283,7 +282,9 @@ public static class BattleStats
 |---|---|
 | `Apply_SkipWithNoOptions_EntersNextSeasonDecree` | `Season + 1`, `Phase = Decree` |
 | `Apply_SkipWithNoOptions_EmitsRewardSkipped` | event `RewardSkipped(season)` |
-| `Apply_SkipWithOptions_RejectsHasRewardOption` | `HasRewardOption`, hash không đổi |
+| `Apply_SkipWithOptions_EntersNextSeasonWithoutReward` | `Season + 1`, Túi / `BagCapacity` không đổi |
+| `Apply_Skip_KeepsSpoilsGold` | `Gold` giữ phần vàng đã cộng |
+| `Apply_SkipWhenNotActive_RejectsRunNotActive` | `RunNotActive` |
 | `Apply_SkipOutsideSpoils_RejectsWrongPhase` | `WrongPhase` |
 
 #### GameRulesAckBattleTest (sửa)
@@ -362,7 +363,7 @@ public static class BattleStats
 #### RunLoopTest / RunLoopInvariantTest (thêm)
 | Test method | Kiểm tra |
 |---|---|
-| `Spoils_AlwaysHasALegalExit` (1.000 seed, state Spoils ngẫu nhiên Túi đầy/không, Xúc tác đủ/không) | đúng một trong `ChooseReward(0)` / `SkipReward` được chấp nhận |
+| `Spoils_EveryOfferedOptionIsClaimable` (1.000 seed, Túi đầy/không, Xúc tác đủ/không) | `ChooseReward(i)` chấp nhận với mọi i < `SpoilsOptions.Count` |
 | `RunLoop_WinEverySeason_ReachesRunEndWon` (agent thắng chắc: content đối thủ yếu) | `Phase = Ended`, `Outcome = Won`, đi qua 7 lần Spoils |
 | `RunLoop_SameSeedSameCommands_SameHash` (có Spoils + modifier) | hash cuối bằng nhau |
 | `Market_BuyThenSellSameSeason_AlwaysLoses_WithAnyModifier` (MarketInvariantTest, Phần B) | `Gold` sau < trước |
@@ -377,7 +378,7 @@ public static class BattleStats
 `Apply_AckWinInLastSeason_DoesNotDrawReward`, `Enter_EmitsSpoilsStarted…`; R3 → SpoilsRulesTest `Enter_*` (số lượng,
 không lặp, trọng số 0, guarantee, thứ tự, số lần rút); R4 → `Enter_BagFull_*`, `Enter_CatalystSlotsFull_*`,
 `Enter_BagAtMaxCapacity_*`; R5 → GameRulesChooseRewardTest; R6 → GameRulesSkipRewardTest; R7 → `Apply_Choose_EntersNextSeasonDecree`,
-`Apply_SkipWithNoOptions_Enters…`, `RunLoop_WinEverySeason_*`, `Spoils_AlwaysHasALegalExit`; R8 → StateHasherTest; R9 →
+`Apply_SkipWithNoOptions_Enters…`, `Apply_SkipWithOptions_*`, `RunLoop_WinEverySeason_*`, `Spoils_EveryOfferedOptionIsClaimable`; R8 → StateHasherTest; R9 →
 ContentDbModifierTest; R10 → ModifierRulesTest + SeasonRulesEnterDecreeTest; R11 → PriceFormulaTest + MarketRulesPriceTest;
 R12 → `Create_SellModifierAllowsProfit_Throws`, `Market_BuyThenSell…_WithAnyModifier`; R13 → BattleStatsTest +
 `Apply_OfferWithOpponentModifier_*`; R14 → `EnterDecree_ForgeRollUsesActiveModifierWeights`, `Create_ModifierZeroesForgePool_Throws`;
@@ -393,16 +394,16 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
 > Logs/editmode.xml -logFile -` (Editor đóng) — đọc `Logs/editmode.xml` (`result="Passed"`, total/failed).
 
 ### Phần A — Chiến lợi phẩm
-- [ ] **A1 — Skeleton**: `RewardKind`, `RewardData`, `RewardOptionData`, `RewardId`, `Reward`, `RewardOption`; mở rộng
+- [x] **A1 — Skeleton**: `RewardKind`, `RewardData`, `RewardOptionData`, `RewardId`, `Reward`, `RewardOption`; mở rộng
   `SeasonData`/`SeasonContent` (tham số tùy chọn); `ContentDb.Create(..., battle, rewards)` + `GetReward`/`TryFindReward`
   (thân tối thiểu); `RunState.SpoilsOptions`; Commands/Events; `RejectReason` +3; `SpoilsRules` thân rỗng; `ContentFactory`
   thêm bể phần thưởng test (`reward_mithril`, `reward_bellows`, `reward_mortar`, `reward_lens`, `reward_bag_2`) + tham số;
   `StateFactory.CreateSpoilsRun`. Kiểm chứng: compile sạch, **665 test cũ vẫn xanh**.
-- [ ] **A2 — Test first**: viết test Phần A §3; chạy → test mới fail đúng lý do (assert, không exception compile).
-- [ ] **A3 — Implement**: validate content, `SpoilsRules`, `SeasonRules.StartNextSeason` + nhánh Thắng của `AckBattle`,
+- [x] **A2 — Test first**: viết test Phần A §3; chạy → test mới fail đúng lý do (assert, không exception compile).
+- [x] **A3 — Implement**: validate content, `SpoilsRules`, `SeasonRules.StartNextSeason` + nhánh Thắng của `AckBattle`,
   dispatch `GameRules`, `StateHasher`. Kiểm chứng: toàn bộ EditMode xanh.
-- [ ] **A4 — Refactor**: gộp test tham số hóa cùng phân vùng; bỏ trùng giữa `AckBattle` và `StartNextSeason`. Test xanh.
-- [ ] **A5 — Tài liệu**: PLAN.md F-011 (Phần A Done), F-009 phần 2 bỏ ghi chú "ngõ cụt"; TECH §3.2/§3.3 (Spoils,
+- [x] **A4 — Refactor**: gộp test tham số hóa cùng phân vùng; bỏ trùng giữa `AckBattle` và `StartNextSeason`. Test xanh.
+- [x] **A5 — Tài liệu**: PLAN.md F-011 (Phần A Done), F-009 phần 2 bỏ ghi chú "ngõ cụt"; TECH §3.2/§3.3 (Spoils,
   `ChooseReward`/`SkipReward`, thứ tự từ chối, stream `Reward`); `ui-season.md` §E theo D4/D5; run-flow AC-6/AC-6b
   tick phần logic; LOG + CHECKPOINT. Đề xuất commit `feat(spoils): add spoils gold, reward draw and ChooseReward/SkipReward`.
 
@@ -429,8 +430,7 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
   `SpoilsStarted`): chỉ có test gọi (chưa có Runtime/baker) — sửa `ContentFactory` là chính. Chấp nhận.
 - **Replay lệch vì thêm lần rút `Season`**: mọi kỳ vọng state RNG sau `EnterDecree` đổi một lần ở B2; chưa có save thật
   nên không phá dữ liệu người chơi.
-- **Mâu thuẫn ui-season §E vs run-flow** (thẻ mờ vs lọc trước) — D4 chờ xác nhận; nếu chọn "thẻ mờ" thì R3/R4 đổi:
-  rút trên toàn bể rồi đánh dấu không nhận được, và `SkipReward` hợp lệ khi mọi thẻ đều mờ.
+- **ui-season §E lệch run-flow** (thẻ mờ vs lọc trước) — chốt theo run-flow + D4; sửa ui-season ở A5.
 - **Tràn số đối thủ**: `v × diff × mod` ≤ 10 000 × 1 000 × 1 000 = 10¹⁰ — trong `long` qua `MulDivFloor`; kết quả ≤
   10⁶ vừa `int`. Mô phỏng đã tính trong `long` (D9 F-010) — giữ nguyên, thêm 1 case biên ở BattleStatsTest.
 - **Cân bằng**: `SpoilsGold` lớn làm mất khan hiếm vàng (P3); modifier giá cực đoan — validator chỉ chặn lỗi logic
@@ -439,8 +439,29 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
 
 ## 6. Implementation Notes (điền khi làm)
 
-- **Design decisions**: - None
-- **Deviations** (lệch so với plan và lý do): - None
-- **Tradeoffs**: - None
-- **Test changes** (sửa test đã commit ở Bước 2 và lý do): - None
+- **Design decisions**:
+  - (A) `ContentDb.Create(..., battle, rewards = null)` — tham số **tùy chọn** (null = không có phần thưởng) để 8 test content
+    gọi `ContentDb.Create` trực tiếp không phải sửa; `ContentFactory` luôn truyền `CreateRewards()`.
+  - (A) `SeasonData` thêm 3 tham số tùy chọn (mặc định: 0 vàng, bể rỗng, không đảm bảo) → `CreateSeasons()` mặc định
+    không có Chiến lợi phẩm; test cần Spoils dùng `ContentFactory.CreateWithSpoils()` / `CreateSpoilsSeasons()`.
+  - (A) `ClaimReason` theo thứ tự của `Buy`: `CatalystSlotsFull` trước `BagFull`.
+  - (A) `Pick` không rút RNG khi không có ứng viên phù hợp (guarantee mà không còn Xúc tác nhận được) — D12 chỉ áp cho lượt có ≥ 1 ứng viên.
+  - (A) Phần thưởng Item tạo `ItemInstance(NextUid++, item)` với `Magic = false`, `Quality = 0` (nguyên liệu gốc — D2).
+- **Deviations** (lệch so với plan và lý do):
+  - (A) Gộp chạy test của Bước 1 vào Bước 2 (một lần batchmode cho skeleton + test mới) — mỗi lần batchmode ~1 phút; skeleton
+    compile sạch, 665 test cũ xanh trong cùng lần chạy.
+  - (A) Test integration `Spoils_EveryOfferedOptionIsClaimable`, `Apply_WinEverySeason_ReachesRunEndWonThroughSpoils`,
+    `Apply_SameSeedThroughSpoils_SameHash` đặt ở `RunLoopInvariantTest` / `RunLoopTest` như plan; `WinSeason` thêm tay Sắt + Than
+    vào Túi mỗi Mùa rồi nung Thép thật (đối thủ HP 1 / ATK 0).
+  - (A) `RunLoopTest.Record` giờ assert lệnh được chấp nhận (chặt hơn; test cũ vẫn xanh).
+- **Tradeoffs**:
+  - (A) Ở skeleton có 11 test phủ định pass "trống" (không bày lựa chọn nào → không vi phạm): `Enter_EmptyPool_*`,
+    `Enter_ZeroWeightOption_*`, `Enter_BagAtMaxCapacity_*`, `Enter_WithoutGuarantee_*`, `Spoils_EveryOfferedOptionIsClaimable`,
+    `Apply_AckLoss_GivesNoSpoilsGold`, `IsClaimable_ItemWhenBagFull_*`… — chấp nhận vì sau implement chúng kiểm trên lựa chọn thật
+    (các test dương cùng nhóm fail ở skeleton).
+- **Test changes** (sửa test sau Bước 2 và lý do):
+  - (A) `ContentFactory.CreateSpoilsSeasons(pool)`: bể tùy chỉnh **không** bật đảm bảo Xúc tác (trước: luôn bật Mùa 2–3 →
+    validator mới từ chối đúng vì bể tùy chỉnh không có Xúc tác) — 4 test `SpoilsRulesTest` lỗi arrange.
+  - (A) `Enter_BagFull_OffersOnlyExpandBag`: Túi 8/8 thay vì 14/14 (14 > trần 12 → Nới Túi không nhận được — lỗi arrange).
+  - (A) Bỏ case `"guarantee"` của `Create_LastSeasonDeclaresSpoils_Throws` trước khi chạy (case này fail vì 2 lý do cùng lúc, không phân biệt được).
 - **Open questions**: - None

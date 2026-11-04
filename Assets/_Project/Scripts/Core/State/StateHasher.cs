@@ -65,6 +65,9 @@ namespace Crucible.Core.State
             writer.Write(run.DecreeEquipment.Index);
             writer.Write((int)run.Outcome);
             WriteBattleLog(writer, run.LastBattle);
+            writer.Write(run.SpoilsOptions.Count);
+            for (var i = 0; i < run.SpoilsOptions.Count; i++)
+                writer.Write(run.SpoilsOptions[i].Index);
 
             writer.Write(run.Rng != null);
             if (run.Rng != null)

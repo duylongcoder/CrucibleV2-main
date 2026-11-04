@@ -79,6 +79,17 @@ namespace Crucible.Tests.TestUtils
         public const int ReflectCapPercent = 50;
         public const int MaxRounds = 10;
 
+        // Chiến lợi phẩm (run-flow §Chiến lợi phẩm) — số tạm cho test. Thứ tự sắp ordinal: bag_2, bellows, lens, mithril, mortar, silver.
+        public const string RewardBag = "reward_bag_2";
+        public const string RewardBellows = "reward_bellows";
+        public const string RewardLens = "reward_lens";
+        public const string RewardMithril = "reward_mithril";
+        public const string RewardMortar = "reward_mortar";
+        public const string RewardSilver = "reward_silver";
+        public const int RewardBagAmount = 2;
+        /// <summary><c>SpoilsGold</c> Mùa s trong <see cref="CreateSpoilsSeasons"/> = s × giá trị này.</summary>
+        public const int SpoilsGoldPerSeason = 5;
+
         /// <summary>Id đối thủ Mùa <paramref name="season"/> trong <see cref="CreateBattle"/>.</summary>
         public static string OpponentOf(int season) => "opp_" + season;
 
@@ -96,7 +107,7 @@ namespace Crucible.Tests.TestUtils
         /// <param name="opponentStatPercent">Hệ số chỉ số đối thủ của bậc khó <see cref="Difficulty"/>.</param>
         public static ContentDb Create(bool steelHasRecipe = true, MarketData market = null,
                                        int turnsPerSeason = TurnsPerSeason, BattleData battle = null,
-                                       int opponentStatPercent = 100)
+                                       int opponentStatPercent = 100, IReadOnlyList<RewardData> rewards = null)
         {
             return ContentDb.Create(
                 new[]
@@ -131,7 +142,57 @@ namespace Crucible.Tests.TestUtils
                 new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount, turnsPerSeason),
                 CreateBrewing(),
                 market ?? CreateMarket(),
-                battle ?? CreateBattle());
+                battle ?? CreateBattle(),
+                rewards ?? CreateRewards());
+        }
+
+        /// <summary>6 phần thưởng: Nới Túi +2, Ống bễ / Cối (Xúc tác), Kính, Mithril (tier 4), Bạc (tier 3).</summary>
+        public static RewardData[] CreateRewards() => new[]
+        {
+            new RewardData(RewardMithril, RewardKind.Item, Mithril),
+            new RewardData(RewardSilver, RewardKind.Item, Silver),
+            new RewardData(RewardLens, RewardKind.Item, Lens),
+            new RewardData(RewardBag, RewardKind.ExpandBag, amount: RewardBagAmount),
+            new RewardData(RewardBellows, RewardKind.Item, Bellows),
+            new RewardData(RewardMortar, RewardKind.Item, Mortar),
+        };
+
+        /// <summary>Bể mặc định: cả 6 phần thưởng, theo thứ tự khai báo này (cố ý khác thứ tự sắp).</summary>
+        public static RewardOptionData[] CreateRewardPool() => new[]
+        {
+            new RewardOptionData(RewardMithril, 30),
+            new RewardOptionData(RewardSilver, 20),
+            new RewardOptionData(RewardLens, 20),
+            new RewardOptionData(RewardBag, 15),
+            new RewardOptionData(RewardBellows, 10),
+            new RewardOptionData(RewardMortar, 5),
+        };
+
+        /// <summary>
+        /// Như <see cref="CreateSeasons"/> + Chiến lợi phẩm Mùa 1…N−1: vàng s × <see cref="SpoilsGoldPerSeason"/>, bể
+        /// <paramref name="pool"/> (null → <see cref="CreateRewardPool"/> + đảm bảo Xúc tác ở Mùa 2–3; bể tùy chỉnh → không đảm bảo).
+        /// Mùa cuối không có.
+        /// </summary>
+        public static SeasonData[] CreateSpoilsSeasons(RewardOptionData[] pool = null)
+        {
+            var seasons = CreateSeasons();
+            for (var s = 1; s < seasons.Length; s++)
+            {
+                seasons[s - 1] = new SeasonData(seasons[s - 1].OpponentId, seasons[s - 1].ForgePool,
+                    s * SpoilsGoldPerSeason, pool ?? CreateRewardPool(), pool == null && (s == 2 || s == 3));
+            }
+
+            return seasons;
+        }
+
+        /// <summary>Content có Chiến lợi phẩm (<see cref="CreateSpoilsSeasons"/>).</summary>
+        public static ContentDb CreateWithSpoils(RewardOptionData[] pool = null) =>
+            Create(battle: CreateBattle(CreateSpoilsSeasons(pool)));
+
+        public static RewardId RewardOf(ContentDb content, string id)
+        {
+            content.TryFindReward(id, out var rewardId);
+            return rewardId;
         }
 
         /// <summary>4 trang bị (bảng battle.md), mỗi Mùa s một đối thủ <c>opp_s</c> (HP 40 + 20s, ATK 5 + 2s, ★ ⌈s/2⌉ tối đa 5;

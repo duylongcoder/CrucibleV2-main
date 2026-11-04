@@ -10,14 +10,28 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: `plan spoils` (F-011) xong bản Draft — `Docs/plans/spoils.md`, chờ duyệt D1–D12. F-010 (665/665 xanh) **vẫn chưa commit**
-**Bước tiếp theo**: người dùng commit F-010 → duyệt plan → `build spoils` Phần A (Spoils) → F-009 phần 2 hoặc Phần B (modifier)
+**Đang làm**: xong `build spoils` **Phần A** (F-011 Spoils). 741/741 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → `build spoils` Phần B (modifier Mùa) hoặc F-009 phần 2 (RandomAgent 1.000 run tới RunEnd — đã hết ngõ cụt) hoặc F-008
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: D4 ui-season §E (thẻ mờ) vs run-flow (lọc trước khi rút); số `SpoilsGold`/bể phần thưởng/modifier thật (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: số `SpoilsGold`/bể phần thưởng/modifier thật (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build spoils (Phần A)
+- **Command**: /unity-game-studio build spoils (F-011 Phần A — Chiến lợi phẩm)
+- **Đã làm**:
+  - Duyệt D1–D12; D4 đổi: `SkipReward` luôn dùng được ở Spoils (người dùng chốt) — sửa plan, run-flow, ui-season §E.
+  - Core: `RewardKind`/`RewardData`/`RewardOptionData`/`RewardId`/`Reward`/`RewardOption`; `SeasonData`/`SeasonContent` + `SpoilsGold`/`RewardPool`/`GuaranteeCatalyst`; `ContentDb` resolve + validate phần thưởng (Item = nguyên liệu gốc, ExpandBag ≥ 1, Mùa cuối không khai báo), `GetReward`/`TryFindReward`; `SpoilsRules` (`Enter`, `IsClaimable`, `ChooseReward`, `SkipReward`); `SeasonRules.StartNextSeason`; `RunState.SpoilsOptions` + `StateHasher`; Command `ChooseReward`/`SkipReward`, event `RewardChosen`/`RewardSkipped`, `SpoilsStarted(+gold, options)`; `RejectReason.InvalidRewardIndex/BagAtMaxCapacity`.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (11 mới, 9 sửa)
+  - Assets/Tests/EditMode/** (4 mới, 6 sửa)
+  - Docs/plans/spoils.md, PLAN.md, TECH.md, design/run-flow.md, design/ui-season.md, LOG.md
+- **Test**:
+  - Skeleton + test-first (1 lần chạy): 741 → 65 fail đúng lý do, 665 cũ xanh; 11 test phủ định pass trống ở skeleton (ghi §6).
+  - Implement: 736/741 — 5 lỗi arrange của test (ghi §6 Test changes) → sửa → **741/741 xanh**; 0 warning CS mới; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: Phần B modifier Mùa; F-009 phần 2; F-013 DTO mang `SpoilsOptions`; view màn Chiến lợi phẩm (F-014/F-015); số thật (balance)
 
 ### 2026-11-04 — build forge-battle
 - **Command**: /unity-game-studio build forge-battle (F-010)

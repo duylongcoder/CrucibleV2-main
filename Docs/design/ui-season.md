@@ -91,10 +91,9 @@ Popup giữa màn trên nền đấu trường (anchor center).
 
 | Trường hợp | Nội dung | Nút |
 |---|---|---|
-| **Thắng** (Mùa 1–7) | "THẮNG" + "Kiếm <khoáng> thắng Vương quốc <tên>" → **+X vàng** (đếm 600 ms) → **3 thẻ lựa chọn** (icon, tên, loại, mô tả ngắn) | chọn thẻ (teal) → **Nhận** |
-| Thẻ không nhận được | mờ + lý do ("Túi đầy", "Đủ 5 Xúc tác") | — |
-| Cả 3 không nhận được | — | **Bỏ qua** |
-| **Thắng Mùa 8** | "THẮNG" + vàng (nếu có) | **Hoàn thành** → kết thúc run |
+| **Thắng** (Mùa 1–7) | "THẮNG" + "Kiếm <khoáng> thắng Vương quốc <tên>" → **+X vàng** (đếm 600 ms) → **≤ 3 thẻ lựa chọn** (icon, tên, loại, mô tả ngắn) — mọi thẻ hiện ra đều nhận được (lọc trước khi rút, run-flow) | chọn thẻ (teal) → **Nhận**; **Bỏ qua** luôn có (không nhận gì, vàng vẫn giữ) |
+| Không còn lựa chọn nào nhận được | dòng "Không có phần thưởng phù hợp" (Túi đầy / đủ 5 Xúc tác / Túi ở trần) | **Bỏ qua** |
+| **Thắng Mùa 8** | "THẮNG" (không có vàng — Mùa cuối không có Chiến lợi phẩm) | **Hoàn thành** → kết thúc run |
 | **Thua** | "THUA" + một ngọn lửa Uy tín vỡ (✕) | **Tiếp tục** → Chiếu chỉ Mùa sau / Trục xuất nếu Uy tín = 0 |
 
 - Nội dung phần thưởng: TBD (thiết kế sau).
