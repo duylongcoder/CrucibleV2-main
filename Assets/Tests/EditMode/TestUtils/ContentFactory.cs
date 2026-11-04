@@ -9,6 +9,7 @@ namespace Crucible.Tests.TestUtils
         public const string StarterKit = "kit_basic";
         public const int StartingReputation = 3;
         public const int StartingBagCapacity = 8;
+        public const int MaxBagCapacity = 12;
         public const int SeasonCount = 8;
         public const long QualityCap = 1_000_000_000_000_000;
 
@@ -23,6 +24,8 @@ namespace Crucible.Tests.TestUtils
         public const string Sand = "add_sand";
         public const string Lens = "lens_basic";
         public const string Bellows = "cat_bellows";
+        public const string Mortar = "cat_mortar";
+        public const string Tongs = "cat_tongs";
         public const string Scrap = "scrap";
 
         public const long SteelEssence = 18;
@@ -64,11 +67,13 @@ namespace Crucible.Tests.TestUtils
                     new ItemData(Sand, ItemKind.Additive, 1),
                     new ItemData(Lens, ItemKind.Lens, 1),
                     new ItemData(Bellows, ItemKind.Catalyst, 1),
+                    new ItemData(Mortar, ItemKind.Catalyst, 1),
+                    new ItemData(Tongs, ItemKind.Catalyst, 1),
                     new ItemData(Scrap, ItemKind.Scrap, 0),
                 },
                 new[] { new DifficultyData(Difficulty) },
                 new[] { new StarterKitData(StarterKit, StarterKitItems) },
-                new RunData(StartingReputation, StartingBagCapacity, SeasonCount),
+                new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount),
                 CreateBrewing());
         }
 

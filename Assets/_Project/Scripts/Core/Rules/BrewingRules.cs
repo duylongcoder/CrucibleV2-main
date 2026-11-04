@@ -22,7 +22,7 @@ namespace Crucible.Core.Rules
             var reason = GridRules.ValidateEditable(run);
             if (reason != RejectReason.None)
                 return CommandResult.Reject(reason);
-            if (IsGridEmpty(run))
+            if (GridRules.CountItems(run) == 0)
                 return CommandResult.Reject(RejectReason.EmptyGrid);
 
             var recipe = RecipeMatcher.Match(run.Grid, content);
@@ -55,17 +55,6 @@ namespace Crucible.Core.Rules
             run.LastBrew = log;
 
             return CommandResult.Accept(new GameEvent[] { new BrewCompleted(result.Uid, log) });
-        }
-
-        private static bool IsGridEmpty(RunState run)
-        {
-            for (var i = 0; i < run.Grid.Length; i++)
-            {
-                if (run.Grid[i] != null)
-                    return false;
-            }
-
-            return true;
         }
     }
 }

@@ -10,14 +10,37 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build brewlog`. F-004 Done (Core + đồng hồ phát lại); 255/255 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → `plan bag` / `plan market` (F-005/F-006) hoặc `plan run-loop` (F-009: `AckBrewResult`, `SkipTurn`)
+**Đang làm**: xong `build bag`. F-005 Done; 312/312 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → `plan market` (F-006: `Buy`/`Sell`/`Reroll`, `BagFull` qua `BagRules.HasRoom`, `CatalystSlots`) hoặc `plan run-loop` (F-009: `AckBrewResult`, `SkipTurn`)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); `UtilitySlotWeights` (TBD); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build bag
+- **Command**: /unity-game-studio build bag
+- **Đã làm**:
+  - Duyệt D1–D3, R5.
+  - Core: `BagRules` (`UsedSlots`/`FreeSlots`/`HasRoom`, `CanExpand`/`Expand`, `IndexOfUid`, luật `ReorderCatalyst`), `GridRules.CountItems`, Command `ReorderCatalyst` + `CatalystsReordered`, `RejectReason.ItemNotCatalyst/InvalidCatalystIndex`, `RunData.MaxBagCapacity`, `ContentDb` validate sức chứa + bộ khởi đầu.
+  - Refactor: `BrewingRules.IsGridEmpty` → `CountItems`; `GridRules.IndexOfUid` → `BagRules.IndexOfUid`.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (3 mới, 6 sửa)
+  - Assets/Tests/EditMode/** (5 mới, 6 sửa)
+  - Docs/plans/bag.md, PLAN.md, TECH.md, GDD.md, design/economy.md, LOG.md
+- **Test**:
+  - Skeleton: 255/255.
+  - Test-first: 312 → 31 mới fail đúng lý do; 26 pass ở skeleton (22 đã dự đoán, 4 test yếu đã sửa).
+  - Implement: **312/312 xanh** lần đầu; refactor 312/312; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: `Buy` + `BagFull` + AC-2/AC-2b đầy đủ (F-006); `CatalystSlots` (F-006/F-007); Nới Túi (F-011); view Túi/kệ (F-014)
+
+### 2026-11-04 — plan bag
+- **Command**: /unity-game-studio plan bag
+- **Đã làm**: plan F-005 — 7 yêu cầu; `BagRules` (`UsedSlots`/`FreeSlots`/`HasRoom` = Túi + lưới, `CanExpand`/`Expand` tới trần), `GridRules.CountItems`, `RunData.MaxBagCapacity` + validate (sức chứa khởi đầu ≤ trần, bộ khởi đầu ≤ sức chứa), Command `ReorderCatalyst(uid, toIndex)` theo vị trí kệ (vật phẩm khác giữ chỉ số) + `CatalystsReordered`, 2 `RejectReason`; ~45 test EditMode (unit + fuzz bất biến sức chứa)
+- **Quyết định (đề xuất, chờ duyệt)**: D1 chỉ Xúc tác sắp thứ tự (thứ tự vật phẩm khác do view); D2 `ReorderCatalyst` chỉ ở Workbench·Editing; D3 `BagFull` để F-006; R5 bộ khởi đầu vượt sức chứa = lỗi content
+- **File**: Docs/plans/bag.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
 
 ### 2026-11-04 — build brewlog
 - **Command**: /unity-game-studio build brewlog

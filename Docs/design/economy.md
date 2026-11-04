@@ -48,7 +48,8 @@ Nhà giả kim tháo vát: bán bớt khoáng thừa lấy vốn, săn đúng m�
 ### Xúc tác & Effect primitive
 - Xúc tác: mua ở Chợ hoặc nhận từ chiến lợi phẩm; nằm trong Túi (chiếm chỗ); tối đa **5** Xúc tác cùng lúc
   (`CatalystSlots`) — mua/nhận thêm bị chặn. Không đặt lên lưới.
-- Mọi Xúc tác trong Túi đều có hiệu lực, chạy theo **thứ tự trong Túi** (người chơi sắp xếp được).
+- Mọi Xúc tác trong Túi đều có hiệu lực, chạy theo **thứ tự trong Túi** (người chơi sắp xếp được trên kệ, chỉ ở bước
+  Editing). **Chỉ thứ tự Xúc tác có nghĩa với luật** — thứ tự các vật phẩm khác trong Túi do view tự sắp (chốt 2026-11-04).
 - Mọi hiệu ứng = **Trigger + Condition + Action**, chỉ từ whitelist:
   - Trigger: `OnBrewStart`, `OnRecipeMatch`, `OnBrewFail`, `OnBrewEnd`, `OnShopRefresh` (`OnSeasonStart` sau MVP)
     — `OnShopRefresh` kích hoạt **đúng 1 lần mỗi lượt Bàn luyện**, khi hàng Chợ làm mới đầu lượt; mở/đóng ngăn
@@ -81,6 +82,7 @@ Không có state machine riêng; Chợ sống trong trạng thái Editing của 
   các Mùa → mua rẻ Mùa này, bán đắt Mùa sau là chiến lược hợp lệ nhưng chiếm chỗ Túi (P3).
 - **Nung khoáng tier cao rồi bán**: hợp lệ; giá tier cao phải > tổng giá nguyên liệu (thưởng cho kỹ năng) nhưng
   không tới mức "nung–bán" áp đảo việc dâng (kiểm bằng GreedyAgent ở `balance`).
+- **Bộ khởi đầu nhiều vật phẩm hơn sức chứa khởi đầu** → lỗi content (validator từ chối), không cắt bớt (chốt 2026-11-04).
 - **Reroll vô hạn** → chi phí tăng tuyến tính, giới hạn bởi vàng.
 - **6 Xúc tác** → không thể; mua/nhận thứ 6 bị chặn.
 - **Thứ tự Xúc tác**: chỉ ảnh hưởng hiệu ứng có thứ tự (vd `GainGold` trước `CreateIngredient`); `Quality` không
@@ -117,7 +119,7 @@ Tiếng xu khi bán/mua; ô hàng mới "lật" khi làm mới/reroll; Túi đ�
 
 ## UI Requirements
 
-- Túi: lưới icon, đếm `x / sức chứa`, kéo để sắp thứ tự (quan trọng cho Xúc tác).
+- Túi: lưới icon, đếm `x / sức chứa`; kéo Xúc tác trên kệ để sắp thứ tự kích hoạt.
 - Chợ: ngăn kéo cạnh lưới; mỗi ô hàng có giá; nút reroll hiện giá lần kế; vùng "kéo vào để bán" hoặc nút bán
   trên tooltip vật phẩm.
 - Hệ số giá Mùa hiển thị định tính (↑ / ↓ so với giá chuẩn).

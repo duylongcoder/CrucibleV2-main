@@ -7,7 +7,7 @@ namespace Crucible.Tests.Core.Content
 {
     public class ContentDbTest
     {
-        private static readonly RunData Run = new RunData(3, 8, 8);
+        private static readonly RunData Run = new RunData(3, 8, 12, 8);
         private static readonly BrewingData Brewing = ContentFactory.CreateBrewing();
 
         [Test]

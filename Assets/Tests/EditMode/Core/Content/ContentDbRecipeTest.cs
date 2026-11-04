@@ -11,7 +11,7 @@ namespace Crucible.Tests.Core.Content
     {
         private const long Cap = 1_000_000_000_000_000;
 
-        private static readonly RunData Run = new RunData(3, 8, 8);
+        private static readonly RunData Run = new RunData(3, 8, 12, 8);
 
         private static RecipeSlotData Ing(string id, bool magic = false) => RecipeSlotData.Ingredient(id, magic);
         private static RecipeSlotData Gap => RecipeSlotData.Gap;

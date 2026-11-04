@@ -23,7 +23,7 @@ namespace Crucible.Core.Rules
             if (!IsValidCell(command.Cell))
                 return CommandResult.Reject(RejectReason.InvalidCell);
 
-            var bagIndex = IndexOfUid(run, command.Uid);
+            var bagIndex = BagRules.IndexOfUid(run, command.Uid);
             if (bagIndex < 0)
                 return CommandResult.Reject(RejectReason.ItemNotFound);
             var item = run.Bag[bagIndex];
@@ -70,6 +70,19 @@ namespace Crucible.Core.Rules
             return CommandResult.Accept(GridChangedEvents);
         }
 
+        /// <summary>Số ô lưới đang có vật phẩm (tính vào sức chứa Túi — <see cref="BagRules.UsedSlots"/>).</summary>
+        public static int CountItems(RunState run)
+        {
+            var count = 0;
+            for (var i = 0; i < run.Grid.Length; i++)
+            {
+                if (run.Grid[i] != null)
+                    count++;
+            }
+
+            return count;
+        }
+
         /// <summary>Run đang chơi → phase Workbench → bước Editing. <see cref="RejectReason.None"/> = hợp lệ.</summary>
         public static RejectReason ValidateEditable(RunState run)
         {
@@ -85,16 +98,5 @@ namespace Crucible.Core.Rules
         private static bool IsValidCell(int cell) => cell >= 0 && cell < CellCount;
 
         private static bool IsPlaceable(ItemKind kind) => kind == ItemKind.Mineral || kind == ItemKind.Additive;
-
-        private static int IndexOfUid(RunState run, int uid)
-        {
-            for (var i = 0; i < run.Bag.Count; i++)
-            {
-                if (run.Bag[i].Uid == uid)
-                    return i;
-            }
-
-            return -1;
-        }
     }
 }

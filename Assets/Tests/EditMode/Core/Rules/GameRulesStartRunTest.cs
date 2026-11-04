@@ -42,6 +42,15 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_StartRun_BagWithinCapacity()
+        {
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(BagRules.UsedSlots(_run), Is.InRange(1, _run.BagCapacity));
+            Assert.That(_run.BagCapacity, Is.LessThanOrEqualTo(_content.Run.MaxBagCapacity));
+        }
+
+        [Test]
         public void Apply_ValidStartRun_FillsBagWithStarterKitInOrder()
         {
             var expected = ContentFactory.StarterKitItems.Select(id =>

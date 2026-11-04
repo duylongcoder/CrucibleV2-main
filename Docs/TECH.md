@@ -61,7 +61,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`) |
 | Phát lại (Presentation) | `BrewReplayTimeline` (C# thuần) | Runtime | Core | brewing.md §Phát lại | Implemented (đồng hồ; view ở F-014) |
@@ -96,11 +96,14 @@ public static class GameRules {
 }
 ```
 - **Command**: `StartRun(diff, kit, seed, nowUnix)` · `AcceptDecree` · `PlaceItem` · `MoveCell` · `RemoveFromGrid`
-  · `ReorderCatalyst` · `Buy(slot, cell?)` · `Sell` · `Reroll` · `Inspect(target, lens)` · `Brew(nowUnix)` ·
+  · `ReorderCatalyst(uid, toIndex)` (vị trí trên kệ, vật phẩm khác giữ chỉ số; chỉ Workbench·Editing) · `Buy(slot, cell?)` · `Sell` · `Reroll` · `Inspect(target, lens)` · `Brew(nowUnix)` ·
   `SkipTurn` · `AckBrewResult` · `PutOnTray` · `ClearTray` · `Offer(nowUnix)` · `DismissCourtier` · `AckBattle` ·
   `ChooseReward(i)` · `SkipReward` · `SetTimescale(n)` (meta, 1–3, nhận ở mọi thời điểm). Thời điểm thật do Runtime truyền vào.
   **Tua phát lại (`SkipReplay`) không là Command**: kết quả đã tính + lưu lúc `Brew`, tua chỉ là hiển thị
   (`BrewReplayTimeline.Skip`) → không lưu, không hash, không thể lệch replay (F-004, 2026-11-04).
+- **Sức chứa Túi** (F-005): mọi luật thêm vật phẩm vào Túi hỏi `BagRules.HasRoom(run, n)` (Túi + lưới ≤
+  `BagCapacity`) **trước** khi mutate; Nới Túi qua `BagRules.Expand` (cắt tại `RunData.MaxBagCapacity`). `ContentDb`
+  chặn sức chứa khởi đầu ngoài `[1, trần]` và bộ khởi đầu vượt sức chứa.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.

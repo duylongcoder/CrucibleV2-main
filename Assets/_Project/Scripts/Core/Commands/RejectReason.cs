@@ -16,5 +16,7 @@ namespace Crucible.Core.Commands
         CellEmpty = 10,
         EmptyGrid = 11,
         InvalidTimescale = 12,
+        ItemNotCatalyst = 13,
+        InvalidCatalystIndex = 14,
     }
 }

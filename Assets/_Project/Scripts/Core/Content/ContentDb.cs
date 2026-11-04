@@ -49,6 +49,7 @@ namespace Crucible.Core.Content
             if (brewing.QualityCap < 0 || brewing.QualityCap > BrewingData.MaxQualityCap)
                 throw new ArgumentOutOfRangeException(nameof(brewing), brewing.QualityCap,
                     $"QualityCap must be in [0, {BrewingData.MaxQualityCap}].");
+            ValidateBag(run, kits);
             ValidateTierTable(brewing.MagicInheritByTier, nameof(BrewingData.MagicInheritByTier));
             ValidateTierTable(brewing.MagicCapByTier, nameof(BrewingData.MagicCapByTier));
             ValidateTierTable(brewing.MagicRetainByTier, nameof(BrewingData.MagicRetainByTier));
@@ -183,6 +184,20 @@ namespace Crucible.Core.Content
             else if (item.MagicChance != 0)
             {
                 throw new ArgumentException($"Only additives carry MagicChance; '{item.Id}' is {item.Kind}.");
+            }
+        }
+
+        private static void ValidateBag(RunData run, IReadOnlyList<StarterKitData> kits)
+        {
+            if (run.StartingBagCapacity < 1 || run.StartingBagCapacity > run.MaxBagCapacity)
+                throw new ArgumentException(
+                    $"StartingBagCapacity {run.StartingBagCapacity} must be in [1, MaxBagCapacity = {run.MaxBagCapacity}].");
+            for (var i = 0; i < kits.Count; i++)
+            {
+                var count = kits[i].ItemIds?.Count ?? 0;
+                if (count > run.StartingBagCapacity)
+                    throw new ArgumentException(
+                        $"Starter kit '{kits[i].Id}' has {count} items, more than StartingBagCapacity {run.StartingBagCapacity}.");
             }
         }
 
