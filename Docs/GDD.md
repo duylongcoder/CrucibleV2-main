@@ -130,7 +130,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | 6 | Chợ & kinh tế | Economy | MVP | Implemented (giá, bày hàng, `Buy`/`Sell`/`Reroll`; nối lượt → #9, modifier → #11) | [design/economy.md](design/economy.md) §Chợ | 1, 5 |
 | 7 | Xúc tác & Effect primitive | Gameplay | MVP | Implemented (F-007; content Xúc tác → balance) | [design/economy.md](design/economy.md) §Xúc tác | 2, 5 |
 | 8 | Thuộc tính ẩn & Kính soi | Gameplay | MVP | Implemented (logic Core F-008; Bàn soi UI + lọc `RunView` → F-014) | §6.2 | 1, 2, 5 |
-| 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | In Review | [design/run-flow.md](design/run-flow.md) | 1–8 |
+| 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | Implemented (logic Core F-009; fuzz 1.000 run tới RunEnd; view → #14) | [design/run-flow.md](design/run-flow.md) | 1–8 |
 | 10 | Rèn, Trận, Uy tín | Gameplay | MVP | Implemented (Core: rút trang bị, Dâng, mô phỏng Trận, Uy tín/Resolution; SB/PD/HT → #8, view → #14/#17) | [design/run-flow.md](design/run-flow.md) §Rèn & Trận | 8, 9 |
 | 11 | Chiến lợi phẩm & modifier Mùa | Gameplay | MVP | Implemented (logic Core F-011; view + số thật còn lại) | [design/run-flow.md](design/run-flow.md) §Chiến lợi phẩm | 1, 9 |
 | 12 | Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu | Progression / Meta | MVP | In Review | §6.3 | 2, 9 |
@@ -210,9 +210,9 @@ thuộc kết quả.
 **Dependencies** — Cung cấp random cho 2, 3, 6, 8, 9, 10, 11. Seed lưu trong save (§6.4).
 
 **Acceptance Criteria**
-- [ ] AC-1: Cùng seed + cùng chuỗi hành động → cùng state hash sau mỗi hành động (1.000 lần lặp; Editor, Standalone, WebGL).
+- [ ] AC-1: Cùng seed + cùng chuỗi hành động → cùng state hash sau mỗi hành động (1.000 lần lặp; Editor, Standalone, WebGL). (2026-11-04: **Editor xong** — `Agent_ThousandRuns_ReplaySameHashEveryStep`, 1.000 run trọn; chờ Standalone/WebGL)
 - [ ] AC-2: Cùng seed → cùng hàng Chợ lượt 1, cùng hệ số giá Mùa 1, cùng loại trang bị Mùa 1 trên cả 3 nền tảng.
-- [ ] AC-3: Thêm 1 lần reroll Chợ không đổi loại trang bị, chiến lợi phẩm, hay ma thuật của cùng lượt nung.
+- [x] AC-3: Thêm 1 lần reroll Chợ không đổi loại trang bị, chiến lợi phẩm, hay ma thuật của cùng lượt nung. (2026-11-04: ma thuật `Apply_ExtraRerollBeforeBrew_SameMagicResult`; chiến lợi phẩm + Chiếu chỉ Mùa 2 `RunStreamIndependenceTest`)
 
 **Open Questions** — ~~Nhập seed ở MVP?~~ Chốt 2026-11-03: không. Sau MVP: cân nhắc hiện/chia sẻ seed ở màn
 kết thúc run và cho nhập seed ("run thử thách").

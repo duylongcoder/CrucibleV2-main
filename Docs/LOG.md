@@ -10,14 +10,36 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build catalyst` (F-007). 997/997 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd, nay có Xúc tác) hoặc F-013 (Lưu & tiếp tục)
+**Đang làm**: xong `build full-run` (F-009 phần 2 → F-009 Done). 1024/1024 EditMode xanh, 0 vi phạm bất biến qua 1.000 run. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → F-013 (Lưu & tiếp tục) — có thể mở rộng fuzz full-run thêm "save → load → hash"
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: content Xúc tác MVP + giá + `UtilitySlotWeights` (balance); bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); `MarketPrice`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: content Xúc tác MVP + giá + `UtilitySlotWeights` (balance); bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); `MarketPrice`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); đồng bộ IndexedDB WebGL; GDD §6.1 AC-1/AC-2 trên WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build full-run
+- **Command**: /unity-game-studio build full-run (F-009 phần 2)
+- **Đã làm**:
+  - Test util: `RandomAgent` (lệnh theo phase, 10 % nhiễu, gợi ý công thức mua/bán nguyên liệu), `RunRecorder` + `RunRecord` + `StepContext`, `ContentFactory.CreateFullRun` (+ `CreateFullRunSeasons`, `FullRunSteelStatLines`, `EasyOpponentStatPercent` = 5).
+  - Test: `RandomAgentTest` (4 method), `FullRunInvariantTest` (7 method — 1.000 run tới Ended, I1–I7, bất biến Mùa/run, Ended từ chối mọi lệnh, phủ nhánh, replay hash 1.000 run), `RunStreamIndependenceTest` (3).
+  - Không đổi production; không tìm ra lỗi luật. Tick run-flow AC-1/2/3/5/7, GDD §6.1 AC-3 (AC-1 phần Editor), economy AC-1/AC-4.
+- **File**:
+  - Assets/Tests/EditMode/TestUtils/{RandomAgent,RunRecorder,RandomAgentTest}.cs (mới), ContentFactory.cs (sửa)
+  - Assets/Tests/EditMode/Core/Rules/{FullRunInvariantTest,RunStreamIndependenceTest}.cs (mới)
+  - Docs/plans/full-run.md, PLAN.md, TECH.md, TEST.md, GDD.md, design/run-flow.md, design/economy.md, LOG.md
+- **Test**:
+  - Skeleton (`Next` → `SkipTurn` tạm): 1024 → 17 fail đúng lý do, 1007 pass (gồm pass sớm đã dự đoán — plan §6).
+  - Implement lần 1: 1021/1024 — R8 `Ended·Won` = 0 (agent không kiếm được Than) + 2 arrange `Spoils`; sửa agent (mua nguyên liệu) + `Reach` nhiều seed → 1024/1024; hint hồ sơ dễ 75 % → 1024/1024, phủ nhánh có biên. 0 warning CS; `check_unity_project.py` 0 lỗi; 3 class mới ~2,06 s.
+- **Còn lại**: GreedyAgent / tỉ lệ thắng (M3 balance); fuzz save→load (F-013); GDD §6.1 AC-1/AC-2 trên WebGL
+
+### 2026-11-04 — plan full-run
+- **Command**: /unity-game-studio plan F-009 (phần 2 "full-run")
+- **Đã làm**: plan 10 yêu cầu — `RandomAgent` (test util, lệnh sinh theo phase + 10 % nhiễu + gợi ý công thức 25 %), `RunRecorder`, `ContentFactory.CreateFullRun` (Spoils + modifier + 3 Xúc tác có Effect + dòng thuộc tính; hồ sơ chuẩn / dễ); fuzz 1.000 run tới Ended với bất biến bước (I1–I7) / Mùa / run, phủ nhánh, replay hash 1.000 run, độc lập stream Mùa 2. Không đổi production; vi phạm → `bug` (D6)
+- **File**: Docs/plans/full-run.md (mới), PLAN.md, LOG.md
+- **Test**: không chạy (command plan)
+- **Còn lại**: người dùng duyệt D1–D6 → `build full-run`
 
 ### 2026-11-04 — build catalyst
 - **Command**: /unity-game-studio build catalyst (F-007 Xúc tác & Effect primitive)

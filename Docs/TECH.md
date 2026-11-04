@@ -213,6 +213,9 @@ public sealed class GameSession {
 - **EditMode**: `Pcg32` vector chuẩn · độc lập stream (GDD §6.1 AC-3) · bảng `RecipeMatcher` · Command bị từ chối
   không đổi RNG · ví dụ trọn trận battle · 1.000 run lặp lại cùng `StateHash` · `RunView` không có field dòng ẩn /
   `Pattern` (reflection) · round-trip save cùng `StateHash`.
+- **Fuzz trọn run** (F-009 phần 2, test-only): `TestUtils/RandomAgent` (lệnh theo phase + 10 % nhiễu + gợi ý công thức có
+  mua/bán), `TestUtils/RunRecorder` (`Play` → `RunRecord` + `StepContext` mỗi bước), `ContentFactory.CreateFullRun(opp%)` (Spoils +
+  modifier + 3 Xúc tác có Effect). `FullRunInvariantTest`: 500 seed × 2 hồ sơ, bất biến I1–I7 / Mùa / run, phủ nhánh; ~2 s.
 - **File**: `Scripts/Core/{Content,State,Commands,Rules,Random,Logs,View}` ·
   `Scripts/Runtime/App/{GameHost,GameSession,ISaveStore,FileSaveStore,SaveDto,SaveMapper,SystemClock}`.
 

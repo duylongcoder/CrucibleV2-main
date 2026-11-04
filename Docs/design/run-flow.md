@@ -173,16 +173,16 @@ Phản đòn, Hấp thụ. `Magic` không tác dụng trong Trận (MVP).
 ## Acceptance Criteria
 
 **Chức năng**
-- [ ] AC-1: RandomAgent 1.000 run: mọi run tới RunEnd, không vi phạm bất biến.
-- [ ] AC-2: Loại trang bị hiện ở Chiếu chỉ = loại được rèn ở Rèn & Trận cùng Mùa (1.000 run).
-- [ ] AC-3: Mỗi Mùa đúng 1 lần Dâng (0–1 khoáng tiêu hao) và đúng 1 kết quả Thắng/Thua.
+- [x] AC-1 (logic, F-009 phần 2 `FullRunInvariantTest`): RandomAgent 1.000 run: mọi run tới RunEnd, không vi phạm bất biến.
+- [x] AC-2 (logic, `Agent_FiveHundredRuns_SeasonInvariantsHold`): Loại trang bị hiện ở Chiếu chỉ = loại được rèn ở Rèn & Trận cùng Mùa (1.000 run).
+- [x] AC-3 (logic, `Agent_FiveHundredRuns_SeasonInvariantsHold`): Mỗi Mùa đúng 1 lần Dâng (0–1 khoáng tiêu hao) và đúng 1 kết quả Thắng/Thua.
 - [ ] AC-4: Hòa trong Trận → Thắng (battle.md).
-- [ ] AC-5: Uy tín 0 → RunEnd(Trục xuất) ngay; Uy tín không bao giờ tăng (MVP).
+- [x] AC-5 (logic, `Agent_FiveHundredRuns_StepInvariantsHold` I5): Uy tín 0 → RunEnd(Trục xuất) ngay; Uy tín không bao giờ tăng (MVP).
 - [x] AC-6b (logic, F-011 `Enter_GuaranteeCatalystWithRoom_AlwaysOffersCatalyst`): Thắng ở Mùa 2 và Mùa 3 (còn chỗ Xúc tác) → luôn có ≥ 1 lựa chọn Xúc tác.
 - [x] AC-6 (logic, F-011): Chiến lợi phẩm chỉ sau Thắng và không ở Mùa 8; vàng `SpoilsGold` cộng đúng 1 lần; tối đa 3 lựa chọn; nhận đúng 1 hoặc Bỏ qua (Bỏ qua luôn dùng được — chốt 2026-11-04).
 - [ ] AC-6c: Cutscene Rèn & Trận cùng thời lượng cho mọi trận ở cùng timescale (Thắng sát nút = Thắng áp đảo); ≤ 9 s ở 1×, ≤ 3 s ở 3×.
 - [ ] AC-6d: Không chuỗi / hình ảnh nào của đối thủ Mùa hiện tại xuất hiện trước nhịp lộ đối thủ.
-- [ ] AC-7: Không có gì để dâng → tự động Thua.
+- [x] AC-7 (logic, F-010 + `SeasonInvariantsHold`): Không có gì để dâng → tự động Thua.
 
 **Trải nghiệm (playtest)**
 - [ ] AC-8: ≥ 80% người chơi nói được loại trang bị của Mùa hiện tại khi được hỏi ở màn Dâng.

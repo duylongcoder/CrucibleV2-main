@@ -134,12 +134,12 @@ Tiếng xu khi bán/mua; ô hàng mới "lật" khi làm mới/reroll; Túi đ�
 
 ## Acceptance Criteria
 
-- [ ] AC-1: Chợ không bao giờ bày bán vật phẩm tier > 3 hoặc có `Recipe` (fuzz 10.000 lượt).
+- [x] AC-1: Chợ không bao giờ bày bán vật phẩm tier > 3 hoặc có `Recipe` (fuzz 10.000 lượt). (2026-11-04: `Agent_FiveHundredRuns_StepInvariantsHold` I4 — 10.617 lượt + mọi reroll qua 1.000 run)
 - [ ] AC-2: Túi + lưới = sức chứa → mua bị từ chối, vàng không đổi.
 - [x] AC-2b: Xếp lưới, mua tới đầy, rồi Nung hoặc Bỏ qua → số vật phẩm Túi + lưới ≤ sức chứa sau mọi bước. (2026-11-04: F-006 + `Apply_SkipTurnWithGridItems_KeepsUsedSlots`, `RunLoopInvariantTest`)
 - [x] AC-2c: `OnShopRefresh` kích hoạt đúng 3 lần mỗi Mùa bất kể số lần mở ngăn Chợ / reroll. (2026-11-04: `Apply_SeasonWithRerolls_ShopRefreshFiresOncePerTurn`)
 - [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
-- [ ] AC-4: Giá mua ≥ 1, giá bán ≥ 0, vàng ≥ 0 sau mọi hành động.
+- [x] AC-4: Giá mua ≥ 1, giá bán ≥ 0, vàng ≥ 0 sau mọi hành động. (2026-11-04: `Agent_FiveHundredRuns_StepInvariantsHold` I4, sau mỗi lệnh của 1.000 run)
 - [ ] AC-5: Reroll lần 1/2/3 trong một lượt có giá 2/3/4; lượt sau về 2.
 - [ ] AC-6: Mỗi lần làm mới / reroll → đúng 5 ô: 4 ô nguyên liệu gốc + 1 ô Kính soi hoặc Xúc tác; đủ 5 Xúc tác → ô tiện ích luôn là Kính soi.
 - [x] AC-6: Mua Xúc tác thứ 6 bị từ chối. (`Apply_BuyCatalystWhenSlotsFull_RejectsWithCatalystSlotsFull`, `Apply_ChooseCatalystWhenSlotsFull_RejectsCatalystSlotsFull`)

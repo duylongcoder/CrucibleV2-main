@@ -17,6 +17,9 @@
 - Tên test: `<Method>_<Condition>_<Expected>` (unit) · `<Condition>_<Expected>` (integration/visual).
 - Test phụ thuộc timing trên máy chậm: `[Category("IgnoreCI")]` kèm lý do.
 - Bằng chứng ảnh: `Docs/evidence/<feature>/<yyyy-mm-dd>_<screen>.png`.
+- **Fuzz trọn run** (EditMode, F-009 phần 2): `RandomAgent` + `RunRecorder` — thêm luật mới vào vòng run thì thêm lệnh vào
+  agent (trọng số §2 `plans/full-run.md`) và bất biến vào `FullRunInvariantTest.CheckStep`; vi phạm báo `seed, step, lệnh` để tái hiện.
+  `Agent_ThousandRuns_CoversEveryBranch` chặn pass rỗng (mỗi nhánh ≥ 1, in số đếm vào output test).
 
 ## 2. Bằng chứng theo loại thay đổi
 
@@ -63,3 +66,4 @@
 
 | Ngày | Phạm vi | Kết quả (pass/fail/skip) | Ghi chú |
 |---|---|---|---|
+| 2026-11-04 | EditMode toàn bộ (Linux, 6000.6.7f1) | 1024/0/0 | F-009 phần 2: 1.000 run fuzz, 0 vi phạm bất biến; 3 class mới ~2 s |

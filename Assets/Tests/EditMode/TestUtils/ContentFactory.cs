@@ -277,6 +277,49 @@ namespace Crucible.Tests.TestUtils
         public static ContentDb CreateWithSpoils(RewardOptionData[] pool = null) =>
             Create(battle: CreateBattle(CreateSpoilsSeasons(pool)));
 
+        /// <summary>Hệ số đối thủ hồ sơ "dễ" của <see cref="CreateFullRun"/> — đủ thấp để dâng gần như luôn Thắng (phủ Mùa 8).</summary>
+        public const int EasyOpponentStatPercent = 5;
+
+        /// <summary>Thép: 2 dòng khởi đầu (Sắc bén 70 %, Hấp thụ 50 %, 1–9) — có dòng ẩn để Kính soi.</summary>
+        public static StatLineData[] FullRunSteelStatLines() => new[]
+        {
+            new StatLineData(StatKind.Sharpness, 70, 1, 9), new StatLineData(StatKind.Absorb, 50, 1, 9),
+        };
+
+        /// <summary>
+        /// Content trọn run (full-run R3): 8 Mùa có Chiến lợi phẩm (<see cref="CreateSpoilsSeasons"/>) + modifier Mùa 2…N (5
+        /// modifier × 1, "không modifier" 1); Ống bễ <c>OnRecipeMatch</c> +5 Essence, Cối <c>OnShopRefresh</c> 50 % +1 vàng,
+        /// Kẹp <c>OnBrewFail</c> tạo 1 Sắt; Thép có dòng thuộc tính.
+        /// </summary>
+        /// <param name="opponentStatPercent">100 = hồ sơ chuẩn; <see cref="EasyOpponentStatPercent"/> = hồ sơ dễ.</param>
+        public static ContentDb CreateFullRun(int opponentStatPercent = 100) =>
+            Create(battle: CreateBattle(CreateFullRunSeasons()), opponentStatPercent: opponentStatPercent,
+                steelStatLines: FullRunSteelStatLines(),
+                bellowsEffects: new[] { Effect(EffectTrigger.OnRecipeMatch, EffectActionData.AddEssence(5)) },
+                mortarEffects: new[]
+                {
+                    Effect(EffectTrigger.OnShopRefresh, EffectActionData.GainGold(1), EffectConditionData.Chance(50)),
+                },
+                tongsEffects: new[] { Effect(EffectTrigger.OnBrewFail, EffectActionData.CreateIngredient(Iron)) });
+
+        /// <summary><see cref="CreateSpoilsSeasons"/> + bể modifier Mùa 2…N: cả 5 modifier trọng số 1, "không modifier" 1.</summary>
+        public static SeasonData[] CreateFullRunSeasons()
+        {
+            var seasons = CreateSpoilsSeasons();
+            var modifiers = CreateModifiers();
+            var pool = new ModifierOptionData[modifiers.Length];
+            for (var i = 0; i < modifiers.Length; i++)
+                pool[i] = new ModifierOptionData(modifiers[i].Id, 1);
+            for (var s = 2; s <= seasons.Length; s++)
+            {
+                var data = seasons[s - 1];
+                seasons[s - 1] = new SeasonData(data.OpponentId, data.ForgePool, data.SpoilsGold, data.RewardPool,
+                    data.GuaranteeCatalyst, pool, noModifierWeight: 1);
+            }
+
+            return seasons;
+        }
+
         public static RewardId RewardOf(ContentDb content, string id)
         {
             content.TryFindReward(id, out var rewardId);
