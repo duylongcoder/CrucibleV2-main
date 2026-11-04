@@ -196,7 +196,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 ## Acceptance Criteria
 
 **Chức năng**
-- [ ] AC-1: Ví dụ `Quality` ra đúng 108 (Essence 18, +3, ×1.5) bất kể thứ tự áp Effect.
+- [x] AC-1: Ví dụ `Quality` ra đúng 108 (Essence 18, +3, ×1.5) bất kể thứ tự áp Effect. (2026-11-04: `GameRulesBrewCatalystTest`)
 - [ ] AC-2: Cùng nguyên liệu A, B với khoảng cách 0 và 1 → hai thành phẩm khác nhau (theo content test).
 - [ ] AC-3: Lệch 1 tick so với công thức → phế phẩm (trừ khi trùng đúng một biến thể khác của nhóm).
 - [ ] AC-3b: Nhóm `Sắt → Than` (content test): khoảng cách 0 → Thép, 1 → Gang, 2 → Phế phẩm.

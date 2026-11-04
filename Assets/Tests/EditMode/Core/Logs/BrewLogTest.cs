@@ -134,7 +134,7 @@ namespace Crucible.Tests.Core.Logs
         public void LogTypes_PublicMembers_ExposeNoRecipeTypes()
         {
             var forbidden = new[] { typeof(Recipe), typeof(RecipeSlot), typeof(RecipeData), typeof(RecipeSlotData) };
-            var logTypes = new[] { typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult) };
+            var logTypes = new[] { typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult), typeof(CatalystActivation), typeof(CatalystActivated) };
 
             var leaks = logTypes
                 .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -150,7 +150,11 @@ namespace Crucible.Tests.Core.Logs
         public void LogTypes_PublicMembers_ExposeNoStatLines()
         {
             var forbidden = new[] { typeof(StatLine), typeof(StatLineData) };
-            var logTypes = new[] { typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult), typeof(BrewCompleted) };
+            var logTypes = new[]
+            {
+                typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult), typeof(BrewCompleted), typeof(CatalystActivation),
+                typeof(CatalystActivated),
+            };
 
             var leaks = logTypes
                 .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)

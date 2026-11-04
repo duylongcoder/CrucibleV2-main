@@ -12,8 +12,9 @@ namespace Crucible.Core.Logs
     {
         private const int GridCellCount = 9;
 
-        private BrewLog(int firstCell, BrewTick[] ticks, BrewLogResult result)
+        private BrewLog(int firstCell, BrewTick[] ticks, BrewLogResult result, CatalystActivation[] activations)
         {
+            Activations = activations;
             FirstCell = firstCell;
             Ticks = ticks;
             Result = result;
@@ -23,9 +24,12 @@ namespace Crucible.Core.Logs
         /// <summary><c>Ticks[i].Cell == FirstCell + i</c>.</summary>
         public IReadOnlyList<BrewTick> Ticks { get; }
         public BrewLogResult Result { get; }
+        /// <summary>Effect Xúc tác đã kích hoạt trong lượt, theo thứ tự (catalyst R9) — kệ nháy lúc hiện kết quả.</summary>
+        public IReadOnlyList<CatalystActivation> Activations { get; }
 
         /// <summary>Chụp lưới 9 ô (null = trống, ≥ 1 vật phẩm) trước khi tiêu hao.</summary>
-        public static BrewLog Create(IReadOnlyList<ItemInstance> grid, ItemInstance result, bool isScrap)
+        public static BrewLog Create(IReadOnlyList<ItemInstance> grid, ItemInstance result, bool isScrap,
+                                     IReadOnlyList<CatalystActivation> activations = null)
         {
             if (grid == null) throw new ArgumentNullException(nameof(grid));
             if (result == null) throw new ArgumentNullException(nameof(result));
@@ -55,7 +59,13 @@ namespace Crucible.Core.Logs
                     : new BrewTick(first + i, true, item.ItemId, item.Magic);
             }
 
-            return new BrewLog(first, ticks, new BrewLogResult(isScrap, result.ItemId, result.Magic));
+            var copied = activations == null || activations.Count == 0
+                ? Array.Empty<CatalystActivation>()
+                : new CatalystActivation[activations.Count];
+            for (var i = 0; i < copied.Length; i++)
+                copied[i] = activations[i];
+
+            return new BrewLog(first, ticks, new BrewLogResult(isScrap, result.ItemId, result.Magic), copied);
         }
     }
 }

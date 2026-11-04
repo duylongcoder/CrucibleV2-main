@@ -10,14 +10,34 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build inspect` (F-008). 890/890 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd) hoặc F-007 (Xúc tác, gồm `AddStat`) hoặc F-013 (Lưu & tiếp tục)
+**Đang làm**: xong `build catalyst` (F-007). 997/997 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd, nay có Xúc tác) hoặc F-013 (Lưu & tiếp tục)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: content Xúc tác MVP + giá + `UtilitySlotWeights` (balance); bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); `MarketPrice`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build catalyst
+- **Command**: /unity-game-studio build catalyst (F-007 Xúc tác & Effect primitive)
+- **Đã làm**:
+  - Người dùng duyệt D1–D12 (phụ gia giữ field `MagicChance` = `AddMagicChance` — đóng câu hỏi mở F-003).
+  - Core: `EffectTrigger`/`EffectConditionKind`/`EffectActionKind`, `EffectData`/`EffectConditionData`/`EffectActionData`, `EffectLimits`, `CatalystEffect`; `ItemData.Effects`; `ContentDb.ResolveEffects` (validate) + `EffectsOf`; `CatalystRunner` (`EvaluateBrew`, `ApplyBrewOutcome`, `RunShopRefresh`) + `CatalystBrewOutcome`; `StatLineRules.ApplyBonuses`; `BrewingRules` nối Xúc tác (Quality, AddStat, vàng, tạo nguyên liệu); `SeasonRules.StartTurn` kích `OnShopRefresh`; `BrewLog.Activations` + `CatalystActivation` + event `CatalystActivated`; `StateHasher` ghi activations.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (12 mới, 7 sửa)
+  - Assets/Tests/EditMode/** (4 mới, 4 sửa)
+  - Docs/plans/catalyst.md, PLAN.md, TECH.md, GDD.md, design/economy.md, design/brewing.md, LOG.md
+- **Test**:
+  - Skeleton + test-first (1 lần chạy, sau 1 lỗi compile `TestCase(string[])` đã sửa): 997 → 81 fail đúng lý do, 890 cũ xanh; 28 test mới pass sẵn (phủ định/trung tính, ghi §6).
+  - Implement: **997/997 xanh** lần đầu; refactor 997/997; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: content Xúc tác thật (balance); F-013 DTO `Activations`; F-014 kệ Xúc tác + nháy; F-009 phần 2 fuzz có Xúc tác
+
+### 2026-11-04 — plan catalyst
+- **Command**: /unity-game-studio plan F-007
+- **Đã làm**: plan F-007 — 10 yêu cầu; content `EffectData` (Trigger + ≤ 3 Condition AND + 1 Action) trên `ItemData` Xúc tác, resolve `ContentDb.EffectsOf`, validator ràng buộc trigger/action/condition + `EffectLimits`; `CatalystRunner` (`EvaluateBrew` thuần + RNG `Chance` sau dòng thuộc tính, `ApplyBrewOutcome` sau kết quả, `RunShopRefresh` stream `Shop` trong `StartTurn`); `StatLineRules.ApplyBonuses`; `BrewLog.Activations` + event `CatalystActivated`; ~75 test EditMode; 12 quyết định D1–D12 chờ duyệt
+- **File**: Docs/plans/catalyst.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: không chạy (plan, không code)
 
 ### 2026-11-04 — build inspect
 - **Command**: /unity-game-studio plan F-008 → build inspect (F-008 Thuộc tính ẩn & Kính soi)

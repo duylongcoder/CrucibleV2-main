@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Crucible.Core.Content;
 using Crucible.Core.Random;
 using Crucible.Core.State;
@@ -33,6 +34,40 @@ namespace Crucible.Core.Rules
                 return Array.Empty<StatLine>();
             Array.Resize(ref lines, count);
             return lines;
+        }
+
+        /// <summary>
+        /// <c>AddStat</c> của Xúc tác (catalyst R6): theo thứ tự, cộng vào dòng cùng thuộc tính hoặc thêm dòng cuối; mỗi giá
+        /// trị kẹp <c>≤ <paramref name="max"/></c>. Không có bonus → trả nguyên <paramref name="rolled"/>.
+        /// </summary>
+        public static StatLine[] ApplyBonuses(StatLine[] rolled, IReadOnlyList<StatLine> bonuses, int max)
+        {
+            if (bonuses.Count == 0)
+                return rolled;
+
+            var lines = new List<StatLine>(rolled);
+            for (var b = 0; b < bonuses.Count; b++)
+            {
+                var bonus = bonuses[b];
+                var index = IndexOf(lines, bonus.Stat);
+                if (index < 0)
+                    lines.Add(new StatLine(bonus.Stat, Math.Min(max, bonus.Value)));
+                else
+                    lines[index] = new StatLine(bonus.Stat, (int)Math.Min(max, (long)lines[index].Value + bonus.Value));
+            }
+
+            return lines.ToArray();
+        }
+
+        private static int IndexOf(List<StatLine> lines, StatKind stat)
+        {
+            for (var i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].Stat == stat)
+                    return i;
+            }
+
+            return -1;
         }
 
         /// <summary>Giá trị dòng <paramref name="stat"/> (đọc cả dòng chưa lộ — Trận); 0 nếu không có.</summary>

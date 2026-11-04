@@ -61,7 +61,12 @@ Nhà giả kim tháo vát: bán bớt khoáng thừa lấy vốn, săn đúng m�
   - Action: `AddEssence`, `AddPotency`, `MulPotency` (≤ ×5/lần), `AddStat` (có giới hạn), `GainGold`,
     `CreateIngredient` (vào Túi, chặn nếu đầy, giới hạn số lần), `AddMagicChance` (chỉ phụ gia; 1–50%/phụ gia)
 - Ràng buộc: `AddEssence/AddPotency/MulPotency/AddStat` chỉ đi với `OnRecipeMatch`; `OnShopRefresh` chỉ dùng
-  điều kiện `Chance`; phụ gia chỉ dùng `AddMagicChance`. Mọi điều kiện `Chance` luôn được tung.
+  điều kiện `Chance`; phụ gia chỉ dùng `AddMagicChance` — chính là field `MagicChance` của phụ gia, không khai báo
+  Effect (chốt 2026-11-04, F-007 D1). Mọi điều kiện `Chance` luôn được tung.
+- Thứ tự kích hoạt (chốt 2026-11-04, F-007 D3): pha `OnBrewStart` → `OnRecipeMatch`/`OnBrewFail` → `OnBrewEnd`; trong pha
+  theo thứ tự Túi, rồi thứ tự khai báo. Mỗi Effect: 1 action, ≤ 3 điều kiện khác loại (AND); Xúc tác ≤ 3 Effect.
+- `AddStat` cộng vào dòng có sẵn hoặc thêm dòng mới (kẹp trần), dòng vẫn ẩn (D6). `GainGold`/`CreateIngredient` áp sau
+  khi kết quả nung vào Túi; `CreateIngredient` tạo 1 nguyên liệu gốc, "giới hạn số lần" = mỗi trigger ≤ 1 lần / lượt (D7).
 - Thêm content = thêm data. Content cần primitive mới → đề xuất thiết kế, không tự thêm.
 
 ### Trạng thái
@@ -132,12 +137,12 @@ Tiếng xu khi bán/mua; ô hàng mới "lật" khi làm mới/reroll; Túi đ�
 - [ ] AC-1: Chợ không bao giờ bày bán vật phẩm tier > 3 hoặc có `Recipe` (fuzz 10.000 lượt).
 - [ ] AC-2: Túi + lưới = sức chứa → mua bị từ chối, vàng không đổi.
 - [x] AC-2b: Xếp lưới, mua tới đầy, rồi Nung hoặc Bỏ qua → số vật phẩm Túi + lưới ≤ sức chứa sau mọi bước. (2026-11-04: F-006 + `Apply_SkipTurnWithGridItems_KeepsUsedSlots`, `RunLoopInvariantTest`)
-- [ ] AC-2c: `OnShopRefresh` kích hoạt đúng 3 lần mỗi Mùa bất kể số lần mở ngăn Chợ / reroll.
+- [x] AC-2c: `OnShopRefresh` kích hoạt đúng 3 lần mỗi Mùa bất kể số lần mở ngăn Chợ / reroll. (2026-11-04: `Apply_SeasonWithRerolls_ShopRefreshFiresOncePerTurn`)
 - [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
 - [ ] AC-4: Giá mua ≥ 1, giá bán ≥ 0, vàng ≥ 0 sau mọi hành động.
 - [ ] AC-5: Reroll lần 1/2/3 trong một lượt có giá 2/3/4; lượt sau về 2.
 - [ ] AC-6: Mỗi lần làm mới / reroll → đúng 5 ô: 4 ô nguyên liệu gốc + 1 ô Kính soi hoặc Xúc tác; đủ 5 Xúc tác → ô tiện ích luôn là Kính soi.
-- [ ] AC-6: Mua Xúc tác thứ 6 bị từ chối.
+- [x] AC-6: Mua Xúc tác thứ 6 bị từ chối. (`Apply_BuyCatalystWhenSlotsFull_RejectsWithCatalystSlotsFull`, `Apply_ChooseCatalystWhenSlotsFull_RejectsCatalystSlotsFull`)
 - [ ] AC-7: Mua rồi bán ngay cùng món → vàng giảm (không có vòng sinh lời trong một lượt).
 - [ ] AC-8 (cân bằng): GreedyAgent "chỉ nung để bán, dâng thứ rẻ nhất" có tỉ lệ thắng run thấp hơn agent cân bằng.
 

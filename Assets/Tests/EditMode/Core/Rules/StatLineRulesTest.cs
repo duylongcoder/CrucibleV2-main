@@ -14,6 +14,47 @@ namespace Crucible.Tests.Core.Rules
     public class StatLineRulesTest
     {
         [Test]
+        public void ApplyBonuses_ExistingStat_AddsValue()
+        {
+            var rolled = new[] { new StatLine(StatKind.Sharpness, 4), new StatLine(StatKind.Absorb, 9) };
+
+            var lines = StatLineRules.ApplyBonuses(rolled, new[] { new StatLine(StatKind.Absorb, 3) }, 100);
+
+            Assert.That(lines, Is.EqualTo(new[] { new StatLine(StatKind.Sharpness, 4), new StatLine(StatKind.Absorb, 12) }));
+        }
+
+        [Test]
+        public void ApplyBonuses_MissingStat_AppendsLine()
+        {
+            var rolled = new[] { new StatLine(StatKind.Sharpness, 4) };
+
+            var lines = StatLineRules.ApplyBonuses(rolled, new[] { new StatLine(StatKind.Reflect, 6) }, 100);
+
+            Assert.That(lines, Is.EqualTo(new[] { new StatLine(StatKind.Sharpness, 4), new StatLine(StatKind.Reflect, 6) }));
+        }
+
+        [Test]
+        public void ApplyBonuses_SumAboveMax_ClampsToMax()
+        {
+            var rolled = new[] { new StatLine(StatKind.Sharpness, 90) };
+            var bonuses = new[] { new StatLine(StatKind.Sharpness, 20), new StatLine(StatKind.Reflect, 150) };
+
+            var lines = StatLineRules.ApplyBonuses(rolled, bonuses, 100);
+
+            Assert.That(lines, Is.EqualTo(new[] { new StatLine(StatKind.Sharpness, 100), new StatLine(StatKind.Reflect, 100) }));
+        }
+
+        [Test]
+        public void ApplyBonuses_NoBonuses_ReturnsSameLines()
+        {
+            var rolled = new[] { new StatLine(StatKind.Sharpness, 4) };
+
+            var lines = StatLineRules.ApplyBonuses(rolled, new StatLine[0], 100);
+
+            Assert.That(lines, Is.EqualTo(rolled));
+        }
+
+        [Test]
         public void Roll_NoStatLines_ReturnsEmptyWithoutDrawing()
         {
             var recipe = Recipe();

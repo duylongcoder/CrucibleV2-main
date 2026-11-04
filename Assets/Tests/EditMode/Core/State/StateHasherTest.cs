@@ -118,6 +118,20 @@ namespace Crucible.Tests.Core.State
         }
 
         [Test]
+        public void Hash_LastBrewDiffersOnlyInActivations_ReturnsDifferentValue()
+        {
+            var grid = new[] { new ItemInstance(40, new ItemId(0)), null, null, null, null, null, null, null, null };
+            var result = new ItemInstance(41, new ItemId(1));
+            var first = StateFactory.CreateActiveRun();
+            var second = StateFactory.CreateActiveRun();
+            first.LastBrew = BrewLog.Create(grid, result, true);
+            second.LastBrew = BrewLog.Create(grid, result, true,
+                new[] { new CatalystActivation(3, 0, EffectTrigger.OnBrewEnd, false) });
+
+            Assert.That(StateHasher.Hash(second, new MetaState()), Is.Not.EqualTo(StateHasher.Hash(first, new MetaState())));
+        }
+
+        [Test]
         public void Hash_MetaTimescaleDiffers_ReturnsDifferentValue()
         {
             var run = StateFactory.CreateActiveRun();

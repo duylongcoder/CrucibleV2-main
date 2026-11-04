@@ -141,13 +141,14 @@ namespace Crucible.Core.Rules
 
         /// <summary>
         /// Lưới mở + hàng Chợ mới (stream <c>Shop</c>). Lưới đã trống (Nung tiêu hao / Bỏ qua trả về Túi).
-        /// F-007: kích <c>OnShopRefresh</c> ngay sau <see cref="MarketRules.RefreshShop"/>, trước <see cref="TurnStarted"/>.
+        /// Kích <c>OnShopRefresh</c> (F-007) ngay sau <see cref="MarketRules.RefreshShop"/>, trước <see cref="TurnStarted"/>.
         /// </summary>
         private static void StartTurn(RunState run, ContentDb content, int turn, List<GameEvent> events)
         {
             run.Turn = turn;
             run.WorkbenchStep = WorkbenchStep.Editing;
             MarketRules.RefreshShop(run, content);
+            CatalystRunner.RunShopRefresh(run, content, events);
             events.Add(new TurnStarted(run.Season, turn));
         }
 

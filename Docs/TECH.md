@@ -61,7 +61,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long), `Lines` + `RevealedMask` (F-008)) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`/`AckBattle` → `SeasonRules`, `ChooseReward`/`SkipReward` → `SpoilsRules`, rút trang bị → `ForgeRules`, `Offer`/`DismissCourtier` → `OfferingRules` + `BattleStats` + `BattleSimulator` + `BattleMath`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, Effect Xúc tác → `CatalystRunner`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`/`AckBattle` → `SeasonRules`, `ChooseReward`/`SkipReward` → `SpoilsRules`, rút trang bị → `ForgeRules`, `Offer`/`DismissCourtier` → `OfferingRules` + `BattleStats` + `BattleSimulator` + `BattleMath`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`, `BattleLog` + `RunState.LastBattle`) |
 | Phát lại (Presentation) | `BrewReplayTimeline` (C# thuần) | Runtime | Core | brewing.md §Phát lại | Implemented (đồng hồ; view ở F-014) |
@@ -71,6 +71,11 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 - **Trách nhiệm**: dữ liệu content bất biến cho luật.
 - **Dữ liệu**: record `ItemData`, `RecipeData`, `EquipmentData`, `OpponentData`, `DifficultyData`, `RunData`,
   `RewardData`, `ModifierData`, `StarterKitData`, `EffectData` (do `ContentBaker` ở Content tạo từ SO).
+  **Effect** (F-007): `ItemData.Effects` (chỉ Xúc tác, 0…3) = `EffectData(Trigger, Action, Conditions ≤ 3 khác loại, AND)` →
+  `ContentDb.EffectsOf(ItemId) → CatalystEffect` (điều kiện lưu phẳng). Validator: action `Quality` (`AddEssence/AddPotency/
+  MulPotency/AddStat`) chỉ `OnRecipeMatch`; `OnShopRefresh` chỉ `Chance`; `RecipeIs` chỉ `OnRecipeMatch`/`OnBrewEnd` + thành
+  phẩm có `Recipe`; `IngredientIs` khoáng/phụ gia; `CreateIngredient` nguyên liệu gốc; khoảng `EffectLimits`. Phụ gia không
+  có Effect — `ItemData.MagicChance` chính là `AddMagicChance` (catalyst D1).
   **Trận** (F-010): `BattleData` (tham số `ContentDb.Create`) gồm hằng số trận (`HeroBaseHp/Atk`, `OffAffinityPercent`,
   `AbsorbCapPercent`, `ReflectCapPercent`, `MaxRounds`, `MaxStatValue` 10 000) + `EquipmentData` (`AtkPerQ`, `HpPerQ`,
   `Affinities: StatKind[]`) + `OpponentData` (★, `BattleKind`, HP/ATK/SB/PD/HT) + `SeasonData` (đối thủ cố định + bể
@@ -151,6 +156,14 @@ public static class GameRules {
   ẩn ≤ `RevealLines` → lộ hết, không rút; ngược lại mỗi dòng 1 `NextInt(còn lại)` stream `Inspect`. Kính tiêu hao,
   `ItemInspected(target, lens, bit mới)`. `Offer` truyền `StatLineRules.ValueOf` (Sắc bén/Phản đòn/Hấp thụ, kể cả chưa lộ)
   vào `ForHero`. `StateHasher` ghi `Lines` + `RevealedMask` mỗi vật phẩm.
+- **Xúc tác** (F-007): `CatalystRunner.EvaluateBrew(bag, grid, recipe?, content, ref chance)` xét pha `OnBrewStart` →
+  `OnRecipeMatch` | `OnBrewFail` → `OnBrewEnd`, trong pha theo thứ tự Túi rồi thứ tự khai báo; `Chance` tung trước và luôn
+  tung khi trigger cháy; chỉ rút RNG → `CatalystBrewOutcome` (Essence/Potency/Mul/StatBonuses + kích hoạt). `Brew`: `Quality
+  = QualityFormula(Base + ΣAddEssence, ΣAddPotency, Mul)`, `StatLineRules.ApplyBonuses` (cộng / thêm dòng, kẹp
+  `MaxStatValue`, không tự lộ); sau `Bag.Add(result)`: `ApplyBrewOutcome` (`GainGold`, `CreateIngredient` 1 vật phẩm cuối
+  Túi nếu `HasRoom`, không thì `Blocked`) → `BrewLog.Activations` + event `CatalystActivated` sau `BrewCompleted`.
+  `SeasonRules.StartTurn`: `RefreshShop` → `CatalystRunner.RunShopRefresh` (stream `Shop`, áp ngay, event) → `TurnStarted`.
+  Không Command / `RejectReason` mới. `StateHasher` ghi `LastBrew.Activations`.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.
@@ -163,7 +176,7 @@ public static class GameRules {
 - **Thứ tự rút `Chance` trong một lượt Nung** (hợp đồng giữa F-003/F-007/F-008 — đổi thứ tự = lệch replay):
   1. tung ma thuật — đúng 1 lần `Roll(MagicChance%)` khi khớp công thức, kể cả 0% (F-003, `BrewingRules`);
   2. dòng thuộc tính thành phẩm (F-008, `StatLineRules.Roll`: mỗi dòng khởi đầu theo thứ tự 1 `Roll(%)`, có → 1
-  `NextInt(max − min + 1)`); 3. điều kiện `Chance` của Xúc tác theo thứ tự Túi (F-007).
+  `NextInt(max − min + 1)`); 3. điều kiện `Chance` của Xúc tác (F-007: pha → thứ tự Túi → khai báo, mỗi Effect có trigger cháy 1 `Roll`). `OnShopRefresh` tung `Chance` trên stream `Shop` ngay sau `RefreshShop`.
   Phế phẩm: không rút ma thuật / thuộc tính. Command bị từ chối: không rút.
 
 ### 3.5 Log, View, Hash

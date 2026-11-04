@@ -124,10 +124,13 @@ namespace Crucible.Tests.TestUtils
                                        int turnsPerSeason = TurnsPerSeason, BattleData battle = null,
                                        int opponentStatPercent = 100, IReadOnlyList<RewardData> rewards = null,
                                        IReadOnlyList<ModifierData> modifiers = null,
-                                       IReadOnlyList<StatLineData> steelStatLines = null, int lensRevealLines = 1)
+                                       IReadOnlyList<StatLineData> steelStatLines = null, int lensRevealLines = 1,
+                                       IReadOnlyList<EffectData> bellowsEffects = null,
+                                       IReadOnlyList<EffectData> mortarEffects = null,
+                                       IReadOnlyList<EffectData> tongsEffects = null,
+                                       IReadOnlyList<ItemData> extraItems = null, long qualityCap = QualityCap)
         {
-            return ContentDb.Create(
-                new[]
+            var items = new List<ItemData>
                 {
                     new ItemData(Iron, ItemKind.Mineral, 1, marketPrice: IronPrice),
                     new ItemData(Copper, ItemKind.Mineral, 1, marketPrice: CopperPrice),
@@ -149,20 +152,38 @@ namespace Crucible.Tests.TestUtils
                     new ItemData(Bone, ItemKind.Additive, 2, magicChance: BoneMagicChance, marketPrice: BonePrice),
                     new ItemData(Sand, ItemKind.Additive, 1, marketPrice: SandPrice),
                     new ItemData(Lens, ItemKind.Lens, 1, marketPrice: LensPrice, revealLines: lensRevealLines),
-                    new ItemData(Bellows, ItemKind.Catalyst, 1, marketPrice: BellowsPrice),
-                    new ItemData(Mortar, ItemKind.Catalyst, 1, marketPrice: MortarPrice),
-                    new ItemData(Tongs, ItemKind.Catalyst, 1, marketPrice: TongsPrice),
+                    new ItemData(Bellows, ItemKind.Catalyst, 1, marketPrice: BellowsPrice, effects: bellowsEffects),
+                    new ItemData(Mortar, ItemKind.Catalyst, 1, marketPrice: MortarPrice, effects: mortarEffects),
+                    new ItemData(Tongs, ItemKind.Catalyst, 1, marketPrice: TongsPrice, effects: tongsEffects),
                     new ItemData(Scrap, ItemKind.Scrap, 0),
-                },
+                };
+            if (extraItems != null)
+                items.AddRange(extraItems);
+
+            return ContentDb.Create(
+                items,
                 new[] { new DifficultyData(Difficulty, opponentStatPercent) },
                 new[] { new StarterKitData(StarterKit, StarterKitItems) },
                 new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount, turnsPerSeason),
-                CreateBrewing(),
+                CreateBrewing(qualityCap),
                 market ?? CreateMarket(),
                 battle ?? CreateBattle(),
                 rewards ?? CreateRewards(),
                 modifiers ?? CreateModifiers());
         }
+
+        /// <summary>Content mặc định với Effect cho <see cref="Bellows"/> / <see cref="Mortar"/> / <see cref="Tongs"/> (null = không Effect).</summary>
+        public static ContentDb CreateWithEffects(EffectData[] bellows = null, EffectData[] mortar = null,
+                                                  EffectData[] tongs = null,
+                                                  IReadOnlyList<StatLineData> steelStatLines = null,
+                                                  long qualityCap = QualityCap) =>
+            Create(steelStatLines: steelStatLines, bellowsEffects: bellows, mortarEffects: mortar, tongsEffects: tongs,
+                qualityCap: qualityCap);
+
+        /// <summary>Effect một action, điều kiện tùy chọn.</summary>
+        public static EffectData Effect(EffectTrigger trigger, EffectActionData action,
+                                        params EffectConditionData[] conditions) =>
+            new EffectData(trigger, action, conditions);
 
         /// <summary>
         /// 5 modifier: trung tính; "đắt" (mua 150, bán 120, Kính 50, reroll 200, 2 reroll miễn phí); "tàn bạo" (đối thủ 200);

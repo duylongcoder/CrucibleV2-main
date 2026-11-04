@@ -125,6 +125,15 @@ namespace Crucible.Core.State
             writer.Write(log.Result.IsScrap);
             writer.Write(log.Result.ItemId.Index);
             writer.Write(log.Result.Magic);
+            writer.Write(log.Activations.Count);
+            for (var i = 0; i < log.Activations.Count; i++)
+            {
+                var activation = log.Activations[i];
+                writer.Write(activation.CatalystUid);
+                writer.Write(activation.EffectIndex);
+                writer.Write((int)activation.Trigger);
+                writer.Write(activation.Blocked);
+            }
         }
 
         private static void WriteBattleLog(CanonicalWriter writer, BattleLog log)

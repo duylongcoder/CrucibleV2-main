@@ -33,6 +33,7 @@ namespace Crucible.Core.Content
         private readonly Dictionary<string, RewardId> _rewardIds;
         private readonly SeasonModifier[] _modifiers;
         private readonly Dictionary<string, ModifierId> _modifierIds;
+        private readonly CatalystEffect[][] _effects;
 
         private ContentDb(ItemData[] items, Dictionary<string, ItemId> itemIds,
                           Dictionary<string, DifficultyData> difficulties,
@@ -41,8 +42,10 @@ namespace Crucible.Core.Content
                           ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts, BattleData battle,
                           EquipmentData[] equipment, Dictionary<string, EquipmentId> equipmentIds,
                           SeasonContent[] seasons, Reward[] rewards, Dictionary<string, RewardId> rewardIds,
-                          SeasonModifier[] modifiers, Dictionary<string, ModifierId> modifierIds)
+                          SeasonModifier[] modifiers, Dictionary<string, ModifierId> modifierIds,
+                          CatalystEffect[][] effects)
         {
+            _effects = effects;
             _modifiers = modifiers;
             _modifierIds = modifierIds;
             _rewards = rewards;
@@ -152,6 +155,8 @@ namespace Crucible.Core.Content
                 }
             }
 
+            var effects = ResolveEffects(sorted, itemIds);
+
             ValidateBattleConstants(battle);
             var equipment = SortEquipment(battle.Equipment);
             var equipmentIds = new Dictionary<string, EquipmentId>(equipment.Length, StringComparer.Ordinal);
@@ -170,7 +175,7 @@ namespace Crucible.Core.Content
             return new ContentDb(sorted, itemIds, difficultyById, kitById, run, brewing, recipes.ToArray(), hasScrap,
                 scrapItemId, market, BuildShopPools(sorted, market), CollectKind(sorted, ItemKind.Lens),
                 CollectKind(sorted, ItemKind.Catalyst), battle, equipment, equipmentIds, seasons, resolvedRewards,
-                rewardIds, resolvedModifiers, modifierIds);
+                rewardIds, resolvedModifiers, modifierIds, effects);
         }
 
         /// <summary>Nguyên liệu gốc (khoáng + phụ gia, không <c>Recipe</c>) tier <paramref name="tier"/> mà Chợ bày được, tăng dần <see cref="ItemId"/>; rỗng khi tier ngoài <c>1…ShopMaxTier</c>.</summary>
@@ -234,6 +239,12 @@ namespace Crucible.Core.Content
 
             modifierId = default;
             return false;
+        }
+
+        /// <summary>Effect đã resolve của <paramref name="id"/> theo thứ tự khai báo; rỗng nếu không phải Xúc tác / không có Effect.</summary>
+        public IReadOnlyList<CatalystEffect> EffectsOf(ItemId id)
+        {
+            return _effects[id.Index];
         }
 
         public ItemData GetItem(ItemId id)
@@ -557,6 +568,162 @@ namespace Crucible.Core.Content
             }
 
             return seasons;
+        }
+
+        /// <summary>
+        /// Effect theo item (catalyst R1, R2, D2, D8, D9, D11): chỉ Xúc tác mang 0…<see cref="EffectLimits.MaxEffectsPerCatalyst"/>
+        /// Effect; mỗi Effect 0…<see cref="EffectLimits.MaxConditionsPerEffect"/> điều kiện khác loại; action <c>Quality</c> chỉ
+        /// ở <c>OnRecipeMatch</c>; <c>OnShopRefresh</c> chỉ điều kiện <c>Chance</c>.
+        /// </summary>
+        private static CatalystEffect[][] ResolveEffects(ItemData[] items, Dictionary<string, ItemId> itemIds)
+        {
+            var resolved = new CatalystEffect[items.Length][];
+            for (var i = 0; i < items.Length; i++)
+            {
+                var item = items[i];
+                var effects = item.Effects;
+                if (effects.Count == 0)
+                {
+                    resolved[i] = Array.Empty<CatalystEffect>();
+                    continue;
+                }
+
+                if (item.Kind != ItemKind.Catalyst)
+                    throw new ArgumentException($"Only catalysts carry effects; '{item.Id}' is {item.Kind}.");
+                if (effects.Count > EffectLimits.MaxEffectsPerCatalyst)
+                    throw new ArgumentException(
+                        $"Catalyst '{item.Id}' has {effects.Count} effects; at most {EffectLimits.MaxEffectsPerCatalyst}.");
+
+                resolved[i] = new CatalystEffect[effects.Count];
+                for (var e = 0; e < effects.Count; e++)
+                {
+                    var owner = $"Catalyst '{item.Id}' effect [{e}]";
+                    var effect = effects[e] ?? throw new ArgumentException($"{owner} is null.");
+                    resolved[i][e] = ResolveEffect(effect, items, itemIds, owner);
+                }
+            }
+
+            return resolved;
+        }
+
+        private static CatalystEffect ResolveEffect(EffectData effect, ItemData[] items, Dictionary<string, ItemId> itemIds,
+                                                    string owner)
+        {
+            var action = effect.Action ?? throw new ArgumentException($"{owner}: action is null.");
+            var trigger = effect.Trigger;
+            if (trigger < EffectTrigger.OnBrewStart || trigger > EffectTrigger.OnShopRefresh)
+                throw new ArgumentException($"{owner}: unknown trigger {trigger}.");
+
+            var actionItem = default(ItemId);
+            switch (action.Kind)
+            {
+                case EffectActionKind.AddEssence:
+                    ValidateAmount(action.Amount, 1, EffectLimits.MaxAddEssence, owner, action.Kind);
+                    break;
+                case EffectActionKind.AddPotency:
+                    ValidateAmount(action.Amount, 1, EffectLimits.MaxAddPotency, owner, action.Kind);
+                    break;
+                case EffectActionKind.MulPotency:
+                    ValidateAmount(action.Amount, EffectLimits.MinMulPotency, EffectLimits.MaxMulPotency, owner, action.Kind);
+                    break;
+                case EffectActionKind.AddStat:
+                    ValidateAmount(action.Amount, 1, BattleData.MaxStatValue, owner, action.Kind);
+                    if (action.Stat < StatKind.Sharpness || action.Stat > StatKind.Absorb)
+                        throw new ArgumentException($"{owner}: unknown stat {action.Stat}.");
+                    break;
+                case EffectActionKind.GainGold:
+                    ValidateAmount(action.Amount, 1, EffectLimits.MaxGainGold, owner, action.Kind);
+                    break;
+                case EffectActionKind.CreateIngredient:
+                    if (action.Amount != 0)
+                        throw new ArgumentException($"{owner}: CreateIngredient creates exactly 1 item; Amount must be 0.");
+                    actionItem = ResolveEffectItem(action.ItemId, itemIds, owner);
+                    var created = items[actionItem.Index];
+                    if (!IsIngredient(created) || created.Recipe != null)
+                        throw new ArgumentException($"{owner}: CreateIngredient '{action.ItemId}' must be a raw mineral or additive.");
+                    break;
+                default:
+                    throw new ArgumentException($"{owner}: unknown action {action.Kind}.");
+            }
+
+            var isQualityAction = action.Kind <= EffectActionKind.AddStat;
+            if (isQualityAction && trigger != EffectTrigger.OnRecipeMatch)
+                throw new ArgumentException($"{owner}: {action.Kind} only works with OnRecipeMatch, not {trigger}.");
+
+            var conditions = effect.Conditions;
+            if (conditions.Count > EffectLimits.MaxConditionsPerEffect)
+                throw new ArgumentException(
+                    $"{owner} has {conditions.Count} conditions; at most {EffectLimits.MaxConditionsPerEffect}.");
+
+            var seen = new bool[(int)EffectConditionKind.Chance + 1];
+            var hasIngredient = false;
+            var ingredient = default(ItemId);
+            var hasRecipe = false;
+            var product = default(ItemId);
+            var minAdditives = 0;
+            var chance = 0;
+            for (var c = 0; c < conditions.Count; c++)
+            {
+                var condition = conditions[c] ?? throw new ArgumentException($"{owner}: condition [{c}] is null.");
+                var kind = condition.Kind;
+                if (kind < EffectConditionKind.IngredientIs || kind > EffectConditionKind.Chance)
+                    throw new ArgumentException($"{owner}: unknown condition {kind}.");
+                if (seen[(int)kind])
+                    throw new ArgumentException($"{owner}: condition {kind} listed twice.");
+                seen[(int)kind] = true;
+                if (trigger == EffectTrigger.OnShopRefresh && kind != EffectConditionKind.Chance)
+                    throw new ArgumentException($"{owner}: OnShopRefresh only accepts a Chance condition, not {kind}.");
+
+                switch (kind)
+                {
+                    case EffectConditionKind.IngredientIs:
+                        ingredient = ResolveEffectItem(condition.ItemId, itemIds, owner);
+                        if (!IsIngredient(items[ingredient.Index]))
+                            throw new ArgumentException($"{owner}: IngredientIs '{condition.ItemId}' must be a mineral or additive.");
+                        hasIngredient = true;
+                        break;
+                    case EffectConditionKind.RecipeIs:
+                        if (trigger != EffectTrigger.OnRecipeMatch && trigger != EffectTrigger.OnBrewEnd)
+                            throw new ArgumentException($"{owner}: RecipeIs only works with OnRecipeMatch or OnBrewEnd, not {trigger}.");
+                        product = ResolveEffectItem(condition.ItemId, itemIds, owner);
+                        if (items[product.Index].Recipe == null)
+                            throw new ArgumentException($"{owner}: RecipeIs '{condition.ItemId}' has no recipe.");
+                        hasRecipe = true;
+                        break;
+                    case EffectConditionKind.AdditiveCount:
+                        ValidateConditionValue(condition, EffectLimits.MinAdditiveCount, EffectLimits.MaxAdditiveCount, owner);
+                        minAdditives = condition.Value;
+                        break;
+                    default:
+                        ValidateConditionValue(condition, EffectLimits.MinChance, EffectLimits.MaxChance, owner);
+                        chance = condition.Value;
+                        break;
+                }
+            }
+
+            return new CatalystEffect(trigger, action.Kind, action.Amount, action.Stat, actionItem, hasIngredient, ingredient,
+                hasRecipe, product, minAdditives, chance);
+        }
+
+        private static bool IsIngredient(ItemData item) => item.Kind == ItemKind.Mineral || item.Kind == ItemKind.Additive;
+
+        private static ItemId ResolveEffectItem(string id, Dictionary<string, ItemId> itemIds, string owner)
+        {
+            if (id == null || !itemIds.TryGetValue(id, out var itemId))
+                throw new ArgumentException($"{owner}: unknown item '{id}'.");
+            return itemId;
+        }
+
+        private static void ValidateAmount(int amount, int min, int max, string owner, EffectActionKind kind)
+        {
+            if (amount < min || amount > max)
+                throw new ArgumentException($"{owner}: {kind} amount {amount} must be in [{min}, {max}].");
+        }
+
+        private static void ValidateConditionValue(EffectConditionData condition, int min, int max, string owner)
+        {
+            if (condition.Value < min || condition.Value > max)
+                throw new ArgumentException($"{owner}: {condition.Kind} value {condition.Value} must be in [{min}, {max}].");
         }
 
         /// <summary>Phần thưởng sắp ordinal theo Id (spoils R1, D2): Item = nguyên liệu gốc không phải phế phẩm; ExpandBag ≥ 1.</summary>
