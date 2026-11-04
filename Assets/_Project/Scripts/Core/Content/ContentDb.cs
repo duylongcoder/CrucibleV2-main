@@ -59,6 +59,8 @@ namespace Crucible.Core.Content
                 throw new ArgumentOutOfRangeException(nameof(brewing), brewing.QualityCap,
                     $"QualityCap must be in [0, {BrewingData.MaxQualityCap}].");
             ValidateBag(run, kits);
+            if (run.TurnsPerSeason < 1)
+                throw new ArgumentException($"TurnsPerSeason {run.TurnsPerSeason} must be >= 1.");
             ValidateMarket(market);
             ValidateTierTable(brewing.MagicInheritByTier, nameof(BrewingData.MagicInheritByTier));
             ValidateTierTable(brewing.MagicCapByTier, nameof(BrewingData.MagicCapByTier));

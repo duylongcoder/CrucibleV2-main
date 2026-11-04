@@ -24,6 +24,20 @@ namespace Crucible.Tests.Core.Content
         }
 
         [Test]
+        public void Create_TurnsPerSeasonBelowOne_Throws([Values(0, -1)] int turns)
+        {
+            Assert.Throws<ArgumentException>(() => ContentFactory.Create(turnsPerSeason: turns));
+        }
+
+        [Test]
+        public void Create_TurnsPerSeasonOne_Succeeds()
+        {
+            var db = ContentFactory.Create(turnsPerSeason: 1);
+
+            Assert.That(db.Run.TurnsPerSeason, Is.EqualTo(1));
+        }
+
+        [Test]
         public void TryFindItem_KnownId_ReturnsMatchingItem()
         {
             var db = CreateWithItems("ore_iron", "add_ash");

@@ -10,14 +10,30 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `plan run-loop` (F-009 phần 1) — chờ duyệt D1–D6. Thay đổi `build market` (F-006) vẫn **chưa commit**
-**Bước tiếp theo**: người dùng commit F-006 + duyệt `Docs/plans/run-loop.md` → `build run-loop`
+**Đang làm**: xong `build run-loop` (F-009 phần 1). 486/486 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → F-007 (Xúc tác, chèn `OnShopRefresh` vào `SeasonRules.StartTurn`) hoặc F-010 (Rèn/Trận/Uy tín — Dâng + rút `Forge` ở `EnterDecree`) → F-009 phần 2
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: D1–D6 run-loop (D1 rút S lúc vào Decree → `StartRun` không còn S = 100); số liệu `MarketPrice` từng item + `UtilitySlotWeights` (balance); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: số liệu `MarketPrice` từng item + `UtilitySlotWeights` (balance); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build run-loop
+- **Command**: /unity-game-studio build run-loop
+- **Đã làm**:
+  - Duyệt D1–D6 (giữ nguyên đề xuất).
+  - Core: `SeasonRules` (`EnterDecree`, `AcceptDecree`, `SkipTurn`, `AckBrewResult`, private `StartTurn`/`EndTurn`), 3 Command + 4 sự kiện (`DecreeAccepted`, `TurnStarted`, `TurnSkipped`, `OfferingStarted`), `RejectReason.NoPendingResult`, `RunState.Turn`, `RunData.TurnsPerSeason` + validate, `StateHasher` ghi `Turn`; `StartRun` gọi `EnterDecree` (S rút ngay Mùa 1).
+- **File**:
+  - Assets/_Project/Scripts/Core/** (8 mới, 8 sửa)
+  - Assets/Tests/EditMode/** (6 mới, 5 sửa)
+  - Docs/plans/run-loop.md, plans/market.md, PLAN.md, TECH.md, design/brewing.md, design/economy.md, LOG.md
+- **Test**:
+  - Skeleton: 430/430.
+  - Test-first: 486 → 48 mới fail đúng lý do; 1 fail do exception + 4 pass sai ở skeleton → đã sửa test (ghi §6); 9 pass đã dự đoán (fuzz bất biến, test biên).
+  - Implement: **486/486 xanh** lần đầu; refactor 486/486; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Ghi chú**: commit `3c5fe1e` có message "feat(run-loop)…" nhưng nội dung là F-006 Chợ + file plan run-loop (code run-loop nằm ở thay đổi chưa commit lần này).
+- **Còn lại**: F-009 phần 2 (Resolution → Mùa kế / RunEnd, AC-1 1.000 run) sau F-010/F-011/F-017; `OnShopRefresh` (F-007); DTO `Turn` (F-013); view Chiếu chỉ / Tiếp tục / Bỏ qua lượt (F-014)
 
 ### 2026-11-04 — plan run-loop
 - **Command**: /unity-game-studio plan run-loop

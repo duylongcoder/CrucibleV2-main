@@ -2,6 +2,7 @@ using System.Linq;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
 using Crucible.Core.Logs;
+using Crucible.Core.Random;
 using Crucible.Core.Rules;
 using Crucible.Core.State;
 using Crucible.Tests.TestUtils;
@@ -39,6 +40,7 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(_run.Reputation, Is.EqualTo(ContentFactory.StartingReputation));
             Assert.That(_run.BagCapacity, Is.EqualTo(ContentFactory.StartingBagCapacity));
             Assert.That(_run.Seed, Is.EqualTo(Seed));
+            Assert.That(_run.Turn, Is.EqualTo(0));
         }
 
         [Test]
@@ -51,15 +53,17 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
-        public void Apply_StartRun_SetsNeutralSeasonPriceAndEmptyShop()
+        public void Apply_StartRun_RollsSeasonPriceAndLeavesShopEmpty()
         {
-            _run.SeasonPricePercent = 130;
             _run.Shop.Slots.Add(new ShopSlot(new ItemId(0)));
             _run.Shop.RerollCount = 2;
+            var market = RngStreams.Create(Seed).Get(RngStream.Market);
+            var expected = ContentFactory.SeasonPriceMin +
+                           market.NextInt(ContentFactory.SeasonPriceMax - ContentFactory.SeasonPriceMin + 1);
 
             GameRules.Apply(_run, _meta, _content, ValidStartRun());
 
-            Assert.That(_run.SeasonPricePercent, Is.EqualTo(MarketRules.NeutralPercent));
+            Assert.That(_run.SeasonPricePercent, Is.EqualTo(expected));
             Assert.That(_run.Shop.Slots, Is.Empty);
             Assert.That(_run.Shop.RerollCount, Is.EqualTo(0));
         }

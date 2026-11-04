@@ -131,7 +131,7 @@ Tiếng xu khi bán/mua; ô hàng mới "lật" khi làm mới/reroll; Túi đ�
 
 - [ ] AC-1: Chợ không bao giờ bày bán vật phẩm tier > 3 hoặc có `Recipe` (fuzz 10.000 lượt).
 - [ ] AC-2: Túi + lưới = sức chứa → mua bị từ chối, vàng không đổi.
-- [ ] AC-2b: Xếp lưới, mua tới đầy, rồi Nung hoặc Bỏ qua → số vật phẩm Túi + lưới ≤ sức chứa sau mọi bước.
+- [x] AC-2b: Xếp lưới, mua tới đầy, rồi Nung hoặc Bỏ qua → số vật phẩm Túi + lưới ≤ sức chứa sau mọi bước. (2026-11-04: F-006 + `Apply_SkipTurnWithGridItems_KeepsUsedSlots`, `RunLoopInvariantTest`)
 - [ ] AC-2c: `OnShopRefresh` kích hoạt đúng 3 lần mỗi Mùa bất kể số lần mở ngăn Chợ / reroll.
 - [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
 - [ ] AC-4: Giá mua ≥ 1, giá bán ≥ 0, vàng ≥ 0 sau mọi hành động.

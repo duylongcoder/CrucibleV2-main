@@ -21,6 +21,7 @@ namespace Crucible.Tests.Core.State
             ["rng draw"] = run => run.Rng.Get(RngStream.Shop).NextUInt(),
             ["grid cell"] = run => run.Grid[4] = new ItemInstance(50, new ItemId(0)),
             ["workbench step"] = run => run.WorkbenchStep = WorkbenchStep.ResultPending,
+            ["turn"] = run => run.Turn = 2,
             ["last brew uid"] = run => run.LastBrewResultUid = 3,
             ["last brew log"] = run => run.LastBrew = BrewLog.Create(
                 new[] { new ItemInstance(40, new ItemId(0)), null, null, null, null, null, null, null, null },

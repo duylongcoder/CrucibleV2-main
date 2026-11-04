@@ -48,6 +48,7 @@ namespace Crucible.Core.State
             }
 
             writer.Write((int)run.WorkbenchStep);
+            writer.Write(run.Turn);
             writer.Write(run.LastBrewResultUid);
             WriteBrewLog(writer, run.LastBrew);
 

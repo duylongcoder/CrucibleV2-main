@@ -34,6 +34,15 @@ namespace Crucible.Tests.TestUtils
             return run;
         }
 
+        /// <summary>Run active ở Chiếu chỉ Mùa 1 (Turn 0), Túi = 3 vật phẩm của <see cref="CreateActiveRun"/>, Chợ rỗng.</summary>
+        public static RunState CreateDecreeRun()
+        {
+            var run = CreateActiveRun();
+            run.Phase = RunPhase.Decree;
+            run.Turn = 0;
+            return run;
+        }
+
         /// <summary>
         /// Run đang ở Bàn luyện, bước Editing. Uid: Túi trước (1, 2, …) rồi tới lưới theo thứ tự ô.
         /// <paramref name="gridItemIds"/>: tối đa 9 phần tử, null = ô trống.
@@ -44,6 +53,7 @@ namespace Crucible.Tests.TestUtils
             run.Bag.Clear();
             run.Phase = RunPhase.Workbench;
             run.WorkbenchStep = WorkbenchStep.Editing;
+            run.Turn = 1;
             run.BagCapacity = 14;
 
             var uid = 1;

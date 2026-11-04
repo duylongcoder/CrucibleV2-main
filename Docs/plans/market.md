@@ -22,6 +22,7 @@ Chiếu chỉ thuộc vòng Mùa (F-009) — F-006 cung cấp hai hàm luật đ
   gian bằng `long`.
 - R2 — `RollSeasonPrice`: rút S đều trong `[SeasonPriceMin, SeasonPriceMax]` (70–130) từ stream `Market`, đúng 1 lần
   `NextInt`. `StartRun` đặt S = 100 và xóa hàng Chợ (giá trị trung tính tới khi F-009 rút ở Decree Mùa 1).
+  *(2026-11-04: thay bởi F-009 run-loop D1 — `StartRun` gọi `SeasonRules.EnterDecree`, S rút ngay ở Decree Mùa 1.)*
 - R3 — `RefreshShop`: đặt lại số reroll = 0 rồi bày hàng mới (R4) từ stream `Shop`. Không rút stream nào khác.
 - R4 — Bày hàng: đúng `IngredientSlotCount` (4) ô nguyên liệu + 1 ô tiện ích, theo thứ tự ô.
   - Ô nguyên liệu: chỉ khoáng / phụ gia **gốc** (`Recipe == null`), tier `1…ShopMaxTier` (3). Rút tier theo

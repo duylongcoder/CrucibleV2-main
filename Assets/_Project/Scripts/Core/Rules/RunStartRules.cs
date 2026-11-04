@@ -36,7 +36,6 @@ namespace Crucible.Core.Rules
             run.StarterKitId = command.StarterKitId;
             run.StartedAtUnix = command.NowUnix;
             run.Season = FirstSeason;
-            run.Phase = RunPhase.Decree;
             run.Gold = 0;
             run.Reputation = content.Run.StartingReputation;
             run.BagCapacity = content.Run.StartingBagCapacity;
@@ -51,9 +50,10 @@ namespace Crucible.Core.Rules
             run.WorkbenchStep = WorkbenchStep.Editing;
             run.LastBrewResultUid = 0;
             run.LastBrew = null;
-            run.SeasonPricePercent = MarketRules.NeutralPercent;
             run.Shop.Slots.Clear();
             run.Shop.RerollCount = 0;
+            // Rút của Chiếu chỉ Mùa 1 (hệ số giá…) ngay khi vào Decree — đọc lại save không rút lại (run-loop D1).
+            SeasonRules.EnterDecree(run, content);
 
             return CommandResult.Accept(new GameEvent[] { new RunStarted(command.Seed) });
         }

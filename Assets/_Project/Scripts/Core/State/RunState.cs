@@ -27,6 +27,8 @@ namespace Crucible.Core.State
         /// <summary>Lưới 3×3 theo thứ tự quét hàng = 9 tick; null = ô trống. Vật phẩm trên lưới không nằm trong <see cref="Bag"/>.</summary>
         public ItemInstance[] Grid { get; } = new ItemInstance[9];
         public WorkbenchStep WorkbenchStep { get; set; }
+        /// <summary>Lượt Bàn luyện hiện tại: 1…<c>TurnsPerSeason</c> khi <see cref="Phase"/> = Workbench, 0 ở phase khác.</summary>
+        public int Turn { get; set; }
         /// <summary>Uid kết quả lượt Nung gần nhất; 0 = chưa có.</summary>
         public int LastBrewResultUid { get; set; }
         /// <summary>Nhật ký lượt Nung gần nhất (lưu cùng save để phát lại / hiện kết quả); null = chưa có.</summary>

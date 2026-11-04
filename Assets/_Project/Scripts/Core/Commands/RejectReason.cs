@@ -23,5 +23,7 @@ namespace Crucible.Core.Commands
         NotEnoughGold = 17,
         BagFull = 18,
         CatalystSlotsFull = 19,
+        /// <summary><c>AckBrewResult</c> khi chưa Nung (bước Editing).</summary>
+        NoPendingResult = 20,
     }
 }

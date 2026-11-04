@@ -38,6 +38,12 @@ namespace Crucible.Core.Rules
                     return MarketRules.Sell(run, content, sell);
                 case Reroll reroll:
                     return MarketRules.Reroll(run, content, reroll);
+                case AcceptDecree acceptDecree:
+                    return SeasonRules.AcceptDecree(run, content, acceptDecree);
+                case SkipTurn skipTurn:
+                    return SeasonRules.SkipTurn(run, content, skipTurn);
+                case AckBrewResult ackBrewResult:
+                    return SeasonRules.AckBrewResult(run, content, ackBrewResult);
                 case SetTimescale setTimescale:
                     return SettingsRules.SetTimescale(meta, setTimescale);
                 default:

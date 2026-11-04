@@ -8,7 +8,7 @@ namespace Crucible.Core.Rules
 {
     /// <summary>
     /// Luật Chợ (economy.md §Chợ): giá, bày hàng, <see cref="Commands.Buy"/> / <see cref="Commands.Sell"/> /
-    /// <see cref="Commands.Reroll"/>. <see cref="RefreshShop"/> và <see cref="RollSeasonPrice"/> do vòng Mùa (F-009) gọi.
+    /// <see cref="Commands.Reroll"/>. <see cref="RefreshShop"/> (đầu lượt) và <see cref="RollSeasonPrice"/> (vào Chiếu chỉ) do <see cref="SeasonRules"/> gọi.
     /// Giá luôn tính từ <see cref="ItemData.MarketPrice"/> × hệ số Mùa lúc cần — không lưu trong ô hàng.
     /// </summary>
     public static class MarketRules

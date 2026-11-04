@@ -53,11 +53,11 @@ Thay đổi nhỏ (tuning số, chỉnh luật nhỏ) có thể đi tắt: `bala
 | F-006 | Chợ & kinh tế | #6 | Logic | MVP | M | Done | [plans/market.md](plans/market.md) | design/economy.md; 430 test EditMode xanh 2026-11-04; `PriceFormula`, `MarketRules`, `Buy(slot, cell?)`/`Sell`/`Reroll`, `MarketData`, `ItemData.MarketPrice`; **F-009 phải gọi** `RollSeasonPrice` ở Decree + `RefreshShop` đầu lượt (AC-2b Bỏ qua, AC-2c, GDD §6.1 AC-2); `OnShopRefresh` → F-007; modifier giá + reroll miễn phí → F-011; bể theo Danh vọng → F-012; số `MarketPrice`/`UtilitySlotWeights` → balance |
 | F-007 | Xúc tác & Effect primitive | #7 | Logic/Data | MVP | M | Designed | — | design/economy.md |
 | F-008 | Thuộc tính ẩn & Kính soi | #8 | Logic | MVP | S | Designed | — | GDD §6.2 |
-| F-009 | Vòng Mùa (state machine) | #9 | Logic | MVP | M | Planned | [plans/run-loop.md](plans/run-loop.md) | design/run-flow.md; **phần 1 run-loop** (Decree → Workbench ×3 → Offering: `SeasonRules`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`, `RunState.Turn`, `RunData.TurnsPerSeason`) chờ duyệt D1–D6; **phần 2** (Resolution → Mùa kế / RunEnd, AC-1 1.000 run) sau F-010/F-011/F-017 |
+| F-009 | Vòng Mùa (state machine) | #9 | Logic | MVP | M | In Progress | [plans/run-loop.md](plans/run-loop.md) | design/run-flow.md; **phần 1 run-loop Done** 2026-11-04, 486 test EditMode xanh (Decree → Workbench ×3 → Offering: `SeasonRules`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`, `RunState.Turn`, `RunData.TurnsPerSeason`; S rút lúc vào Decree); **phần 2** (Resolution → Mùa kế / RunEnd, AC-1 1.000 run) sau F-010/F-011/F-017 |
 | F-010 | Rèn, Trận, Uy tín | #10 | Logic | MVP | S | Designed | — | design/run-flow.md |
 | F-011 | Chiến lợi phẩm & modifier Mùa | #11 | Logic/Data | MVP | M | Designed | — | design/run-flow.md |
 | F-012 | Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu | #12 | Logic/UI | MVP | M | Designed | — | GDD §6.3 |
-| F-013 | Lưu & tiếp tục | #13 | Integration | MVP | M | Designed | — | GDD §6.4; DTO phải mang `RunState.LastBrew` + `MetaState.Timescale` (F-004), `SeasonPricePercent` + `Shop` (ô + `RerollCount`) (F-006) |
+| F-013 | Lưu & tiếp tục | #13 | Integration | MVP | M | Designed | — | GDD §6.4; DTO phải mang `RunState.Turn` (F-009), `RunState.LastBrew` + `MetaState.Timescale` (F-004), `SeasonPricePercent` + `Shop` (ô + `RerollCount`) (F-006) |
 | F-014 | UI/UX greybox các màn | #14 | UI | MVP | L | Designed | — | design/ui-ban-luyen.md, ui-season.md, ui-meta.md; còn: màn Kết thúc run, Trận (#17); + view phát lại BrewLog (từ F-004: highlight tick, chạm lò để tua, nút/phím timescale, SO `BrewTickSeconds`) |
 | F-017 | Trận — mô phỏng tất định + phát lại 6 nhịp | #17 | Logic/UI | MVP | M | Designed | — | design/battle.md |
 

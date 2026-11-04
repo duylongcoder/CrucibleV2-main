@@ -11,6 +11,7 @@ namespace Crucible.Tests.TestUtils
         public const int StartingBagCapacity = 8;
         public const int MaxBagCapacity = 12;
         public const int SeasonCount = 8;
+        public const int TurnsPerSeason = 3;
         public const long QualityCap = 1_000_000_000_000_000;
 
         public const string Iron = "ore_iron";
@@ -74,7 +75,9 @@ namespace Crucible.Tests.TestUtils
         /// </summary>
         /// <param name="steelHasRecipe">false → Thép là nguyên liệu gốc (cùng tập Id ⇒ cùng <see cref="ItemId"/>) — lưới <c>[Sắt, Than]</c> ra phế phẩm.</param>
         /// <param name="market">null → <see cref="CreateMarket"/>.</param>
-        public static ContentDb Create(bool steelHasRecipe = true, MarketData market = null)
+        /// <param name="turnsPerSeason">Số lượt Bàn luyện mỗi Mùa (<see cref="RunData.TurnsPerSeason"/>).</param>
+        public static ContentDb Create(bool steelHasRecipe = true, MarketData market = null,
+                                       int turnsPerSeason = TurnsPerSeason)
         {
             return ContentDb.Create(
                 new[]
@@ -106,7 +109,7 @@ namespace Crucible.Tests.TestUtils
                 },
                 new[] { new DifficultyData(Difficulty) },
                 new[] { new StarterKitData(StarterKit, StarterKitItems) },
-                new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount),
+                new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount, turnsPerSeason),
                 CreateBrewing(),
                 market ?? CreateMarket());
         }

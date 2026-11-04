@@ -1,6 +1,6 @@
 # Plan: Vòng lượt — Chiếu chỉ → Bàn luyện ×3 → Dâng (F-009, phần 1 "run-loop")
 
-> **Trạng thái**: Draft (chờ duyệt D1–D6) · **Cập nhật**: 2026-11-04
+> **Trạng thái**: Done (D1–D6 duyệt 2026-11-04; 486/486 EditMode xanh) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/run-flow.md` §Chiếu chỉ, §Bàn luyện, §Trạng thái & chuyển trạng thái (hàng RunStart → Offering),
 > Edge Cases "đóng tab… Decree đã rút thì không rút lại"; `design/brewing.md` §Trạng thái một lượt Bàn luyện, AC-10;
 > `design/economy.md` §Chợ (hàng làm mới đầu lượt), AC-2b (phần Bỏ qua), AC-2c; GDD §6.1 AC-2/AC-3 ·
@@ -243,18 +243,18 @@ Command quan sát được qua sự kiện + state.
 > Lệnh test (Editor đóng): `"$UNITY" -batchmode -nographics -projectPath . -runTests -testPlatform EditMode
 > -testResults Logs/editmode.xml -logFile -` (Linux: `UNITY="$HOME/Unity/Hub/Editor/6000.6.7f1/Editor/Unity"`).
 
-- [ ] **Bước 1 — Skeleton**: 3 Command, 4 sự kiện, `NoPendingResult`, `RunData.TurnsPerSeason`, `RunState.Turn`,
+- [x] **Bước 1 — Skeleton**: 3 Command, 4 sự kiện, `NoPendingResult`, `RunData.TurnsPerSeason`, `RunState.Turn`,
   `SeasonRules` (thân trả `Reject(UnknownCommand)` / rỗng), dispatch trong `GameRules`, `StateFactory.CreateDecreeRun`.
   Kiểm chứng: compile sạch; **430/430** xanh (chưa đổi hành vi).
-- [ ] **Bước 2 — Test first**: viết test §3; sửa 3 test cũ (StartRun ×2, StateHasher case). Kiểm chứng: test mới fail
+- [x] **Bước 2 — Test first**: viết test §3; sửa 3 test cũ (StartRun ×2, StateHasher case). Kiểm chứng: test mới fail
   đúng lý do (`UnknownCommand`, `Turn` sai, S = 100…); ghi số pass/fail dự đoán trước (các test `Reject*` có thể
   pass sớm nếu skeleton trả đúng — sửa skeleton trả `UnknownCommand` để chúng fail).
-- [ ] **Bước 3 — Implement**: thứ tự `RunData` + validate → `StateHasher` → `EnterDecree` + `StartRun` → `AcceptDecree`
+- [x] **Bước 3 — Implement**: thứ tự `RunData` + validate → `StateHasher` → `EnterDecree` + `StartRun` → `AcceptDecree`
   + `StartTurn` → `EndTurn` → `SkipTurn` → `AckBrewResult`. Kiểm chứng: toàn bộ EditMode xanh; 0 warning CS mới;
   `python3 .claude/skills/unity-game-studio/scripts/check_unity_project.py .` 0 lỗi.
-- [ ] **Bước 4 — Refactor**: gộp test `Reject*` tham số hóa theo phase; dùng chung helper "chạy tới lượt k" trong
+- [x] **Bước 4 — Refactor**: gộp test `Reject*` tham số hóa theo phase; dùng chung helper "chạy tới lượt k" trong
   `RunLoopTest`/fuzz. Test vẫn xanh.
-- [ ] **Bước 5 — Tài liệu**: PLAN F-009 → **In Progress** (phần 1 xong; phần 2 chờ F-010/F-011/F-017) + ghi chú;
+- [x] **Bước 5 — Tài liệu**: PLAN F-009 → **In Progress** (phần 1 xong; phần 2 chờ F-010/F-011/F-017) + ghi chú;
   TECH §3 (State + `Turn`, Command & luật + `SeasonRules`, §3.3 bỏ "F-009 gọi"); F-006 R2 ghi "thay bởi F-009 D1";
   F-013 backlog + `Turn`; brewing/economy/run-flow tick AC đã đạt; LOG + CHECKPOINT.
   Commit đề xuất: `feat(run-loop): add decree→workbench×3→offering turn loop (AcceptDecree, SkipTurn, AckBrewResult)`.
@@ -273,8 +273,17 @@ Command quan sát được qua sự kiện + state.
 
 ## 6. Implementation Notes (điền khi làm)
 
-- **Design decisions**: - None
-- **Deviations**: - None
-- **Tradeoffs**: - None
-- **Test changes**: - None
+- **Design decisions**:
+  - `StateFactory.CreateWorkbenchRun` đặt `Turn = 1` (run Bàn luyện hợp lệ theo R7); thêm `ContentFactory.TurnsPerSeason`
+    + tham số `Create(turnsPerSeason)`.
+  - `EnterDecree` đặt cả `Phase` + `Turn` → `RunStartRules` bỏ dòng `Phase = Decree` / `Turn = 0` riêng (Refactor).
+  - Sự kiện gom vào `List<GameEvent>` cục bộ (Command không ở vòng nóng).
+- **Deviations**:
+  - Bỏ `Apply_ExtraRerollInTurnOne_SameSeasonPrice`: S rút ở Decree trước mọi reroll → luôn bằng nhau, test không kiểm
+    được gì cho tới khi có Mùa 2 (F-009 phần 2 sẽ thêm "reroll Mùa 1 không đổi S Mùa 2").
+  - `Apply_AckOutsideWorkbench_*` không có case ResultPending ở phase khác — không tới được qua luật.
+- **Tradeoffs**: hai fuzz F-005/F-006 giữ cơ chế giả lượt (D6) — vẫn đúng vì gọi trực tiếp `RefreshShop` / đặt `Editing`.
+- **Test changes** (sau Bước 2): `Apply_SkipTurnWithGridItems_EmitsGridChanged` đưa assert `Count` lên đầu (skeleton
+  fail bằng exception thay vì assertion); thêm assert `Accepted` cho `Apply_SkipTurnWithGridItems_KeepsUsedSlots`,
+  `Apply_AcceptDecree_KeepsSeasonPrice`, `Apply_AckAfterBrew_KeepsBrewResultInBag/KeepsLastBrew` (pass sai ở skeleton).
 - **Open questions**: - None

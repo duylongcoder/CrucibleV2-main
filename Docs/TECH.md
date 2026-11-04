@@ -61,7 +61,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult` → `SeasonRules`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`) |
 | Phát lại (Presentation) | `BrewReplayTimeline` (C# thuần) | Runtime | Core | brewing.md §Phát lại | Implemented (đồng hồ; view ở F-014) |
@@ -77,7 +77,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 
 ### 3.2 State
 - **`RunState`** (class mutable, chỉ Core sửa): seed, `RngStreams`, độ khó, bộ khởi đầu; `Season` 1–8;
-  `Phase` (`Decree · Workbench · Offering · Battle · Spoils · Ended`); `Turn` 1–3; `WorkbenchStep` (`Editing ·
+  `Phase` (`Decree · Workbench · Offering · Battle · Spoils · Ended`); `Turn` (1…`RunData.TurnsPerSeason` ở Workbench, 0 ở phase khác); `WorkbenchStep` (`Editing ·
   ResultPending`); vàng, Uy tín, sức chứa Túi; `Bag: List<ItemInstance>` (thứ tự list = thứ tự Xúc tác); `Grid:
   ItemInstance?[9]`; `SeasonPricePercent` (S, 100 tới khi rút ở Decree); `Shop` (`ShopState`: `List<ShopSlot>` 4 nguyên liệu + 1
   tiện ích, `ShopSlot.None` = rỗng/đã bán; `RerollCount`); `Decree`; `OfferingTrayUid`; `LastBrew`, `LastBattle`, `Spoils`;
@@ -109,7 +109,12 @@ public static class GameRules {
   `InvalidCell`/`ItemNotPlaceable` (khi có `cell`) → `CatalystSlotsFull` → `BagFull` → `NotEnoughGold`; `Sell(uid)` từ Túi
   hoặc lưới; `Reroll` chỉ rút `Shop`. Giá tính lúc cần từ `ItemData.MarketPrice` × S (không lưu). `MarketRules.RefreshShop`
   (đặt lại reroll + bày hàng, stream `Shop`) và `RollSeasonPrice` (stream `Market`, 1 lần `NextInt`) **không là Command** —
-  vòng Mùa (F-009) gọi; F-007 kích `OnShopRefresh` sau `RefreshShop`.
+  `SeasonRules` gọi; F-007 kích `OnShopRefresh` sau `RefreshShop` (trong `SeasonRules.StartTurn`).
+- **Vòng lượt** (F-009 phần 1): `SeasonRules.EnterDecree` (public, `StartRun` + F-009 phần 2 gọi) đặt Decree, `Turn = 0`,
+  rút S **lúc vào** Decree (F-010 thêm `Forge`, F-011 thêm `Season`, thứ tự Market → Forge → Season). `AcceptDecree` →
+  lượt 1. Mỗi lượt: Editing + `RefreshShop` + `TurnStarted`. Kết thúc lượt: `AckBrewResult` (chỉ `ResultPending`, else
+  `NoPendingResult`; giữ `LastBrew`) hoặc `SkipTurn` (chỉ Editing; lưới → cuối Túi ô 0→8). Hết lượt cuối → `Offering`,
+  `Turn = 0`, xóa hàng Chợ, `OfferingStarted`. `StateHasher` ghi `Turn`.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.
