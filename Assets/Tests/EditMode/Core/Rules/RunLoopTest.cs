@@ -95,6 +95,114 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(sawMagic && sawPlain, Is.True, "chance should produce both outcomes");
         }
 
+        [Test]
+        public void Apply_SameSeed_SameSeasonOneEquipment()
+        {
+            var content = ContentFactory.Create();
+            var seen = new HashSet<EquipmentId>();
+            for (ulong seed = 0; seed < 50; seed++)
+            {
+                var first = StartRun(content, seed);
+                var second = StartRun(content, seed);
+
+                Assert.That(second.DecreeEquipment, Is.EqualTo(first.DecreeEquipment), $"seed {seed}");
+                seen.Add(first.DecreeEquipment);
+            }
+
+            Assert.That(seen.Count, Is.GreaterThan(1), "seeds should yield different equipment");
+        }
+
+        [Test]
+        public void Apply_ExtraRerollInSeasonOne_SameSeasonTwoEquipment()
+        {
+            var content = ContentFactory.Create();
+            for (ulong seed = 0; seed < 30; seed++)
+            {
+                var plain = LoseSeasonOne(content, seed, rerolls: 0);
+                var rerolled = LoseSeasonOne(content, seed, rerolls: 1);
+
+                Assert.That(rerolled.Season, Is.EqualTo(2), "arrange: season 2");
+                Assert.That(rerolled.DecreeEquipment, Is.EqualTo(plain.DecreeEquipment), $"seed {seed}");
+            }
+        }
+
+        [Test]
+        public void Apply_FullSeasonWithOffer_ReachesSeasonTwoOrSpoils()
+        {
+            var content = ContentFactory.Create();
+            var run = StartAndAccept(content, 77);
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Coal)));
+            PlaceFromBag(run, content, Iron, 0);
+            PlaceFromBag(run, content, Coal, 1);
+            Assert.That(Apply(run, content, new Brew(NowUnix)).Accepted, Is.True, "arrange: brew");
+            var steel = run.Bag.Last();
+            Assert.That(content.GetItem(steel.ItemId).Id, Is.EqualTo(Steel), "arrange: recipe");
+            Assert.That(Apply(run, content, new AckBrewResult()).Accepted, Is.True);
+            Assert.That(Apply(run, content, new SkipTurn()).Accepted, Is.True);
+            Assert.That(Apply(run, content, new SkipTurn()).Accepted, Is.True);
+            var decreeEquipment = run.DecreeEquipment;
+
+            Assert.That(Apply(run, content, new Offer(steel.Uid)).Accepted, Is.True, "offer");
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Battle));
+            Assert.That(run.LastBattle.Equipment, Is.EqualTo(decreeEquipment));
+            Assert.That(Apply(run, content, new AckBattle()).Accepted, Is.True, "ack");
+
+            if (run.LastBattle.HeroWon)
+            {
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Spoils));
+                Assert.That(run.Reputation, Is.EqualTo(StartingReputation));
+            }
+            else
+            {
+                Assert.That(run.Phase, Is.EqualTo(RunPhase.Decree));
+                Assert.That(run.Season, Is.EqualTo(2));
+            }
+        }
+
+        [Test]
+        public void Apply_SkipAllTurnsAndDismissThreeSeasons_ExilesInSeasonThree()
+        {
+            var content = ContentFactory.Create();
+            var run = StartRun(content, 5);
+            var events = new List<GameEvent>();
+
+            for (var season = 1; season <= StartingReputation; season++)
+            {
+                Assert.That(run.Season, Is.EqualTo(season));
+                Record(events, Apply(run, content, new AcceptDecree()));
+                for (var turn = 0; turn < TurnsPerSeason; turn++)
+                    Record(events, Apply(run, content, new SkipTurn()));
+                Record(events, Apply(run, content, new DismissCourtier()));
+                Record(events, Apply(run, content, new AckBattle()));
+            }
+
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Ended));
+            Assert.That(run.Outcome, Is.EqualTo(RunOutcome.Exiled));
+            Assert.That(run.Season, Is.EqualTo(StartingReputation));
+            Assert.That(events.OfType<ReputationLost>().Select(e => e.Remaining), Is.EqualTo(new[] { 2, 1, 0 }));
+        }
+
+        /// <summary>Mùa 1: (reroll ×n) → Bỏ qua ×3 → ra về → Thua → Chiếu chỉ Mùa 2.</summary>
+        private RunState LoseSeasonOne(ContentDb content, ulong seed, int rerolls)
+        {
+            var run = StartAndAccept(content, seed);
+            run.Gold = 10;
+            for (var i = 0; i < rerolls; i++)
+                Assert.That(Apply(run, content, new Reroll()).Accepted, Is.True, "arrange: reroll");
+            for (var turn = 0; turn < TurnsPerSeason; turn++)
+                Assert.That(Apply(run, content, new SkipTurn()).Accepted, Is.True, "arrange: skip");
+            Assert.That(Apply(run, content, new DismissCourtier()).Accepted, Is.True, "arrange: dismiss");
+            Assert.That(Apply(run, content, new AckBattle()).Accepted, Is.True, "arrange: ack");
+            return run;
+        }
+
+        private RunState StartRun(ContentDb content, ulong seed)
+        {
+            var run = new RunState();
+            Assert.That(Apply(run, content, new StartRun(Difficulty, StarterKit, seed, NowUnix)).Accepted, Is.True);
+            return run;
+        }
+
         /// <summary>Lưới [Sắt, Tro, Than] → Gang có Tro (10%); trả về <c>Magic</c> của thành phẩm.</summary>
         private bool BrewCastIronWithAsh(ContentDb content, ulong seed, int rerolls)
         {
@@ -121,8 +229,7 @@ namespace Crucible.Tests.Core.Rules
 
         private RunState StartAndAccept(ContentDb content, ulong seed)
         {
-            var run = new RunState();
-            Assert.That(Apply(run, content, new StartRun(Difficulty, StarterKit, seed, NowUnix)).Accepted, Is.True);
+            var run = StartRun(content, seed);
             Assert.That(Apply(run, content, new AcceptDecree()).Accepted, Is.True, "arrange: accept decree");
             return run;
         }

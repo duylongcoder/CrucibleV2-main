@@ -265,6 +265,6 @@ namespace Crucible.Tests.Core.Rules
         private static ContentDb CreateContent(params ItemData[] items) =>
             ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(),
                 new RunData(StartingReputation, StartingBagCapacity, MaxBagCapacity, SeasonCount), CreateBrewing(),
-                CreateMarket());
+                CreateMarket(), CreateBattle());
     }
 }

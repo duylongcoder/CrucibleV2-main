@@ -31,6 +31,9 @@ namespace Crucible.Tests.Core.State
             ["season price"] = run => run.SeasonPricePercent += 1,
             ["shop slot count"] = run => run.Shop.Slots.Add(ShopSlot.None),
             ["shop reroll count"] = run => run.Shop.RerollCount = 1,
+            ["decree equipment"] = run => run.DecreeEquipment = new EquipmentId(2),
+            ["outcome"] = run => run.Outcome = RunOutcome.Won,
+            ["last battle"] = run => run.LastBattle = BattleLog.Forfeit(1, default, default, default),
         };
 
         private static IEnumerable<string> MutationNames => Mutations.Keys;
@@ -55,6 +58,35 @@ namespace Crucible.Tests.Core.State
             var mutatedHash = StateHasher.Hash(mutated, new MetaState());
 
             Assert.That(mutatedHash, Is.Not.EqualTo(baselineHash));
+        }
+
+        [TestCase("season")]
+        [TestCase("equipment")]
+        [TestCase("hero")]
+        [TestCase("opponent")]
+        [TestCase("rounds")]
+        [TestCase("offered item")]
+        public void Hash_LastBattleDiffersInOneField_ReturnsDifferentValue(string field)
+        {
+            var battle = ContentFactory.CreateBattle();
+            var item = new ItemInstance(5, new ItemId(1));
+            var hero = new Combatant(100, 20, 0, 0, 0);
+            var opponent = new Combatant(60, 7, 0, 0, 0);
+            var baseline = StateFactory.CreateActiveRun();
+            var mutated = StateFactory.CreateActiveRun();
+            baseline.LastBattle = Crucible.Core.Rules.BattleSimulator.Simulate(1, default, item, hero, opponent, battle);
+            mutated.LastBattle = field switch
+            {
+                "season" => Crucible.Core.Rules.BattleSimulator.Simulate(2, default, item, hero, opponent, battle),
+                "equipment" => Crucible.Core.Rules.BattleSimulator.Simulate(1, new EquipmentId(1), item, hero, opponent, battle),
+                "hero" => Crucible.Core.Rules.BattleSimulator.Simulate(1, default, item, new Combatant(101, 20, 0, 0, 0), opponent, battle),
+                "opponent" => Crucible.Core.Rules.BattleSimulator.Simulate(1, default, item, hero, new Combatant(60, 7, 0, 0, 1), battle),
+                "rounds" => Crucible.Core.Rules.BattleSimulator.Simulate(1, default, item, new Combatant(100, 25, 0, 0, 0), opponent, battle),
+                _ => Crucible.Core.Rules.BattleSimulator.Simulate(1, default, new ItemInstance(5, new ItemId(2), magic: true), hero, opponent, battle),
+            };
+
+            Assert.That(StateHasher.Hash(mutated, new MetaState()),
+                Is.Not.EqualTo(StateHasher.Hash(baseline, new MetaState())));
         }
 
         [Test]

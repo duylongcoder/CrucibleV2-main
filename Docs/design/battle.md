@@ -45,7 +45,8 @@ Mọi phép tính **số nguyên, làm tròn xuống** (tất định trên WebG
 **Một hiệp** (ta luôn đánh trước):
 1. Ta đánh: `gốc = ATK × (100 + SB) / 100`; đối thủ nhận `max(1, gốc × (100 − min(HTCap, HT_đt)) / 100)`; ta bị
    dội ngược `nhận × min(PDCap, PD_đt) / 100`.
-2. Đối thủ còn sống → đối thủ đánh, cùng công thức đổi vai.
+2. **Cả hai còn đứng** → đối thủ đánh, cùng công thức đổi vai. Ta gục vì dội ngược ở đòn của mình mà đối thủ còn đứng →
+   hết trận, ta thua (đối thủ không đánh nữa — chốt 2026-11-04, F-010 D5).
 3. HP ≤ 0 → gục. Cả hai cùng gục trong một hiệp (do dội ngược) → **ta thắng** (giữ luật "bằng nhau → Thắng").
 
 **Kết thúc**: có người gục → hết trận. Sau `MaxRounds` (10) hiệp cả hai còn đứng → bên có **tổng sát thương gây

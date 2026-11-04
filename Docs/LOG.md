@@ -10,14 +10,36 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build run-loop` (F-009 phần 1). 486/486 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → F-007 (Xúc tác, chèn `OnShopRefresh` vào `SeasonRules.StartTurn`) hoặc F-010 (Rèn/Trận/Uy tín — Dâng + rút `Forge` ở `EnterDecree`) → F-009 phần 2
+**Đang làm**: `plan spoils` (F-011) xong bản Draft — `Docs/plans/spoils.md`, chờ duyệt D1–D12. F-010 (665/665 xanh) **vẫn chưa commit**
+**Bước tiếp theo**: người dùng commit F-010 → duyệt plan → `build spoils` Phần A (Spoils) → F-009 phần 2 hoặc Phần B (modifier)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: số liệu `MarketPrice` từng item + `UtilitySlotWeights` (balance); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: D4 ui-season §E (thẻ mờ) vs run-flow (lọc trước khi rút); số `SpoilsGold`/bể phần thưởng/modifier thật (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build forge-battle
+- **Command**: /unity-game-studio build forge-battle (F-010)
+- **Đã làm**:
+  - Duyệt D4–D11 (giữ nguyên đề xuất).
+  - Core: content `BattleData`/`EquipmentData`/`OpponentData`/`SeasonData`/`ForgeOptionData` (+ `EquipmentId`, `StatKind`, `BattleKind`, `ForgeOption`, `SeasonContent`), `DifficultyData.OpponentStatPercent`, `ContentDb` validate + `GetEquipment`/`TryFindEquipment`/`Season(n)`; `ForgeRules.RollEquipment` gọi trong `EnterDecree` sau Market; `OfferingRules` (`Offer(uid)`, `DismissCourtier`); `BattleMath`, `BattleStats`, `BattleSimulator`, `BattleLog`/`BattleRound`/`Combatant`/`BattleEndReason`; `SeasonRules.AckBattle` đủ Resolution; `RunState.DecreeEquipment/LastBattle/Outcome` + `RunOutcome`; 3 Command + 7 sự kiện; `RejectReason.ItemNotOfferable/HasOfferableItem`; `StateHasher` ghi 3 field mới.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (30 mới, 8 sửa)
+  - Assets/Tests/EditMode/** (10 mới, 14 sửa)
+  - Docs/plans/forge-battle.md, PLAN.md, TECH.md, GDD.md, design/battle.md, design/run-flow.md, LOG.md
+- **Test**:
+  - Skeleton: 486/486.
+  - Test-first: 665 → 153 fail đúng lý do (35 NRE do skeleton cố ý trả `null`); 22 pass ở skeleton (đã dự đoán) + 6 pass sai → đã làm chặt test (ghi §6).
+  - Implement: **665/665 xanh** lần đầu; refactor 665/665; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: Spoils (`ChooseReward`/`SkipReward`, `SpoilsGold`) → F-011; SB/PD/HT thật → F-008; lộ thuộc tính + biểu cảm thợ rèn + timeline 6 nhịp → F-017; DTO → F-013; view Dâng/Kết quả → F-014; fuzz 1.000 run → F-009 phần 2
+
+### 2026-11-04 — plan forge-battle
+- **Command**: /unity-game-studio plan forge-battle (F-010)
+- **Đã làm**: plan F-010 — 12 yêu cầu; content `BattleData` (hằng số trận, `EquipmentData`, `OpponentData`, `SeasonData` đối thủ cố định + bể trang bị), `DifficultyData.OpponentStatPercent`; `ForgeRules.RollEquipment` (stream `Forge`, sau Market ở `EnterDecree`); `OfferingRules` (`IsOfferable` = khoáng có công thức, `Offer(uid)`, `DismissCourtier`); `BattleStats` + `BattleSimulator` + `BattleLog` (battle.md, số nguyên, `MulDivFloor`); `SeasonRules.AckBattle` đủ Resolution; `RunState.DecreeEquipment/LastBattle/Outcome`; ~110 test EditMode
+- **Quyết định**: người dùng chốt D1 `BattleSimulator` lõi vào F-010 (SB/PD/HT ta = 0 tới F-008), D2 khay chỉ ở view (bỏ `PutOnTray`/`ClearTray`/`OfferingTrayUid`), D3 `AckBattle` đủ bảng chuyển trạng thái. Đề xuất chờ duyệt D4–D11 (rút Forge luôn 1 lần, ta gục vì dội ngược → thua ngay, run Ended giữ `IsActive`, Spoils ngõ cụt tới F-011, `LastBattle` giữ sau Ack…)
+- **File**: Docs/plans/forge-battle.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
 
 ### 2026-11-04 — build run-loop
 - **Command**: /unity-game-studio build run-loop

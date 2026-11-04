@@ -62,6 +62,10 @@ namespace Crucible.Core.State
                 writer.Write(slot.ItemId.Index);
             }
 
+            writer.Write(run.DecreeEquipment.Index);
+            writer.Write((int)run.Outcome);
+            WriteBattleLog(writer, run.LastBattle);
+
             writer.Write(run.Rng != null);
             if (run.Rng != null)
             {
@@ -101,6 +105,47 @@ namespace Crucible.Core.State
             writer.Write(log.Result.IsScrap);
             writer.Write(log.Result.ItemId.Index);
             writer.Write(log.Result.Magic);
+        }
+
+        private static void WriteBattleLog(CanonicalWriter writer, BattleLog log)
+        {
+            writer.Write(log != null);
+            if (log == null)
+                return;
+
+            writer.Write(log.Season);
+            writer.Write(log.Equipment.Index);
+            writer.Write(log.HasOfferedItem);
+            writer.Write(log.OfferedItem.Index);
+            writer.Write(log.OfferedMagic);
+            WriteCombatant(writer, log.Hero);
+            WriteCombatant(writer, log.Opponent);
+            writer.Write(log.Rounds.Count);
+            for (var i = 0; i < log.Rounds.Count; i++)
+            {
+                var round = log.Rounds[i];
+                writer.Write(round.HeroDamage);
+                writer.Write(round.ReflectToHero);
+                writer.Write(round.OpponentAttacked);
+                writer.Write(round.OpponentDamage);
+                writer.Write(round.ReflectToOpponent);
+                writer.Write(round.HeroHpAfter);
+                writer.Write(round.OpponentHpAfter);
+            }
+
+            writer.Write(log.HeroTotalDealt);
+            writer.Write(log.OpponentTotalDealt);
+            writer.Write((int)log.EndReason);
+            writer.Write(log.HeroWon);
+        }
+
+        private static void WriteCombatant(CanonicalWriter writer, Combatant combatant)
+        {
+            writer.Write(combatant.Hp);
+            writer.Write(combatant.Atk);
+            writer.Write(combatant.Sharpness);
+            writer.Write(combatant.Reflect);
+            writer.Write(combatant.Absorb);
         }
 
         private static void WriteMeta(CanonicalWriter writer, MetaState meta)

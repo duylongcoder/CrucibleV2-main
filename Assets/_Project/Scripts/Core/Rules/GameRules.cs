@@ -44,6 +44,12 @@ namespace Crucible.Core.Rules
                     return SeasonRules.SkipTurn(run, content, skipTurn);
                 case AckBrewResult ackBrewResult:
                     return SeasonRules.AckBrewResult(run, content, ackBrewResult);
+                case Offer offer:
+                    return OfferingRules.Offer(run, content, offer);
+                case DismissCourtier dismissCourtier:
+                    return OfferingRules.DismissCourtier(run, content, dismissCourtier);
+                case AckBattle ackBattle:
+                    return SeasonRules.AckBattle(run, content, ackBattle);
                 case SetTimescale setTimescale:
                     return SettingsRules.SetTimescale(meta, setTimescale);
                 default:

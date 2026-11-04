@@ -52,6 +52,8 @@ namespace Crucible.Core.Rules
             run.LastBrew = null;
             run.Shop.Slots.Clear();
             run.Shop.RerollCount = 0;
+            run.LastBattle = null;
+            run.Outcome = RunOutcome.None;
             // Rút của Chiếu chỉ Mùa 1 (hệ số giá…) ngay khi vào Decree — đọc lại save không rút lại (run-loop D1).
             SeasonRules.EnterDecree(run, content);
 

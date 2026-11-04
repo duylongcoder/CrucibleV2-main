@@ -90,6 +90,81 @@ namespace Crucible.Tests.Core.Rules
             }
         }
 
+        [Test]
+        public void Apply_RandomCommandsThroughBattle_KeepsResolutionInvariants([Values(1, 2, 3, 4, 5)] int seed)
+        {
+            var run = StartRun((ulong)seed);
+            var random = new System.Random(seed);
+            var battlesPerSeason = new int[SeasonCount + 1];
+            var acksPerSeason = new int[SeasonCount + 1];
+
+            for (var step = 0; step < MaxStepsToResolution && !IsResolved(run); step++)
+            {
+                var before = StateHasher.Hash(run, _meta);
+                var reputation = run.Reputation;
+                var season = run.Season;
+                var command = NextSeasonCommand(random, run);
+                var result = Apply(run, command);
+                if (!result.Accepted)
+                {
+                    Assert.That(StateHasher.Hash(run, _meta), Is.EqualTo(before), $"step {step}: rejected changed state");
+                    continue;
+                }
+
+                foreach (var e in result.Events)
+                {
+                    if (e is BattleStarted started)
+                    {
+                        battlesPerSeason[started.Season]++;
+                        Assert.That(started.Log.Equipment, Is.EqualTo(run.DecreeEquipment), $"step {step}: forged equipment");
+                    }
+                }
+
+                if (command is AckBattle)
+                    acksPerSeason[season]++;
+                Assert.That(run.Reputation, Is.LessThanOrEqualTo(reputation), $"step {step}: reputation increased");
+                Assert.That(battlesPerSeason[season], Is.LessThanOrEqualTo(1), $"step {step}: battles in season {season}");
+                Assert.That(acksPerSeason[season], Is.LessThanOrEqualTo(1), $"step {step}: acks in season {season}");
+                if (run.Phase == RunPhase.Workbench)
+                    Assert.That(run.Turn, Is.InRange(1, TurnsPerSeason), $"step {step}");
+                else
+                    Assert.That(run.Turn, Is.EqualTo(0), $"step {step}");
+                Assert.That(BagRules.UsedSlots(run), Is.LessThanOrEqualTo(run.BagCapacity), $"step {step}");
+            }
+        }
+
+        [Test]
+        public void Apply_RandomCommandsFromStartRun_AlwaysReachesSpoilsOrEnded()
+        {
+            for (var seed = 0; seed < 100; seed++)
+            {
+                var run = StartRun((ulong)seed);
+                var random = new System.Random(seed);
+
+                for (var step = 0; step < MaxStepsToResolution && !IsResolved(run); step++)
+                    Apply(run, NextSeasonCommand(random, run));
+
+                Assert.That(IsResolved(run), Is.True, $"seed {seed}: stuck in {run.Phase}, season {run.Season}");
+            }
+        }
+
+        private const int MaxStepsToResolution = 20000;
+
+        private static bool IsResolved(RunState run) => run.Phase == RunPhase.Spoils || run.Phase == RunPhase.Ended;
+
+        /// <summary>Lệnh của <see cref="NextCommand"/> + Dâng (2/18), ra về (1/18), xem xong Trận (1/18).</summary>
+        private static ICommand NextSeasonCommand(System.Random random, RunState run)
+        {
+            switch (random.Next(18))
+            {
+                case 14:
+                case 15: return new Offer(RandomUid(random, run));
+                case 16: return new DismissCourtier();
+                case 17: return new AckBattle();
+                default: return NextCommand(random, run);
+            }
+        }
+
         private RunState StartRun(ulong seed)
         {
             var run = new RunState();

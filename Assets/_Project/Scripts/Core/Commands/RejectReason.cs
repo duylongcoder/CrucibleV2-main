@@ -25,5 +25,9 @@ namespace Crucible.Core.Commands
         CatalystSlotsFull = 19,
         /// <summary><c>AckBrewResult</c> khi chưa Nung (bước Editing).</summary>
         NoPendingResult = 20,
+        /// <summary><c>Offer</c> vật phẩm không phải thành phẩm đạt chuẩn.</summary>
+        ItemNotOfferable = 21,
+        /// <summary><c>DismissCourtier</c> khi Túi còn thành phẩm đạt chuẩn.</summary>
+        HasOfferableItem = 22,
     }
 }

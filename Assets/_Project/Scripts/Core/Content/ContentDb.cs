@@ -8,19 +8,31 @@ namespace Crucible.Core.Content
     {
         /// <summary>Công thức dài nhất = số ô lưới (brewing.md: lưới 3×3 cố định).</summary>
         public const int MaxPatternLength = 9;
+        /// <summary>Trần hệ số chỉ số đối thủ của bậc khó (%).</summary>
+        public const int MaxOpponentStatPercent = 1000;
+        private const int MaxStars = 5;
 
         private readonly ItemData[] _items;
         private readonly Dictionary<string, ItemId> _itemIds;
         private readonly Dictionary<string, DifficultyData> _difficulties;
         private readonly Dictionary<string, StarterKitData> _starterKits;
         private readonly ItemId[][] _shopPools;
+        private readonly EquipmentData[] _equipment;
+        private readonly Dictionary<string, EquipmentId> _equipmentIds;
+        private readonly SeasonContent[] _seasons;
 
         private ContentDb(ItemData[] items, Dictionary<string, ItemId> itemIds,
                           Dictionary<string, DifficultyData> difficulties,
                           Dictionary<string, StarterKitData> starterKits, RunData run, BrewingData brewing,
                           Recipe[] recipes, bool hasScrap, ItemId scrapItemId, MarketData market,
-                          ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts)
+                          ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts, BattleData battle,
+                          EquipmentData[] equipment, Dictionary<string, EquipmentId> equipmentIds,
+                          SeasonContent[] seasons)
         {
+            Battle = battle;
+            _equipment = equipment;
+            _equipmentIds = equipmentIds;
+            _seasons = seasons;
             Market = market;
             _shopPools = shopPools;
             Lenses = lenses;
@@ -38,6 +50,7 @@ namespace Crucible.Core.Content
 
         public RunData Run { get; }
         public MarketData Market { get; }
+        public BattleData Battle { get; }
         public BrewingData Brewing { get; }
         /// <summary>Công thức theo thứ tự <see cref="ItemId"/> thành phẩm.</summary>
         public IReadOnlyList<Recipe> Recipes { get; }
@@ -47,7 +60,7 @@ namespace Crucible.Core.Content
 
         public static ContentDb Create(IReadOnlyList<ItemData> items, IReadOnlyList<DifficultyData> difficulties,
                                        IReadOnlyList<StarterKitData> kits, RunData run, BrewingData brewing,
-                                       MarketData market)
+                                       MarketData market, BattleData battle)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
             if (difficulties == null) throw new ArgumentNullException(nameof(difficulties));
@@ -55,6 +68,7 @@ namespace Crucible.Core.Content
             if (run == null) throw new ArgumentNullException(nameof(run));
             if (brewing == null) throw new ArgumentNullException(nameof(brewing));
             if (market == null) throw new ArgumentNullException(nameof(market));
+            if (battle == null) throw new ArgumentNullException(nameof(battle));
             if (brewing.QualityCap < 0 || brewing.QualityCap > BrewingData.MaxQualityCap)
                 throw new ArgumentOutOfRangeException(nameof(brewing), brewing.QualityCap,
                     $"QualityCap must be in [0, {BrewingData.MaxQualityCap}].");
@@ -77,7 +91,13 @@ namespace Crucible.Core.Content
 
             var difficultyById = new Dictionary<string, DifficultyData>(difficulties.Count, StringComparer.Ordinal);
             for (var i = 0; i < difficulties.Count; i++)
+            {
                 AddUnique(difficultyById, difficulties[i].Id, difficulties[i], "difficulty");
+                var percent = difficulties[i].OpponentStatPercent;
+                if (percent < 1 || percent > MaxOpponentStatPercent)
+                    throw new ArgumentException(
+                        $"Difficulty '{difficulties[i].Id}' OpponentStatPercent {percent} must be in [1, {MaxOpponentStatPercent}].");
+            }
 
             var kitById = new Dictionary<string, StarterKitData>(kits.Count, StringComparer.Ordinal);
             for (var i = 0; i < kits.Count; i++)
@@ -112,9 +132,20 @@ namespace Crucible.Core.Content
                 }
             }
 
+            ValidateBattleConstants(battle);
+            var equipment = SortEquipment(battle.Equipment);
+            var equipmentIds = new Dictionary<string, EquipmentId>(equipment.Length, StringComparer.Ordinal);
+            for (var i = 0; i < equipment.Length; i++)
+            {
+                AddUnique(equipmentIds, equipment[i].Id, new EquipmentId(i), "equipment");
+                ValidateEquipment(equipment[i]);
+            }
+
+            var seasons = ResolveSeasons(battle, run, equipmentIds);
+
             return new ContentDb(sorted, itemIds, difficultyById, kitById, run, brewing, recipes.ToArray(), hasScrap,
                 scrapItemId, market, BuildShopPools(sorted, market), CollectKind(sorted, ItemKind.Lens),
-                CollectKind(sorted, ItemKind.Catalyst));
+                CollectKind(sorted, ItemKind.Catalyst), battle, equipment, equipmentIds, seasons);
         }
 
         /// <summary>Nguyên liệu gốc (khoáng + phụ gia, không <c>Recipe</c>) tier <paramref name="tier"/> mà Chợ bày được, tăng dần <see cref="ItemId"/>; rỗng khi tier ngoài <c>1…ShopMaxTier</c>.</summary>
@@ -129,6 +160,28 @@ namespace Crucible.Core.Content
         public IReadOnlyList<ItemId> Lenses { get; }
         /// <summary>Mọi Xúc tác, tăng dần <see cref="ItemId"/>.</summary>
         public IReadOnlyList<ItemId> Catalysts { get; }
+
+        public EquipmentData GetEquipment(EquipmentId id)
+        {
+            return _equipment[id.Index];
+        }
+
+        public bool TryFindEquipment(string id, out EquipmentId equipmentId)
+        {
+            if (id != null)
+                return _equipmentIds.TryGetValue(id, out equipmentId);
+
+            equipmentId = default;
+            return false;
+        }
+
+        /// <summary>Mùa <paramref name="season"/> (1…<c>Run.SeasonCount</c>) đã resolve; ngoài khoảng → <see cref="ArgumentOutOfRangeException"/>.</summary>
+        public SeasonContent Season(int season)
+        {
+            if (season < 1 || season > _seasons.Length)
+                throw new ArgumentOutOfRangeException(nameof(season), season, $"Must be in [1, {_seasons.Length}].");
+            return _seasons[season - 1];
+        }
 
         public ItemData GetItem(ItemId id)
         {
@@ -301,6 +354,120 @@ namespace Crucible.Core.Content
             }
 
             return result.ToArray();
+        }
+
+        private static void ValidateBattleConstants(BattleData battle)
+        {
+            if (battle.HeroBaseHp < 1 || battle.HeroBaseAtk < 1)
+                throw new ArgumentException($"HeroBaseHp {battle.HeroBaseHp} and HeroBaseAtk {battle.HeroBaseAtk} must be >= 1.");
+            ValidatePercent(battle.OffAffinityPercent, nameof(BattleData.OffAffinityPercent));
+            ValidatePercent(battle.AbsorbCapPercent, nameof(BattleData.AbsorbCapPercent));
+            ValidatePercent(battle.ReflectCapPercent, nameof(BattleData.ReflectCapPercent));
+            if (battle.MaxRounds < 1)
+                throw new ArgumentException($"MaxRounds {battle.MaxRounds} must be >= 1.");
+            if (battle.Equipment == null || battle.Opponents == null || battle.Seasons == null)
+                throw new ArgumentException("Battle Equipment, Opponents and Seasons must not be null.");
+        }
+
+        private static void ValidatePercent(int value, string name)
+        {
+            if (value < 0 || value > 100)
+                throw new ArgumentException($"{name} {value} must be in [0, 100].");
+        }
+
+        private static EquipmentData[] SortEquipment(IReadOnlyList<EquipmentData> equipment)
+        {
+            var sorted = new EquipmentData[equipment.Count];
+            for (var i = 0; i < sorted.Length; i++)
+                sorted[i] = equipment[i] ?? throw new ArgumentException($"Equipment[{i}] is null.");
+            Array.Sort(sorted, (a, b) => string.CompareOrdinal(a.Id, b.Id));
+            return sorted;
+        }
+
+        private static void ValidateEquipment(EquipmentData equipment)
+        {
+            ValidatePercent(equipment.AtkPerQ, $"Equipment '{equipment.Id}' AtkPerQ");
+            ValidatePercent(equipment.HpPerQ, $"Equipment '{equipment.Id}' HpPerQ");
+            var affinities = equipment.Affinities ??
+                             throw new ArgumentException($"Equipment '{equipment.Id}' Affinities must not be null.");
+            for (var a = 0; a < affinities.Count; a++)
+            {
+                for (var b = a + 1; b < affinities.Count; b++)
+                {
+                    if (affinities[a] == affinities[b])
+                        throw new ArgumentException($"Equipment '{equipment.Id}' lists affinity {affinities[a]} twice.");
+                }
+            }
+        }
+
+        private static void ValidateOpponent(OpponentData opponent)
+        {
+            if (opponent.Stars < 1 || opponent.Stars > MaxStars)
+                throw new ArgumentException($"Opponent '{opponent.Id}' Stars {opponent.Stars} must be in [1, {MaxStars}].");
+            if (opponent.Hp < 1 || opponent.Atk < 0)
+                throw new ArgumentException($"Opponent '{opponent.Id}' needs Hp >= 1 and Atk >= 0.");
+            ValidateStat(opponent.Sharpness, opponent.Id);
+            ValidateStat(opponent.Reflect, opponent.Id);
+            ValidateStat(opponent.Absorb, opponent.Id);
+        }
+
+        private static void ValidateStat(int value, string owner)
+        {
+            if (value < 0 || value > BattleData.MaxStatValue)
+                throw new ArgumentException($"Opponent '{owner}' stat {value} must be in [0, {BattleData.MaxStatValue}].");
+        }
+
+        /// <summary>Đối thủ + bể trang bị theo thứ tự khai báo; <c>Dictionary</c> chỉ để tra Id (không lặp).</summary>
+        private static SeasonContent[] ResolveSeasons(BattleData battle, RunData run,
+                                                      Dictionary<string, EquipmentId> equipmentIds)
+        {
+            var opponentById = new Dictionary<string, OpponentData>(battle.Opponents.Count, StringComparer.Ordinal);
+            for (var i = 0; i < battle.Opponents.Count; i++)
+            {
+                var opponent = battle.Opponents[i] ?? throw new ArgumentException($"Opponents[{i}] is null.");
+                AddUnique(opponentById, opponent.Id, opponent, "opponent");
+                ValidateOpponent(opponent);
+            }
+
+            if (battle.Seasons.Count != run.SeasonCount)
+                throw new ArgumentException(
+                    $"Battle declares {battle.Seasons.Count} seasons but SeasonCount is {run.SeasonCount}.");
+
+            var seasons = new SeasonContent[battle.Seasons.Count];
+            for (var s = 0; s < seasons.Length; s++)
+            {
+                var data = battle.Seasons[s] ?? throw new ArgumentException($"Seasons[{s}] is null.");
+                var number = s + 1;
+                if (data.OpponentId == null || !opponentById.TryGetValue(data.OpponentId, out var opponent))
+                    throw new ArgumentException($"Season {number}: unknown opponent '{data.OpponentId}'.");
+                if (data.ForgePool == null || data.ForgePool.Count == 0)
+                    throw new ArgumentException($"Season {number}: forge pool must not be empty.");
+
+                var pool = new ForgeOption[data.ForgePool.Count];
+                var total = 0L;
+                for (var i = 0; i < pool.Length; i++)
+                {
+                    var option = data.ForgePool[i] ?? throw new ArgumentException($"Season {number}: pool[{i}] is null.");
+                    if (option.EquipmentId == null || !equipmentIds.TryGetValue(option.EquipmentId, out var equipment))
+                        throw new ArgumentException($"Season {number}: unknown equipment '{option.EquipmentId}'.");
+                    for (var j = 0; j < i; j++)
+                    {
+                        if (pool[j].Equipment == equipment)
+                            throw new ArgumentException($"Season {number}: equipment '{option.EquipmentId}' listed twice.");
+                    }
+
+                    if (option.Weight < 0)
+                        throw new ArgumentException($"Season {number}: weight of '{option.EquipmentId}' must not be negative.");
+                    pool[i] = new ForgeOption(equipment, option.Weight);
+                    total += option.Weight;
+                }
+
+                if (total < 1 || total > int.MaxValue)
+                    throw new ArgumentException($"Season {number}: forge weights sum {total} must be in [1, {int.MaxValue}].");
+                seasons[s] = new SeasonContent(opponent, pool, (int)total);
+            }
+
+            return seasons;
         }
 
         private static void ValidateTierTable(IReadOnlyList<int> table, string name)

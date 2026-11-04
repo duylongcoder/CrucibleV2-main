@@ -14,14 +14,15 @@ namespace Crucible.Core.Rules
     {
         /// <summary>
         /// Vào Chiếu chỉ của <c>run.Season</c>: <c>Phase = Decree</c>, <c>Turn = 0</c>, rút hệ số giá Mùa (stream
-        /// <c>Market</c>). F-010: + loại trang bị (stream <c>Forge</c>); F-011: + modifier Mùa sau (stream <c>Season</c>)
-        /// — giữ thứ tự Market → Forge → Season. Không validate — người gọi đảm bảo run đang active.
+        /// <c>Market</c>) rồi loại trang bị (stream <c>Forge</c>); F-011: + modifier Mùa sau (stream <c>Season</c>) — giữ
+        /// thứ tự Market → Forge → Season (hợp đồng replay). Không validate — người gọi đảm bảo run đang active.
         /// </summary>
         public static void EnterDecree(RunState run, ContentDb content)
         {
             run.Phase = RunPhase.Decree;
             run.Turn = 0;
             MarketRules.RollSeasonPrice(run, content);
+            ForgeRules.RollEquipment(run, content);
         }
 
         public static CommandResult AcceptDecree(RunState run, ContentDb content, AcceptDecree command)
@@ -80,6 +81,55 @@ namespace Crucible.Core.Rules
             // Mutate.
             var events = new List<GameEvent>();
             EndTurn(run, content, events);
+            return CommandResult.Accept(events);
+        }
+
+        /// <summary>
+        /// Resolution sau Trận (run-flow §Trạng thái; xét Uy tín trước Mùa): Thua → Uy tín −1, về 0 → Trục xuất; Mùa cuối →
+        /// Thắng run; Thắng → Spoils; Thua còn Uy tín → Chiếu chỉ Mùa kế. Giữ <c>LastBattle</c> (forge-battle D11).
+        /// </summary>
+        public static CommandResult AckBattle(RunState run, ContentDb content, AckBattle command)
+        {
+            // Validate — chưa chạm state.
+            if (!run.IsActive)
+                return CommandResult.Reject(RejectReason.RunNotActive);
+            if (run.Phase != RunPhase.Battle)
+                return CommandResult.Reject(RejectReason.WrongPhase);
+
+            // Mutate.
+            var events = new List<GameEvent>();
+            var won = run.LastBattle != null && run.LastBattle.HeroWon;
+            if (!won)
+            {
+                run.Reputation--;
+                events.Add(new ReputationLost(run.Reputation));
+                if (run.Reputation <= 0)
+                    return EndRun(run, RunOutcome.Exiled, events);
+            }
+
+            if (run.Season >= content.Run.SeasonCount)
+                return EndRun(run, RunOutcome.Won, events);
+
+            if (won)
+            {
+                // F-011: SpoilsGold + 3 lựa chọn; hiện chưa có lệnh rời Spoils (D7).
+                run.Phase = RunPhase.Spoils;
+                events.Add(new SpoilsStarted(run.Season));
+                return CommandResult.Accept(events);
+            }
+
+            run.Season++;
+            EnterDecree(run, content);
+            events.Add(new SeasonStarted(run.Season));
+            return CommandResult.Accept(events);
+        }
+
+        /// <summary>Kết thúc run: giữ <c>IsActive</c> (D6) — mọi lệnh run sau đó bị <c>WrongPhase</c>.</summary>
+        private static CommandResult EndRun(RunState run, RunOutcome outcome, List<GameEvent> events)
+        {
+            run.Phase = RunPhase.Ended;
+            run.Outcome = outcome;
+            events.Add(new RunEnded(outcome));
             return CommandResult.Accept(events);
         }
 

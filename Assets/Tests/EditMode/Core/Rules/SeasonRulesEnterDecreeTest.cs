@@ -49,14 +49,35 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
-        public void EnterDecree_OnlyAdvancesMarketStream()
+        public void EnterDecree_OnlyAdvancesMarketAndForgeStreams()
         {
             var run = StateFactory.CreateActiveRun();
             var before = run.Rng.Capture();
 
             SeasonRules.EnterDecree(run, _content);
 
-            MarketRulesShopTest.AssertOnlyStreamAdvanced(before, run.Rng.Capture(), RngStream.Market);
+            var after = run.Rng.Capture();
+            for (var i = 0; i < RngStreams.Count; i++)
+            {
+                var stream = (RngStream)i;
+                if (stream == RngStream.Market || stream == RngStream.Forge)
+                    Assert.That(after[i], Is.Not.EqualTo(before[i]), $"{stream} should advance");
+                else
+                    Assert.That(after[i], Is.EqualTo(before[i]), $"{stream} should not advance");
+            }
+        }
+
+        [Test]
+        public void EnterDecree_Always_RollsEquipmentOfCurrentSeason([Values(1, 2, 8)] int season)
+        {
+            var run = StateFactory.CreateActiveRun();
+            run.Season = season;
+            var forge = run.Rng.Get(RngStream.Forge);
+            var expected = ForgeRulesTest.ExpectedEquipment(_content, season, ref forge);
+
+            SeasonRules.EnterDecree(run, _content);
+
+            Assert.That(run.DecreeEquipment, Is.EqualTo(expected));
         }
 
         [Test]

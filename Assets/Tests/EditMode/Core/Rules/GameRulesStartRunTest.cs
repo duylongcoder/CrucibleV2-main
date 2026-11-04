@@ -118,6 +118,29 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_StartRun_RollsSeasonOneEquipment()
+        {
+            var forge = RngStreams.Create(Seed).Get(RngStream.Forge);
+            var expected = ForgeRulesTest.ExpectedEquipment(_content, 1, ref forge);
+
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(_run.DecreeEquipment, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void Apply_StartRun_ResetsLastBattleAndOutcome()
+        {
+            _run.LastBattle = BattleLog.Forfeit(3, new EquipmentId(1), default, default);
+            _run.Outcome = RunOutcome.Exiled;
+
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(_run.LastBattle, Is.Null);
+            Assert.That(_run.Outcome, Is.EqualTo(RunOutcome.None));
+        }
+
+        [Test]
         public void Apply_ValidStartRun_ClearsLastBrew()
         {
             var grid = new ItemInstance[9];

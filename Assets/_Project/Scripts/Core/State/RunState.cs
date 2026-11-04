@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Crucible.Core.Content;
 using Crucible.Core.Logs;
 using Crucible.Core.Random;
 
@@ -38,5 +39,12 @@ namespace Crucible.Core.State
         public int SeasonPricePercent { get; set; }
         /// <summary>Hàng Chợ lượt hiện tại.</summary>
         public ShopState Shop { get; } = new ShopState();
+
+        /// <summary>Loại trang bị Mùa này — rút ở Chiếu chỉ (stream <c>Forge</c>).</summary>
+        public EquipmentId DecreeEquipment { get; set; }
+        /// <summary>Nhật ký Trận gần nhất (lưu cùng save; giữ sau <c>AckBattle</c> tới lần Dâng kế); null = chưa có.</summary>
+        public BattleLog LastBattle { get; set; }
+        /// <summary>Kết cục run; <see cref="RunOutcome.None"/> tới khi <see cref="Phase"/> = Ended.</summary>
+        public RunOutcome Outcome { get; set; }
     }
 }

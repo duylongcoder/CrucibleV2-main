@@ -66,6 +66,6 @@ namespace Crucible.Tests.Core.Content
 
         private static ContentDb Create(BrewingData brewing, ItemData[] items) =>
             ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, brewing,
-                ContentFactory.CreateMarket());
+                ContentFactory.CreateMarket(), ContentFactory.CreateBattle());
     }
 }

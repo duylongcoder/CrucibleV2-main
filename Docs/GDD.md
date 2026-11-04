@@ -131,7 +131,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | 7 | Xúc tác & Effect primitive | Gameplay | MVP | In Review | [design/economy.md](design/economy.md) §Xúc tác | 2, 5 |
 | 8 | Thuộc tính ẩn & Kính soi | Gameplay | MVP | In Review | §6.2 | 1, 2, 5 |
 | 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | In Review | [design/run-flow.md](design/run-flow.md) | 1–8 |
-| 10 | Rèn, Trận, Uy tín | Gameplay | MVP | In Review | [design/run-flow.md](design/run-flow.md) §Rèn & Trận | 8, 9 |
+| 10 | Rèn, Trận, Uy tín | Gameplay | MVP | Implemented (Core: rút trang bị, Dâng, mô phỏng Trận, Uy tín/Resolution; SB/PD/HT → #8, view → #14/#17) | [design/run-flow.md](design/run-flow.md) §Rèn & Trận | 8, 9 |
 | 11 | Chiến lợi phẩm & modifier Mùa | Gameplay | MVP | In Review | [design/run-flow.md](design/run-flow.md) §Chiến lợi phẩm | 1, 9 |
 | 12 | Meta: Sổ công thức, Danh vọng, bậc khó, bộ khởi đầu | Progression / Meta | MVP | In Review | §6.3 | 2, 9 |
 | 13 | Lưu & tiếp tục (dừng là dừng) | Persistence | MVP | In Review | §6.4 | 1, 9 |

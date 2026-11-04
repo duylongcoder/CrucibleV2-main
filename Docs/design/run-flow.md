@@ -40,7 +40,10 @@ Lượt bỏ qua vẫn tính vào 3 lượt.
 
 **Dâng** (`Offering`) — sau lượt 3:
 - Dùng Kính soi được; **không** mua bán.
-- Chọn **1** thành phẩm đạt chuẩn bất kỳ trong Túi để dâng; luôn tiêu hao.
+- Chọn **1** thành phẩm đạt chuẩn bất kỳ trong Túi để dâng; luôn tiêu hao. "Đạt chuẩn" = khoáng làm ra từ công thức
+  (không phải nguyên liệu gốc / phế phẩm). Khay cận thần chỉ là trạng thái hiển thị — đóng tab giữa Dâng thì khay trống
+  lại (chốt 2026-11-04, F-010).
+- "Để cận thần ra về" chỉ có khi Túi không còn thành phẩm đạt chuẩn.
 - Không có thành phẩm đạt chuẩn → không dâng được → Rèn & Trận với kết quả **tự động Thua**.
 
 **Rèn & Trận** (`Forge` + `Battle`, **cutscene** — sửa 2026-11-04):

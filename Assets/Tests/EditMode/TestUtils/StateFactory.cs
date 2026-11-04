@@ -1,4 +1,5 @@
 using Crucible.Core.Content;
+using Crucible.Core.Logs;
 using Crucible.Core.Random;
 using Crucible.Core.Rules;
 using Crucible.Core.State;
@@ -70,6 +71,31 @@ namespace Crucible.Tests.TestUtils
             }
 
             run.NextUid = uid;
+            return run;
+        }
+
+        /// <summary>
+        /// Run ở Dâng Mùa <paramref name="season"/> (Turn 0, Chợ rỗng, loại trang bị = <paramref name="equipmentId"/>, mặc
+        /// định Kiếm). Túi = <paramref name="bagItemIds"/> theo thứ tự, uid 1, 2, …
+        /// </summary>
+        public static RunState CreateOfferingRun(ContentDb content, string[] bagItemIds, int season = 1,
+                                                 string equipmentId = ContentFactory.Sword)
+        {
+            var run = CreateWorkbenchRun(content, bagItemIds);
+            run.Phase = RunPhase.Offering;
+            run.Turn = 0;
+            run.Season = season;
+            run.DecreeEquipment = ContentFactory.EquipmentOf(content, equipmentId);
+            return run;
+        }
+
+        /// <summary>Run ở Trận Mùa <paramref name="season"/> với <paramref name="log"/> đã tính, Uy tín <paramref name="reputation"/>.</summary>
+        public static RunState CreateBattleRun(ContentDb content, BattleLog log, int season = 1, int reputation = 3)
+        {
+            var run = CreateOfferingRun(content, new string[0], season);
+            run.Phase = RunPhase.Battle;
+            run.Reputation = reputation;
+            run.LastBattle = log;
             return run;
         }
 
