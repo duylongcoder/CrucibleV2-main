@@ -43,7 +43,8 @@ Canh lửa đúng nhịp như một thợ cả: "thả sắt, chờ một nhịp
 - `Pattern`: danh sách slot; mỗi slot là một item id hoặc `Gap`. Slot đầu và cuối luôn là nguyên liệu; độ dài
   ≤ 9. Slot nguyên liệu có thể mang cờ `RequiresMagic`.
 - `AllowedAdditives`: phụ gia được phép đứng ở **bất kỳ** slot `Gap` nào.
-- `BaseEssence`, các dòng thuộc tính khởi đầu.
+- `BaseEssence`, các dòng thuộc tính khởi đầu: mỗi dòng `(thuộc tính, % xuất hiện, min, max)` — khi khớp tung `%`, có thì
+  giá trị đều trong `[min, max]` (stream `Chance`, sau tung ma thuật); mỗi thuộc tính ≤ 1 dòng, `1 ≤ min ≤ max` (GDD §6.2).
 - `Recipe` = null → nguyên liệu gốc (chỉ từ Chợ / bộ khởi đầu / chiến lợi phẩm).
 - Công thức là content cố định: giống nhau ở mọi run, seed, bậc khó; modifier không bao giờ đổi công thức.
 

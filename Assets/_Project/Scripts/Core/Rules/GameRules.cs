@@ -36,6 +36,8 @@ namespace Crucible.Core.Rules
                     return MarketRules.Buy(run, content, buy);
                 case Sell sell:
                     return MarketRules.Sell(run, content, sell);
+                case Inspect inspect:
+                    return InspectRules.Inspect(run, content, inspect);
                 case Reroll reroll:
                     return MarketRules.Reroll(run, content, reroll);
                 case AcceptDecree acceptDecree:

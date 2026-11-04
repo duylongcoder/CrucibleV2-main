@@ -88,7 +88,7 @@ namespace Crucible.Tests.Core.Rules
             var content = CreateContent(
                 new ItemData("ore_a", ItemKind.Mineral, 1, marketPrice: 3),
                 new ItemData("add_b", ItemKind.Additive, 2, marketPrice: 4),
-                new ItemData(Lens, ItemKind.Lens, 1, marketPrice: 6));
+                new ItemData(Lens, ItemKind.Lens, 1, marketPrice: 6, revealLines: 1));
             var run = CreateRun(content, StateFactory.Seed);
 
             for (var r = 0; r < 200; r++)
@@ -107,7 +107,7 @@ namespace Crucible.Tests.Core.Rules
         public void RefreshShop_NoIngredientPool_LeavesIngredientSlotsEmpty()
         {
             var content = CreateContent(
-                new ItemData(Lens, ItemKind.Lens, 1, marketPrice: 6),
+                new ItemData(Lens, ItemKind.Lens, 1, marketPrice: 6, revealLines: 1),
                 new ItemData(Bellows, ItemKind.Catalyst, 1, marketPrice: 10));
             var run = CreateRun(content, StateFactory.Seed);
 

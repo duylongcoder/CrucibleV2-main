@@ -118,10 +118,13 @@ namespace Crucible.Tests.TestUtils
         /// <param name="turnsPerSeason">Số lượt Bàn luyện mỗi Mùa (<see cref="RunData.TurnsPerSeason"/>).</param>
         /// <param name="battle">null → <see cref="CreateBattle"/>.</param>
         /// <param name="opponentStatPercent">Hệ số chỉ số đối thủ của bậc khó <see cref="Difficulty"/>.</param>
+        /// <param name="steelStatLines">Dòng khởi đầu của công thức Thép (null = không có — giữ chuỗi <c>Chance</c> cũ).</param>
+        /// <param name="lensRevealLines"><c>RevealLines</c> của <see cref="Lens"/> (1 = Kính thường, 3 = Kính tốt).</param>
         public static ContentDb Create(bool steelHasRecipe = true, MarketData market = null,
                                        int turnsPerSeason = TurnsPerSeason, BattleData battle = null,
                                        int opponentStatPercent = 100, IReadOnlyList<RewardData> rewards = null,
-                                       IReadOnlyList<ModifierData> modifiers = null)
+                                       IReadOnlyList<ModifierData> modifiers = null,
+                                       IReadOnlyList<StatLineData> steelStatLines = null, int lensRevealLines = 1)
         {
             return ContentDb.Create(
                 new[]
@@ -132,7 +135,7 @@ namespace Crucible.Tests.TestUtils
                     new ItemData(Steel, ItemKind.Mineral, 2, steelHasRecipe
                         ? new RecipeData(
                             new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Ingredient(Coal) },
-                            new string[0], SteelEssence)
+                            new string[0], SteelEssence, steelStatLines)
                         : null, marketPrice: SteelPrice),
                     new ItemData(CastIron, ItemKind.Mineral, 2, new RecipeData(
                         new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Gap, RecipeSlotData.Ingredient(Coal) },
@@ -145,7 +148,7 @@ namespace Crucible.Tests.TestUtils
                     new ItemData(Ash, ItemKind.Additive, 1, magicChance: AshMagicChance, marketPrice: AshPrice),
                     new ItemData(Bone, ItemKind.Additive, 2, magicChance: BoneMagicChance, marketPrice: BonePrice),
                     new ItemData(Sand, ItemKind.Additive, 1, marketPrice: SandPrice),
-                    new ItemData(Lens, ItemKind.Lens, 1, marketPrice: LensPrice),
+                    new ItemData(Lens, ItemKind.Lens, 1, marketPrice: LensPrice, revealLines: lensRevealLines),
                     new ItemData(Bellows, ItemKind.Catalyst, 1, marketPrice: BellowsPrice),
                     new ItemData(Mortar, ItemKind.Catalyst, 1, marketPrice: MortarPrice),
                     new ItemData(Tongs, ItemKind.Catalyst, 1, marketPrice: TongsPrice),

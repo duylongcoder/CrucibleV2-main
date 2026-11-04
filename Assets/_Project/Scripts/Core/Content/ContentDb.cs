@@ -298,11 +298,41 @@ namespace Crucible.Core.Content
             for (var i = 0; i < additives.Length; i++)
                 additives[i] = Resolve(items, itemIds, additiveIds[i], ItemKind.Additive, owner, "allowed additive");
 
-            return new Recipe(product, slots, additives, data.BaseEssence);
+            return new Recipe(product, slots, additives, data.BaseEssence, ResolveStatLines(data.StatLines, owner));
+        }
+
+        /// <summary>Dòng khởi đầu (inspect R1, D4, D5): % 0–100, 1 ≤ min ≤ max ≤ <c>MaxStatValue</c>, mỗi thuộc tính 1 dòng.</summary>
+        private static StatLineData[] ResolveStatLines(IReadOnlyList<StatLineData> lines, string owner)
+        {
+            if (lines == null || lines.Count == 0)
+                return Array.Empty<StatLineData>();
+
+            var resolved = new StatLineData[lines.Count];
+            for (var i = 0; i < resolved.Length; i++)
+            {
+                var line = lines[i] ?? throw new ArgumentException($"Recipe of '{owner}': stat line [{i}] is null.");
+                if (line.ChancePercent < 0 || line.ChancePercent > 100)
+                    throw new ArgumentException($"Recipe of '{owner}': {line.Stat} chance {line.ChancePercent} must be in [0, 100].");
+                if (line.Min < 1 || line.Min > line.Max || line.Max > BattleData.MaxStatValue)
+                    throw new ArgumentException(
+                        $"Recipe of '{owner}': {line.Stat} range [{line.Min}, {line.Max}] must satisfy 1 ≤ min ≤ max ≤ {BattleData.MaxStatValue}.");
+                for (var j = 0; j < i; j++)
+                {
+                    if (resolved[j].Stat == line.Stat)
+                        throw new ArgumentException($"Recipe of '{owner}': stat {line.Stat} listed twice.");
+                }
+
+                resolved[i] = line;
+            }
+
+            return resolved;
         }
 
         private static void ValidateItem(ItemData item)
         {
+            if (item.Kind == ItemKind.Lens ? item.RevealLines < 1 : item.RevealLines != 0)
+                throw new ArgumentException(
+                    $"Item '{item.Id}' ({item.Kind}) RevealLines {item.RevealLines}: lenses need >= 1, other kinds 0.");
             if (item.MarketPrice < 0)
                 throw new ArgumentException($"Item '{item.Id}' MarketPrice {item.MarketPrice} must not be negative.");
 

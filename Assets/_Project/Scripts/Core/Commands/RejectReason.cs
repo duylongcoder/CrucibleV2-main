@@ -33,5 +33,11 @@ namespace Crucible.Core.Commands
         InvalidRewardIndex = 23,
         /// <summary>Nới Túi khi Túi đã ở trần <c>MaxBagCapacity</c>.</summary>
         BagAtMaxCapacity = 24,
+        /// <summary><c>Inspect</c> với vật phẩm Kính không phải Kính soi.</summary>
+        ItemNotLens = 25,
+        /// <summary><c>Inspect</c> vật phẩm không phải thành phẩm (nguyên liệu gốc, phế phẩm…).</summary>
+        ItemNotInspectable = 26,
+        /// <summary><c>Inspect</c> thành phẩm đã lộ hết dòng — Kính không tiêu hao.</summary>
+        NothingToReveal = 27,
     }
 }

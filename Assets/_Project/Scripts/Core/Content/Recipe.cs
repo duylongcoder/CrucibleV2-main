@@ -7,8 +7,10 @@ namespace Crucible.Core.Content
     {
         private readonly ItemId[] _allowedAdditives;
 
-        public Recipe(ItemId product, RecipeSlot[] pattern, ItemId[] allowedAdditives, long baseEssence)
+        public Recipe(ItemId product, RecipeSlot[] pattern, ItemId[] allowedAdditives, long baseEssence,
+                      IReadOnlyList<StatLineData> statLines = null)
         {
+            StatLines = statLines ?? System.Array.Empty<StatLineData>();
             Product = product;
             Pattern = pattern;
             _allowedAdditives = allowedAdditives;
@@ -18,6 +20,8 @@ namespace Crucible.Core.Content
         public ItemId Product { get; }
         public IReadOnlyList<RecipeSlot> Pattern { get; }
         public long BaseEssence { get; }
+        /// <summary>Dòng thuộc tính khởi đầu đã validate, theo thứ tự khai báo.</summary>
+        public IReadOnlyList<StatLineData> StatLines { get; }
 
         public bool IsAllowedAdditive(ItemId item)
         {

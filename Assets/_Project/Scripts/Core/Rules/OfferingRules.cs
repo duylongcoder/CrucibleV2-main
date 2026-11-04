@@ -42,8 +42,10 @@ namespace Crucible.Core.Rules
             // Mutate.
             run.Bag.RemoveAt(index);
             var battle = content.Battle;
-            // F-008: truyền giá trị Sắc bén / Phản đòn / Hấp thụ từ dòng thuộc tính của khoáng (D1).
-            var hero = BattleStats.ForHero(offered.Quality, 0, 0, 0, content.GetEquipment(run.DecreeEquipment), battle);
+            // Trận đọc mọi dòng, kể cả chưa lộ (battle §Dependencies; inspect R7).
+            var hero = BattleStats.ForHero(offered.Quality, StatLineRules.ValueOf(offered, StatKind.Sharpness),
+                StatLineRules.ValueOf(offered, StatKind.Reflect), StatLineRules.ValueOf(offered, StatKind.Absorb),
+                content.GetEquipment(run.DecreeEquipment), battle);
             var log = BattleSimulator.Simulate(run.Season, run.DecreeEquipment, offered, hero, Opponent(run, content),
                 battle);
             return EnterBattle(run, log, new ItemOffered(run.Season, command.Uid));

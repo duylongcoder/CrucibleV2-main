@@ -120,6 +120,23 @@ namespace Crucible.Tests.TestUtils
             return run;
         }
 
+        /// <summary>Thêm thành phẩm <paramref name="itemId"/> (Q <paramref name="quality"/>, dòng <paramref name="lines"/>, chưa lộ) vào cuối Túi.</summary>
+        public static ItemInstance AddProduct(RunState run, ContentDb content, string itemId, long quality,
+                                              params StatLine[] lines)
+        {
+            var item = new ItemInstance(run.NextUid++, ContentFactory.IdOf(content, itemId), quality: quality, lines: lines);
+            run.Bag.Add(item);
+            return item;
+        }
+
+        /// <summary>Thêm vật phẩm gốc <paramref name="itemId"/> (vd Kính) vào cuối Túi.</summary>
+        public static ItemInstance AddItem(RunState run, ContentDb content, string itemId)
+        {
+            var item = new ItemInstance(run.NextUid++, ContentFactory.IdOf(content, itemId));
+            run.Bag.Add(item);
+            return item;
+        }
+
         /// <summary>Dựng hàng Chợ tay theo thứ tự ô; null = ô rỗng. Số reroll = 0.</summary>
         public static void StockShop(RunState run, ContentDb content, params string[] slotItemIds)
         {

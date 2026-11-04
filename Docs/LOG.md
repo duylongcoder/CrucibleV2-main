@@ -10,14 +10,28 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build spoils` **Phần B** — F-011 Done. 820/820 EditMode xanh. **Chưa commit** Phần B (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd) hoặc F-008 (dòng thuộc tính → SB/PD/HT)
+**Đang làm**: xong `build inspect` (F-008). 890/890 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd) hoặc F-007 (Xúc tác, gồm `AddStat`) hoặc F-013 (Lưu & tiếp tục)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: số `SpoilsGold`/bể phần thưởng/danh sách modifier + khoảng an toàn (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build inspect
+- **Command**: /unity-game-studio plan F-008 → build inspect (F-008 Thuộc tính ẩn & Kính soi)
+- **Đã làm**:
+  - Người dùng chốt mô hình dòng khởi đầu = (thuộc tính, %, min, max) (ghi GDD §6.2); duyệt D1–D10.
+  - Core: `StatLineData` + `RecipeData/Recipe.StatLines` (validate %, khoảng, trùng thuộc tính), `ItemData.RevealLines` (Kính ≥ 1, khác 0); `StatLine`, `ItemInstance.Lines/RevealedMask`; `StatLineRules` (`Roll`, `ValueOf`); `BrewingRules` sinh dòng sau tung ma thuật; `InspectRules` + Command `Inspect` + event `ItemInspected`; `RejectReason.ItemNotLens/ItemNotInspectable/NothingToReveal`; `OfferingRules` truyền SB/PD/HT thật; `StateHasher` ghi dòng + mask.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (6 mới, 10 sửa)
+  - Assets/Tests/EditMode/** (3 mới, 10 sửa)
+  - Docs/plans/inspect.md, PLAN.md, TECH.md, GDD.md, design/brewing.md, LOG.md
+- **Test**:
+  - Skeleton + test-first (1 lần chạy): 890 → 53 fail đúng lý do, 820 cũ xanh; vài test trung tính pass ở skeleton (ghi §6).
+  - Implement: 888/890 — 2 test cũ `MarketRulesShopTest` dựng Kính thiếu `RevealLines` (validator mới) → sửa arrange → **890/890 xanh**; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: F-013 DTO (`Lines`, `RevealedMask`); F-014 `RunView` lọc dòng chưa lộ + Bàn soi; F-017 lộ thuộc tính khi kích hoạt trong Trận; F-007 `AddStat`; số thật (balance)
 
 ### 2026-11-04 — build spoils (Phần B)
 - **Command**: /unity-game-studio build spoils (F-011 Phần B — modifier Mùa)

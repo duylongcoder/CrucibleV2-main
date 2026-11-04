@@ -225,6 +225,37 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(StateHasher.Hash(second, _meta), Is.EqualTo(StateHasher.Hash(first, _meta)));
         }
 
+        [Test]
+        public void Apply_BrewInspectOffer_LinesFlowIntoBattle()
+        {
+            var content = ContentFactory.Create(steelStatLines: new[] { new StatLineData(StatKind.Sharpness, 100, 8, 8) },
+                battle: CreateBattle(CreateSingleOptionSeasons(Sword)));
+            var run = StartAndAccept(content, 21);
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Coal)));
+            var lens = StateFactory.AddItem(run, content, Lens);
+            PlaceFromBag(run, content, Iron, 0);
+            PlaceFromBag(run, content, Coal, 1);
+            Assert.That(Apply(run, content, new Brew(NowUnix)).Accepted, Is.True, "arrange: brew");
+            var steel = run.Bag.Last();
+            Assert.That(Apply(run, content, new AckBrewResult()).Accepted, Is.True, "arrange: ack brew");
+            Assert.That(Apply(run, content, new Inspect(steel.Uid, lens.Uid)).Accepted, Is.True, "inspect");
+            for (var turn = 1; turn < TurnsPerSeason; turn++)
+                Assert.That(Apply(run, content, new SkipTurn()).Accepted, Is.True, "arrange: skip");
+
+            Assert.That(Apply(run, content, new Offer(steel.Uid)).Accepted, Is.True, "offer");
+
+            Assert.That(BitCount(steel.RevealedMask), Is.EqualTo(1));
+            Assert.That(run.LastBattle.Hero.Sharpness, Is.EqualTo(8));
+        }
+
+        private static int BitCount(int mask)
+        {
+            var count = 0;
+            for (; mask != 0; mask &= mask - 1)
+                count++;
+            return count;
+        }
+
         /// <summary>Đối thủ HP 1 / ATK 0 mọi Mùa + Chiến lợi phẩm mặc định.</summary>
         private static ContentDb CreateWeakOpponentsWithSpoils()
         {

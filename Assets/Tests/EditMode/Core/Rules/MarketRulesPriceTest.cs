@@ -66,6 +66,17 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void SellPrice_SameProductDifferentLines_SamePrice()
+        {
+            var plain = new ItemInstance(1, IdOf(_content, Steel), quality: 10);
+            var rich = new ItemInstance(2, IdOf(_content, Steel), true, 90,
+                new[] { new StatLine(StatKind.Sharpness, 50), new StatLine(StatKind.Absorb, 30) });
+
+            Assert.That(MarketRules.SellPrice(_run, _content, rich.ItemId),
+                Is.EqualTo(MarketRules.SellPrice(_run, _content, plain.ItemId)));
+        }
+
+        [Test]
         public void BuyPrice_ActiveBuyModifier_Applies()
         {
             _run.SeasonPricePercent = 120;

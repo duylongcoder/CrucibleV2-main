@@ -191,6 +191,49 @@ namespace Crucible.Tests.Core.Rules
             return run;
         }
 
+        [Test]
+        public void Apply_RandomCommandsWithInspect_RevealedLinesOnlyGrow([Values(1, 2, 3, 4, 5)] int seed)
+        {
+            var content = ContentFactory.Create(steelStatLines: new[]
+            {
+                new StatLineData(StatKind.Sharpness, 70, 1, 9), new StatLineData(StatKind.Absorb, 50, 1, 9),
+            });
+            var run = new RunState();
+            Assert.That(GameRules.Apply(run, _meta, content, new StartRun(Difficulty, StarterKit, (ulong)seed, NowUnix)).Accepted,
+                Is.True, "arrange: start");
+            for (var i = 0; i < 3; i++)
+                StateFactory.AddItem(run, content, Lens);
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Coal)));
+            run.Bag.Add(new ItemInstance(run.NextUid++, IdOf(content, Coal)));
+            run.Gold = StartGold;
+            var random = new System.Random(seed);
+            var masks = new Dictionary<int, int>();
+            var inspected = 0;
+
+            for (var step = 0; step < MaxSteps && run.Phase != RunPhase.Offering; step++)
+            {
+                var before = StateHasher.Hash(run, _meta);
+                var command = random.Next(4) == 0
+                    ? new Inspect(RandomUid(random, run), RandomUid(random, run))
+                    : NextCommand(random, run);
+                var result = GameRules.Apply(run, _meta, content, command);
+                if (!result.Accepted)
+                    Assert.That(StateHasher.Hash(run, _meta), Is.EqualTo(before), $"step {step}: rejected changed state");
+                else if (command is Inspect)
+                    inspected++;
+
+                foreach (var item in run.Bag)
+                {
+                    if (masks.TryGetValue(item.Uid, out var previous))
+                        Assert.That(item.RevealedMask & previous, Is.EqualTo(previous), $"step {step}: uid {item.Uid} lost a line");
+                    Assert.That(item.RevealedMask >> InspectRules.LineCount(item), Is.EqualTo(0), $"step {step}: mask beyond lines");
+                    masks[item.Uid] = item.RevealedMask;
+                }
+            }
+
+            Assert.That(run.Phase, Is.EqualTo(RunPhase.Offering), "reached offering");
+        }
+
         private const int MaxStepsToResolution = 20000;
 
         private static bool IsResolved(RunState run) => run.Phase == RunPhase.Spoils || run.Phase == RunPhase.Ended;

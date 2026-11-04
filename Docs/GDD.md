@@ -129,7 +129,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | 5 | Túi | Core | MVP | Implemented (luật Túi + `ReorderCatalyst`; Mua → #6, Nới Túi → #11) | [design/economy.md](design/economy.md) §Túi | — |
 | 6 | Chợ & kinh tế | Economy | MVP | Implemented (giá, bày hàng, `Buy`/`Sell`/`Reroll`; nối lượt → #9, modifier → #11) | [design/economy.md](design/economy.md) §Chợ | 1, 5 |
 | 7 | Xúc tác & Effect primitive | Gameplay | MVP | In Review | [design/economy.md](design/economy.md) §Xúc tác | 2, 5 |
-| 8 | Thuộc tính ẩn & Kính soi | Gameplay | MVP | In Review | §6.2 | 1, 2, 5 |
+| 8 | Thuộc tính ẩn & Kính soi | Gameplay | MVP | Implemented (logic Core F-008; Bàn soi UI + lọc `RunView` → F-014) | §6.2 | 1, 2, 5 |
 | 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | In Review | [design/run-flow.md](design/run-flow.md) | 1–8 |
 | 10 | Rèn, Trận, Uy tín | Gameplay | MVP | Implemented (Core: rút trang bị, Dâng, mô phỏng Trận, Uy tín/Resolution; SB/PD/HT → #8, view → #14/#17) | [design/run-flow.md](design/run-flow.md) §Rèn & Trận | 8, 9 |
 | 11 | Chiến lợi phẩm & modifier Mùa | Gameplay | MVP | Implemented (logic Core F-011; view + số thật còn lại) | [design/run-flow.md](design/run-flow.md) §Chiến lợi phẩm | 1, 9 |
@@ -234,6 +234,8 @@ chọn đúng khoáng để dâng → Kính soi là một quyết định kinh t
   hiệu ứng ma thuật trên sprite (cùng loại khoáng, bề ngoài giống nhau, chỉ khác hiệu ứng) + nhãn trong thẻ vật
   phẩm. Kính soi **không** tính `Magic`; "dòng ẩn" chỉ gồm `Quality` và các thuộc tính phụ (Phản đòn, Hấp thụ,
   Sắc bén...).
+- Dòng khởi đầu của công thức = danh sách **(thuộc tính, % xuất hiện, min, max)** (chốt 2026-11-04): mỗi dòng tung 1 lần
+  `Roll(%)`, có thì giá trị rút đều trong `[min, max]`; mỗi thuộc tính tối đa 1 dòng / công thức.
 - Dòng thuộc tính sinh lúc tạo thành phẩm (stream `Chance`) theo dòng khởi đầu của công thức; Xúc tác sửa qua
   Effect (`AddStat`); phụ gia chỉ tác động `Magic`.
 - Thuộc tính **không** ảnh hưởng giá bán.
@@ -266,11 +268,11 @@ biểu cảm thợ rèn trong cutscene lộ `Quality` của khoáng **đã dâng
 đổi được quyết định Mùa đó), không phản ánh đối thủ / kết quả trận. Thuộc tính ẩn còn lộ khi kích hoạt trong Trận (battle.md) — cũng chỉ sau khi dâng.
 
 **Acceptance Criteria**
-- [ ] AC-1: Thành phẩm có 4 dòng, Kính `RevealLines` 1 → lộ đúng 1 dòng chưa lộ; dùng lần 2 → lộ dòng khác.
-- [ ] AC-2: Thành phẩm đã lộ hết → lệnh soi bị từ chối, Kính không bị tiêu hao.
-- [ ] AC-3: Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
+- [x] AC-1 (logic, F-008): Thành phẩm có 4 dòng, Kính `RevealLines` 1 → lộ đúng 1 dòng chưa lộ; dùng lần 2 → lộ dòng khác.
+- [x] AC-2 (logic, F-008): Thành phẩm đã lộ hết → lệnh soi bị từ chối, Kính không bị tiêu hao.
+- [x] AC-3 (F-008): Bán 2 thành phẩm cùng loại khác thuộc tính → cùng giá.
 - [ ] AC-4: Không thông tin dòng chưa lộ nào xuất hiện ở UI/log release.
-- [ ] AC-5: Thành phẩm kích hoạt ma thuật → hiệu ứng ma thuật hiện ngay khi ra lò, không cần soi; Kính soi lên
+- [ ] AC-5 (phần Kính soi không tính `Magic` đã có test F-008; hiệu ứng → F-014): Thành phẩm kích hoạt ma thuật → hiệu ứng ma thuật hiện ngay khi ra lò, không cần soi; Kính soi lên
   thành phẩm đó không lộ/tiêu tốn lượt cho `Magic`.
 
 **Open Questions** — Không còn (chốt 2026-11-03: không hiện số dòng / chỉ báo dòng ẩn).

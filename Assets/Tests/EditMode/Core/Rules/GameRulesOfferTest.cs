@@ -85,6 +85,44 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_OfferProductWithLines_HeroGetsLineValuesWithAffinity()
+        {
+            _run.Bag[1] = new ItemInstance(SteelUid, IdOf(_content, Steel), quality: SteelQuality, lines: new[]
+            {
+                new StatLine(StatKind.Sharpness, 20), new StatLine(StatKind.Reflect, 9), new StatLine(StatKind.Absorb, 7),
+            });
+
+            Apply(new Offer(SteelUid));
+
+            // Kiếm: Sắc bén hợp 100 %, Phản đòn / Hấp thụ 50 % (floor).
+            Assert.That(_run.DecreeEquipment, Is.EqualTo(EquipmentOf(_content, Sword)), "arrange");
+            Assert.That(_run.LastBattle.Hero.Sharpness, Is.EqualTo(20));
+            Assert.That(_run.LastBattle.Hero.Reflect, Is.EqualTo(4));
+            Assert.That(_run.LastBattle.Hero.Absorb, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Apply_OfferHiddenLines_StillCountInBattle()
+        {
+            _run.Bag[1] = new ItemInstance(SteelUid, IdOf(_content, Steel), quality: SteelQuality,
+                lines: new[] { new StatLine(StatKind.Sharpness, 12) });
+
+            Apply(new Offer(SteelUid));
+
+            Assert.That(_run.LastBattle.Hero.Sharpness, Is.EqualTo(12));
+        }
+
+        [Test]
+        public void Apply_OfferProductWithoutLines_HeroSecondaryStatsZero()
+        {
+            Apply(new Offer(SteelUid));
+
+            Assert.That(_run.LastBattle.Hero.Sharpness, Is.EqualTo(0));
+            Assert.That(_run.LastBattle.Hero.Reflect, Is.EqualTo(0));
+            Assert.That(_run.LastBattle.Hero.Absorb, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Apply_OfferProduct_EmitsItemOfferedThenBattleStarted()
         {
             var result = Apply(new Offer(SteelUid));

@@ -96,6 +96,14 @@ namespace Crucible.Core.State
             writer.Write(item.ItemId.Index);
             writer.Write(item.Magic);
             writer.Write(item.Quality);
+            writer.Write(item.Lines.Count);
+            for (var i = 0; i < item.Lines.Count; i++)
+            {
+                writer.Write((int)item.Lines[i].Stat);
+                writer.Write(item.Lines[i].Value);
+            }
+
+            writer.Write(item.RevealedMask);
         }
 
         private static void WriteBrewLog(CanonicalWriter writer, BrewLog log)

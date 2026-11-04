@@ -4,8 +4,9 @@ namespace Crucible.Core.Content
     public sealed class ItemData
     {
         public ItemData(string id, ItemKind kind, int tier, RecipeData recipe = null, int magicChance = 0,
-                        int marketPrice = 0)
+                        int marketPrice = 0, int revealLines = 0)
         {
+            RevealLines = revealLines;
             Id = id;
             Kind = kind;
             Tier = tier;
@@ -23,5 +24,7 @@ namespace Crucible.Core.Content
         public int MagicChance { get; }
         /// <summary>Giá chuẩn trước hệ số Mùa / modifier (economy.md §Formulas); ≥ 0.</summary>
         public int MarketPrice { get; }
+        /// <summary>Số dòng một Kính soi lộ (≥ 1 với Kính; 0 với loại khác — GDD §6.2: Kính thường 1, Kính tốt 3).</summary>
+        public int RevealLines { get; }
     }
 }

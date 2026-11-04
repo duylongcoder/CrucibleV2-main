@@ -9,7 +9,7 @@ namespace Crucible.Core.Rules
 {
     /// <summary>
     /// Luật <see cref="Commands.Brew"/> (brewing.md §Thành phẩm & tiêu hao, §Kích hoạt ma thuật). Khớp → tung ma thuật
-    /// (stream <c>Chance</c>); phế phẩm → không rút random. Chưa chạy Xúc tác (F-007) — <c>Quality</c> =
+    /// rồi sinh dòng thuộc tính (stream <c>Chance</c>); phế phẩm → không rút random. Chưa chạy Xúc tác (F-007) — <c>Quality</c> =
     /// <c>BaseEssence</c> qua <see cref="QualityFormula"/> với 0 / ∅.
     /// </summary>
     public static class BrewingRules
@@ -34,10 +34,12 @@ namespace Crucible.Core.Rules
             if (recipe != null)
             {
                 var quality = QualityFormula.Compute(recipe.BaseEssence, 0, NoMultipliers, content.Brewing.QualityCap);
-                // Lần rút Chance đầu tiên của lượt nung khớp; luôn rút đúng 1 lần, kể cả 0% (TECH §3.4).
+                // Chance (TECH §3.4): 1. tung ma thuật — đúng 1 lần, kể cả 0%; 2. dòng thuộc tính (F-008).
                 var magicChance = MagicChanceFormula.ForBrew(run.Grid, recipe, content);
-                var magic = run.Rng.Get(RngStream.Chance).Roll(magicChance);
-                result = new ItemInstance(run.NextUid, recipe.Product, magic, quality);
+                ref var chance = ref run.Rng.Get(RngStream.Chance);
+                var magic = chance.Roll(magicChance);
+                var lines = StatLineRules.Roll(ref chance, recipe);
+                result = new ItemInstance(run.NextUid, recipe.Product, magic, quality, lines);
             }
             else
             {

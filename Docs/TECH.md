@@ -60,7 +60,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 | Hệ thống | Class chính | Assembly | Phụ thuộc | GDD | Trạng thái |
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
-| State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
+| State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long), `Lines` + `RevealedMask` (F-008)) |
 | Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`, `ReorderCatalyst` + chỗ chung Túi/lưới → `BagRules`, `Buy`/`Sell`/`Reroll` + bày hàng → `MarketRules` + `PriceFormula`, `AcceptDecree`/`SkipTurn`/`AckBrewResult`/`AckBattle` → `SeasonRules`, `ChooseReward`/`SkipReward` → `SpoilsRules`, rút trang bị → `ForgeRules`, `Offer`/`DismissCourtier` → `OfferingRules` + `BattleStats` + `BattleSimulator` + `BattleMath`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
 | Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`, `BattleLog` + `RunState.LastBattle`) |
@@ -145,6 +145,12 @@ public static class GameRules {
   `ModifierRules.RollNext` (Mùa < cuối: 1 `NextInt(NoModifierWeight + Σ)` stream `Season`, "không modifier" đứng trước).
   Áp: `MarketRules` (mua / Kính / bán / reroll + miễn phí), `BattleStats.ForOpponent(opp, diff%, mod%)` = `⌊v × diff × mod /
   10000⌋`. `StateHasher` ghi `ActiveModifier`, `NextModifier`.
+- **Kính soi** (F-008): `Inspect(targetUid, lensUid)` — cả hai trong Túi; Workbench·Editing hoặc Offering. Từ chối
+  `RunNotActive` → `WrongPhase` → `GridLocked` → `ItemNotFound` (target) → `ItemNotInspectable` (không có `Recipe`) →
+  `ItemNotFound` (Kính) → `ItemNotLens` → `NothingToReveal` (Kính giữ lại). Dòng ẩn = `Quality` (bit 0) + `Lines` (bit i + 1);
+  ẩn ≤ `RevealLines` → lộ hết, không rút; ngược lại mỗi dòng 1 `NextInt(còn lại)` stream `Inspect`. Kính tiêu hao,
+  `ItemInspected(target, lens, bit mới)`. `Offer` truyền `StatLineRules.ValueOf` (Sắc bén/Phản đòn/Hấp thụ, kể cả chưa lộ)
+  vào `ForHero`. `StateHasher` ghi `Lines` + `RevealedMask` mỗi vật phẩm.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.
@@ -156,7 +162,8 @@ public static class GameRules {
 - `RngStreams`: 7 stream, mỗi stream `SplitMix64(seed ^ streamSalt)`. Mỗi lớp luật chỉ nhận stream của mình (`ref`).
 - **Thứ tự rút `Chance` trong một lượt Nung** (hợp đồng giữa F-003/F-007/F-008 — đổi thứ tự = lệch replay):
   1. tung ma thuật — đúng 1 lần `Roll(MagicChance%)` khi khớp công thức, kể cả 0% (F-003, `BrewingRules`);
-  2. dòng thuộc tính thành phẩm (F-008); 3. điều kiện `Chance` của Xúc tác theo thứ tự Túi (F-007).
+  2. dòng thuộc tính thành phẩm (F-008, `StatLineRules.Roll`: mỗi dòng khởi đầu theo thứ tự 1 `Roll(%)`, có → 1
+  `NextInt(max − min + 1)`); 3. điều kiện `Chance` của Xúc tác theo thứ tự Túi (F-007).
   Phế phẩm: không rút ma thuật / thuộc tính. Command bị từ chối: không rút.
 
 ### 3.5 Log, View, Hash

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Crucible.Core.Commands;
 using Crucible.Core.Content;
 using Crucible.Core.Logs;
 using Crucible.Core.State;
@@ -134,6 +135,22 @@ namespace Crucible.Tests.Core.Logs
         {
             var forbidden = new[] { typeof(Recipe), typeof(RecipeSlot), typeof(RecipeData), typeof(RecipeSlotData) };
             var logTypes = new[] { typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult) };
+
+            var leaks = logTypes
+                .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                    .Select(property => (type, property.Name, property.PropertyType)))
+                .Where(member => MentionsAny(member.PropertyType, forbidden))
+                .Select(member => $"{member.type.Name}.{member.Name}")
+                .ToArray();
+
+            Assert.That(leaks, Is.Empty);
+        }
+
+        [Test]
+        public void LogTypes_PublicMembers_ExposeNoStatLines()
+        {
+            var forbidden = new[] { typeof(StatLine), typeof(StatLineData) };
+            var logTypes = new[] { typeof(BrewLog), typeof(BrewTick), typeof(BrewLogResult), typeof(BrewCompleted) };
 
             var leaks = logTypes
                 .SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance)

@@ -1,8 +1,10 @@
 using System.Linq;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
+using Crucible.Core.Random;
 using Crucible.Core.Rules;
 using Crucible.Core.State;
+using Crucible.Tests.Core.Content;
 using Crucible.Tests.TestUtils;
 using NUnit.Framework;
 using static Crucible.Tests.TestUtils.ContentFactory;
@@ -43,6 +45,62 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(result.ItemId, Is.EqualTo(IdOf(_content, Steel)));
             Assert.That(result.Quality, Is.EqualTo(SteelEssence));
             Assert.That(result.Magic, Is.False);
+        }
+
+        [Test]
+        public void Apply_BrewRecipeWithStatLines_ProductHasLines()
+        {
+            var content = ContentFactory.Create(steelStatLines: new[] { new StatLineData(StatKind.Sharpness, 100, 5, 15) });
+            var run = StateFactory.CreateWorkbenchRun(content, new[] { Copper }, new[] { Iron, Coal });
+
+            GameRules.Apply(run, _meta, content, new Brew(0));
+
+            var line = run.Bag.Last().Lines.Single();
+            Assert.That(line.Stat, Is.EqualTo(StatKind.Sharpness));
+            Assert.That(line.Value, Is.InRange(5, 15));
+        }
+
+        [Test]
+        public void Apply_BrewProduct_StartsFullyHidden()
+        {
+            var content = ContentFactory.Create(steelStatLines: new[] { new StatLineData(StatKind.Sharpness, 100, 5, 15) });
+            var run = StateFactory.CreateWorkbenchRun(content, new[] { Copper }, new[] { Iron, Coal });
+
+            GameRules.Apply(run, _meta, content, new Brew(0));
+
+            Assert.That(run.Bag.Last().RevealedMask, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Apply_BrewStatLines_DrawAfterMagicAndMatchDirectRoll()
+        {
+            var lines = new[] { new StatLineData(StatKind.Sharpness, 60, 5, 15), new StatLineData(StatKind.Absorb, 50, 1, 9) };
+            var content = ContentFactory.Create(steelStatLines: lines);
+            var run = StateFactory.CreateWorkbenchRun(content, new[] { Copper }, new[] { Iron, Coal });
+            var recipe = ContentDbStatLineTest.SteelRecipe(content);
+            var chance = run.Rng.Get(RngStream.Chance);
+            var expectedMagic = chance.Roll(MagicChanceFormula.ForBrew(run.Grid, recipe, content));
+            var expectedLines = StatLineRules.Roll(ref chance, recipe);
+
+            GameRules.Apply(run, _meta, content, new Brew(0));
+
+            var product = run.Bag.Last();
+            Assert.That(product.Magic, Is.EqualTo(expectedMagic));
+            Assert.That(product.Lines, Is.EqualTo(expectedLines));
+            Assert.That(run.Rng.Get(RngStream.Chance).State, Is.EqualTo(chance.State));
+        }
+
+        [Test]
+        public void Apply_BrewScrapWithStatLineContent_NoLinesAndNoChanceDraw()
+        {
+            var content = ContentFactory.Create(steelStatLines: new[] { new StatLineData(StatKind.Sharpness, 100, 5, 15) });
+            var run = StateFactory.CreateWorkbenchRun(content, new[] { Copper }, new[] { Coal, Iron });
+            var before = run.Rng.Get(RngStream.Chance).State;
+
+            GameRules.Apply(run, _meta, content, new Brew(0));
+
+            Assert.That(run.Bag.Last().Lines, Is.Empty);
+            Assert.That(run.Rng.Get(RngStream.Chance).State, Is.EqualTo(before));
         }
 
         [Test]

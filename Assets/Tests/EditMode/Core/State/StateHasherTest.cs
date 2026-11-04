@@ -36,6 +36,9 @@ namespace Crucible.Tests.Core.State
             ["last battle"] = run => run.LastBattle = BattleLog.Forfeit(1, default, default, default),
             ["spoils options"] = run => run.SpoilsOptions.Add(new RewardId(1)),
             ["active modifier"] = run => run.ActiveModifier = new ModifierId(0),
+            ["item lines"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId,
+                lines: new[] { new StatLine(StatKind.Sharpness, 5) }),
+            ["revealed mask"] = run => run.Bag[0].RevealedMask = 1,
             ["next modifier"] = run => run.NextModifier = new ModifierId(0),
         };
 
