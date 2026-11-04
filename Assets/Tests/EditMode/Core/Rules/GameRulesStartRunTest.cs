@@ -1,6 +1,7 @@
 using System.Linq;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
+using Crucible.Core.Logs;
 using Crucible.Core.Rules;
 using Crucible.Core.State;
 using Crucible.Tests.TestUtils;
@@ -87,6 +88,18 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(_run.Grid, Has.All.Null);
             Assert.That(_run.WorkbenchStep, Is.EqualTo(WorkbenchStep.Editing));
             Assert.That(_run.LastBrewResultUid, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Apply_ValidStartRun_ClearsLastBrew()
+        {
+            var grid = new ItemInstance[9];
+            grid[0] = new ItemInstance(7, new ItemId(0));
+            _run.LastBrew = BrewLog.Create(grid, new ItemInstance(8, new ItemId(1)), true);
+
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(_run.LastBrew, Is.Null);
         }
 
         [Test]

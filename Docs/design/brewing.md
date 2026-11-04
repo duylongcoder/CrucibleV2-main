@@ -202,11 +202,11 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 - [ ] AC-4: Thêm phụ gia hợp lệ vào khoảng trống → cùng thành phẩm, cùng `Quality` cơ bản, `MagicChance` tăng đúng.
 - [ ] AC-5: Slot `RequiresMagic` + nguyên liệu chưa ma thuật → phế phẩm.
 - [ ] AC-6: `MagicChance` = 50% cho ví dụ trong Formulas; tổng > 90 → 90.
-- [ ] AC-7: Với cùng một lưới, `BrewLog` khớp và hỏng trùng nhau tới trước sự kiện kết quả.
+- [x] AC-7: Với cùng một lưới, `BrewLog` khớp và hỏng trùng nhau tới trước sự kiện kết quả. (`GameRulesBrewLogTest`, 2026-11-04)
 - [ ] AC-8: Trong Brewing, mọi lệnh chỉnh lưới / soi / mua bán bị từ chối.
 - [ ] AC-9: Mọi vật phẩm trên lưới bị tiêu hao; đúng 1 kết quả vào Túi.
 - [ ] AC-10: Lưới trống → Nung bị từ chối; Bỏ qua lượt luôn hợp lệ.
-- [ ] AC-11: Chạm để tua → hiện kết quả ngay; state không đổi so với xem hết.
+- [ ] AC-11: Chạm để tua → hiện kết quả ngay; state không đổi so với xem hết. (Phần logic xong 2026-11-04: tua không phải Command, có `BrewReplayTimeline.Skip`. Phần "hiện ngay" chờ view F-014.)
 
 **Trải nghiệm (playtest)**
 - [ ] AC-12: ≥ 70% người chơi mới tự giải được công thức có 1 nhịp chờ trong ≤ 4 lần thử (Mùa 2).

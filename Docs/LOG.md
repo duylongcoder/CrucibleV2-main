@@ -10,14 +10,31 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: `plan brewlog` (F-004) — plan Draft, **chờ người dùng duyệt**; F-003 vẫn **chưa commit**
-**Bước tiếp theo**: người dùng commit F-002/F-003 → duyệt `Docs/plans/brewlog.md` → `build brewlog`
+**Đang làm**: xong `build brewlog`. F-004 Done (Core + đồng hồ phát lại); 255/255 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → `plan bag` / `plan market` (F-005/F-006) hoặc `plan run-loop` (F-009: `AckBrewResult`, `SkipTurn`)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: F-004 tách view phát lại sang F-014 (chờ xác nhận khi duyệt); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); bộ khởi đầu > sức chứa Túi?; đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build brewlog
+- **Command**: /unity-game-studio build brewlog
+- **Đã làm**:
+  - Core: `BrewLog`/`BrewTick`/`BrewLogResult` (Core/Logs). `Brew` chụp log trước khi tiêu hao → `RunState.LastBrew` + `BrewCompleted.Log`; `StartRun` xóa log.
+  - Core: `MetaState.Timescale` (mặc định 1), Command `SetTimescale` + `SettingsRules` + `TimescaleChanged`, `RejectReason.InvalidTimescale`.
+  - `StateHasher` ghi `LastBrew` + `Timescale`.
+  - Runtime: `BrewReplayTimeline` (script đầu tiên của `Crucible.Runtime`).
+- **File**:
+  - Assets/_Project/Scripts/Core/** (6 mới, 8 sửa), Runtime/Replay (1 mới)
+  - Assets/Tests/EditMode/** (4 mới, 3 sửa)
+  - Docs/plans/brewlog.md, PLAN.md, TECH.md, GDD.md, design/brewing.md, LOG.md
+- **Test**:
+  - Skeleton: 196/196.
+  - Test-first: 255 → 51 mới fail đúng lý do; 8 pass ở skeleton (2 test yếu đã sửa).
+  - Implement: **255/255 xanh** lần đầu; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: view phát lại (F-014); DTO save mang `LastBrew` + `Timescale` (F-013); `AckBrewResult` (F-009)
 
 ### 2026-11-04 — plan brewlog
 - **Command**: /unity-game-studio plan brewlog

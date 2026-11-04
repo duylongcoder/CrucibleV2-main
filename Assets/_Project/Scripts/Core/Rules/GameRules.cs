@@ -30,6 +30,8 @@ namespace Crucible.Core.Rules
                     return GridRules.Move(run, moveCell);
                 case Brew brew:
                     return BrewingRules.Brew(run, content, brew);
+                case SetTimescale setTimescale:
+                    return SettingsRules.SetTimescale(meta, setTimescale);
                 default:
                     return CommandResult.Reject(RejectReason.UnknownCommand);
             }

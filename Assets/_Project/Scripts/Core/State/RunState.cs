@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Crucible.Core.Logs;
 using Crucible.Core.Random;
 
 namespace Crucible.Core.State
@@ -28,5 +29,7 @@ namespace Crucible.Core.State
         public WorkbenchStep WorkbenchStep { get; set; }
         /// <summary>Uid kết quả lượt Nung gần nhất; 0 = chưa có.</summary>
         public int LastBrewResultUid { get; set; }
+        /// <summary>Nhật ký lượt Nung gần nhất (lưu cùng save để phát lại / hiện kết quả); null = chưa có.</summary>
+        public BrewLog LastBrew { get; set; }
     }
 }

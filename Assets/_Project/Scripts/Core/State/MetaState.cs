@@ -4,5 +4,7 @@ namespace Crucible.Core.State
     public sealed class MetaState
     {
         public int Renown { get; set; }
+        /// <summary>Timescale phát lại ưa thích 1–3 (GDD §6.3).</summary>
+        public int Timescale { get; set; } = 1;
     }
 }

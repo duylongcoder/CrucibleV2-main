@@ -39,7 +39,8 @@ namespace Crucible.Tests.TestUtils
         /// Nhóm Sắt → Than (brewing.md AC-3b): <c>[Sắt, Than]</c> → Thép, <c>[Sắt, Gap, Than]</c> → Gang (cho phép Tro 10%, Xương 20%);
         /// <c>[Thép(ma thuật), Than]</c> → Sao thép.
         /// </summary>
-        public static ContentDb Create()
+        /// <param name="steelHasRecipe">false → Thép là nguyên liệu gốc (cùng tập Id ⇒ cùng <see cref="ItemId"/>) — lưới <c>[Sắt, Than]</c> ra phế phẩm.</param>
+        public static ContentDb Create(bool steelHasRecipe = true)
         {
             return ContentDb.Create(
                 new[]
@@ -47,9 +48,11 @@ namespace Crucible.Tests.TestUtils
                     new ItemData(Iron, ItemKind.Mineral, 1),
                     new ItemData(Copper, ItemKind.Mineral, 1),
                     new ItemData(Coal, ItemKind.Mineral, 1),
-                    new ItemData(Steel, ItemKind.Mineral, 2, new RecipeData(
-                        new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Ingredient(Coal) },
-                        new string[0], SteelEssence)),
+                    new ItemData(Steel, ItemKind.Mineral, 2, steelHasRecipe
+                        ? new RecipeData(
+                            new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Ingredient(Coal) },
+                            new string[0], SteelEssence)
+                        : null),
                     new ItemData(CastIron, ItemKind.Mineral, 2, new RecipeData(
                         new[] { RecipeSlotData.Ingredient(Iron), RecipeSlotData.Gap, RecipeSlotData.Ingredient(Coal) },
                         new[] { Ash, Bone }, CastIronEssence)),

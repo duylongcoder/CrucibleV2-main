@@ -1,6 +1,7 @@
 using System;
 using Crucible.Core.Commands;
 using Crucible.Core.Content;
+using Crucible.Core.Logs;
 using Crucible.Core.Random;
 using Crucible.Core.State;
 
@@ -43,13 +44,17 @@ namespace Crucible.Core.Rules
                 result = new ItemInstance(run.NextUid, content.ScrapItemId);
             }
 
+            // Chụp lưới trước khi tiêu hao (brewing.md §BrewLog).
+            var log = BrewLog.Create(run.Grid, result, recipe == null);
+
             Array.Clear(run.Grid, 0, run.Grid.Length);
             run.NextUid++;
             run.Bag.Add(result);
             run.WorkbenchStep = WorkbenchStep.ResultPending;
             run.LastBrewResultUid = result.Uid;
+            run.LastBrew = log;
 
-            return CommandResult.Accept(new GameEvent[] { new BrewCompleted(result.Uid) });
+            return CommandResult.Accept(new GameEvent[] { new BrewCompleted(result.Uid, log) });
         }
 
         private static bool IsGridEmpty(RunState run)

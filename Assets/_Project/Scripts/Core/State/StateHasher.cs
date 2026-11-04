@@ -1,4 +1,5 @@
 using System;
+using Crucible.Core.Logs;
 using Crucible.Core.Random;
 
 namespace Crucible.Core.State
@@ -48,6 +49,7 @@ namespace Crucible.Core.State
 
             writer.Write((int)run.WorkbenchStep);
             writer.Write(run.LastBrewResultUid);
+            WriteBrewLog(writer, run.LastBrew);
 
             writer.Write(run.Rng != null);
             if (run.Rng != null)
@@ -69,9 +71,31 @@ namespace Crucible.Core.State
             writer.Write(item.Quality);
         }
 
+        private static void WriteBrewLog(CanonicalWriter writer, BrewLog log)
+        {
+            writer.Write(log != null);
+            if (log == null)
+                return;
+
+            writer.Write(log.FirstCell);
+            writer.Write(log.Ticks.Count);
+            for (var i = 0; i < log.Ticks.Count; i++)
+            {
+                var tick = log.Ticks[i];
+                writer.Write(tick.HasItem);
+                writer.Write(tick.ItemId.Index);
+                writer.Write(tick.Magic);
+            }
+
+            writer.Write(log.Result.IsScrap);
+            writer.Write(log.Result.ItemId.Index);
+            writer.Write(log.Result.Magic);
+        }
+
         private static void WriteMeta(CanonicalWriter writer, MetaState meta)
         {
             writer.Write(meta.Renown);
+            writer.Write(meta.Timescale);
         }
     }
 }

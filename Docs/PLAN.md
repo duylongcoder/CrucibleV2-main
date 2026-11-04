@@ -48,7 +48,7 @@ Thay đổi nhỏ (tuning số, chỉnh luật nhỏ) có thể đi tắt: `bala
 | F-001 | Seed & RNG streams | #1 | Logic | MVP | S | In Test | [plans/core-foundation.md](plans/core-foundation.md) | GDD §6.1 — nền xanh; AC-2/AC-3 cần Chợ/Chiếu chỉ (F-006/F-009), AC-1 đa nền tảng cần build WebGL |
 | F-002 | Lò nung: lưới, chuỗi nạp, khớp công thức, `Quality` | #2 | Logic | MVP | M | Done | [plans/brewing.md](plans/brewing.md) | design/brewing.md; Quality số nguyên; 160 test EditMode xanh 2026-11-04; AC-4 (MagicChance)/6 → F-003, AC-7/11 → F-004, AC-8 soi/mua → F-006/F-008, AC-10 Bỏ qua → F-009 |
 | F-003 | Kích hoạt ma thuật | #3 | Logic | MVP | S | Done | [plans/magic.md](plans/magic.md) | design/brewing.md; 3 bảng theo tier (Inherit/Cap/Retain), số liệu chốt ở `balance`; 196 test EditMode xanh 2026-11-04 |
-| F-004 | BrewLog + phát lại, timescale, chạm để tua | #4 | Logic | MVP | S | Planned | [plans/brewlog.md](plans/brewlog.md) | design/brewing.md; phạm vi Core (`BrewLog`, `SetTimescale`) + `BrewReplayTimeline` (Runtime, thuần C#); **view phát lại → F-014** |
+| F-004 | BrewLog + phát lại, timescale, chạm để tua | #4 | Logic | MVP | S | Done | [plans/brewlog.md](plans/brewlog.md) | design/brewing.md; 255 test EditMode xanh 2026-11-04; phạm vi Core (`BrewLog`, `SetTimescale`) + `BrewReplayTimeline` (Runtime, thuần C#); **view phát lại → F-014** |
 | F-005 | Túi | #5 | Logic | MVP | S | Designed | — | design/economy.md |
 | F-006 | Chợ & kinh tế | #6 | Logic | MVP | M | Designed | — | design/economy.md |
 | F-007 | Xúc tác & Effect primitive | #7 | Logic/Data | MVP | M | Designed | — | design/economy.md |

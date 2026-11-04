@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Crucible.Core.Content;
+using Crucible.Core.Logs;
 using Crucible.Core.Random;
 using Crucible.Core.State;
 using Crucible.Tests.TestUtils;
@@ -21,6 +22,9 @@ namespace Crucible.Tests.Core.State
             ["grid cell"] = run => run.Grid[4] = new ItemInstance(50, new ItemId(0)),
             ["workbench step"] = run => run.WorkbenchStep = WorkbenchStep.ResultPending,
             ["last brew uid"] = run => run.LastBrewResultUid = 3,
+            ["last brew log"] = run => run.LastBrew = BrewLog.Create(
+                new[] { new ItemInstance(40, new ItemId(0)), null, null, null, null, null, null, null, null },
+                new ItemInstance(41, new ItemId(1)), true),
             ["item magic"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, magic: true),
             ["item quality"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, quality: 7),
         };
@@ -47,6 +51,17 @@ namespace Crucible.Tests.Core.State
             var mutatedHash = StateHasher.Hash(mutated, new MetaState());
 
             Assert.That(mutatedHash, Is.Not.EqualTo(baselineHash));
+        }
+
+        [Test]
+        public void Hash_MetaTimescaleDiffers_ReturnsDifferentValue()
+        {
+            var run = StateFactory.CreateActiveRun();
+
+            var baselineHash = StateHasher.Hash(run, new MetaState { Timescale = 1 });
+            var fasterHash = StateHasher.Hash(run, new MetaState { Timescale = 3 });
+
+            Assert.That(fasterHash, Is.Not.EqualTo(baselineHash));
         }
 
         [Test]

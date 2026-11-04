@@ -61,9 +61,10 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 |---|---|---|---|---|---|
 | Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (Item/Difficulty/StarterKit/Run + `RecipeData`→`Recipe` có validate, `BrewingData` (+ 3 bảng ma thuật theo tier), `ItemData.MagicChance`, `ItemKind.Scrap`) |
 | State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền + `Grid[9]`, `WorkbenchStep`, `LastBrewResultUid`; `ItemInstance.Magic/Quality` (long); chưa `Lines`) |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`StartRun`, `PlaceItem/RemoveFromGrid/MoveCell` → `GridRules`, `Brew` → `BrewingRules` + `RecipeMatcher` + `QualityFormula` + `MagicChanceFormula`, `SetTimescale` → `SettingsRules`) |
 | RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
-| Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`) |
+| Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`, `BrewLog` + `RunState.LastBrew`) |
+| Phát lại (Presentation) | `BrewReplayTimeline` (C# thuần) | Runtime | Core | brewing.md §Phát lại | Implemented (đồng hồ; view ở F-014) |
 | Phiên chơi | `GameSession`, `GameHost`, `ISaveStore`, `FileSaveStore`, `SaveMapper`, `IClock` | Runtime | Core | GDD §6.4 | Designed |
 
 ### 3.1 Content trong Core — `ContentDb`
@@ -97,7 +98,9 @@ public static class GameRules {
 - **Command**: `StartRun(diff, kit, seed, nowUnix)` · `AcceptDecree` · `PlaceItem` · `MoveCell` · `RemoveFromGrid`
   · `ReorderCatalyst` · `Buy(slot, cell?)` · `Sell` · `Reroll` · `Inspect(target, lens)` · `Brew(nowUnix)` ·
   `SkipTurn` · `AckBrewResult` · `PutOnTray` · `ClearTray` · `Offer(nowUnix)` · `DismissCourtier` · `AckBattle` ·
-  `ChooseReward(i)` · `SkipReward`. Thời điểm thật do Runtime truyền vào.
+  `ChooseReward(i)` · `SkipReward` · `SetTimescale(n)` (meta, 1–3, nhận ở mọi thời điểm). Thời điểm thật do Runtime truyền vào.
+  **Tua phát lại (`SkipReplay`) không là Command**: kết quả đã tính + lưu lúc `Brew`, tua chỉ là hiển thị
+  (`BrewReplayTimeline.Skip`) → không lưu, không hash, không thể lệch replay (F-004, 2026-11-04).
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.
@@ -113,7 +116,10 @@ public static class GameRules {
   Phế phẩm: không rút ma thuật / thuộc tính. Command bị từ chối: không rút.
 
 ### 3.5 Log, View, Hash
-- `BrewLog`: tick "nạp X" / "chờ" + một kết quả; **không** chứa `Pattern`.
+- `BrewLog` (`Core/Logs`, bất biến): `FirstCell` + `Ticks` (`BrewTick`: `Cell`, `HasItem`, `ItemId`, `Magic`) từ vật
+  phẩm đầu → cuối (ô trống ở giữa = "chờ") + `Result` (`BrewLogResult`: `IsScrap`, `ItemId`, `Magic`). **Không** chứa
+  `Recipe`/`Pattern` (test reflection). `Brew` chụp trước khi tiêu hao → `RunState.LastBrew` + `BrewCompleted.Log`;
+  `StateHasher` ghi `LastBrew` và `MetaState.Timescale`.
 - `BattleLog`: hiệp (đòn, sát thương, dội ngược, HP), thuộc tính lộ, biểu cảm thợ rèn, kết quả.
 - `RunViewBuilder.Build(run, content) → RunView`: vật phẩm chỉ có `RevealedLines`; đối thủ chỉ có tên tới khi
   `Phase == Battle` (ADR-007).

@@ -1,6 +1,6 @@
 # Plan: BrewLog + phát lại, timescale, chạm để tua (F-004)
 
-> **Trạng thái**: Draft (chờ duyệt) · **Cập nhật**: 2026-11-04
+> **Trạng thái**: Done (duyệt khi gọi `build brewlog`; 255/255 EditMode xanh) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/brewing.md` §Nhật ký lượt nung & phát lại, §Formulas (Thời lượng phát lại), AC-7, AC-11; GDD §6.3
 > (meta: timescale ưa thích); `design/ui-ban-luyen.md` §5, §4 "Khi phát lại" · **ADR**: ADR-001, ADR-004, ADR-007 ·
 > **Loại**: Logic (Core) + Logic thuần Presentation (Runtime, không MonoBehaviour)
@@ -223,23 +223,23 @@ AC-7 dựng "cùng lưới, khớp vs hỏng" bằng 2 `ContentDb` có **cùng t
 > `"$UNITY" -batchmode -nographics -projectPath . -runTests -testPlatform EditMode -testResults Logs/editmode.xml -logFile -`
 > Một class: thêm `-testFilter Crucible.Tests.Core.Logs.BrewLogTest` (v.v.).
 
-- [ ] **Bước 0 — Tiền điều kiện**: người dùng commit F-002/F-003 đang dở (`git status` sạch phần Core) để diff F-004 tách biệt.
-- [ ] **Bước 1 — Skeleton**: tạo `BrewLog`, `BrewTick`, `BrewLogResult`, `SetTimescale`, `TimescaleChanged`,
+- [x] **Bước 0 — Tiền điều kiện**: người dùng commit F-002/F-003 đang dở (`git status` sạch phần Core) để diff F-004 tách biệt.
+- [x] **Bước 1 — Skeleton**: tạo `BrewLog`, `BrewTick`, `BrewLogResult`, `SetTimescale`, `TimescaleChanged`,
   `SettingsRules`, `BrewReplayTimeline` (thân rỗng / trả mặc định / `throw new NotImplementedException()` cho
   `BrewLog.Create`), thêm field `LastBrew`, `Timescale` (chưa khởi tạo 1), `InvalidTimescale`, tham số
   `BrewCompleted(resultUid, log)` (truyền `null`), dispatch `SetTimescale` → gọi skeleton. **Kiểm chứng**: chạy EditMode
   → compile sạch (cả `Crucible.Runtime` lần đầu có script), 196/196 cũ vẫn xanh.
-- [ ] **Bước 2 — Test first**: viết test §3 + sửa 2 test hiện có + tham số `ContentFactory.Create(steelHasRecipe)`.
+- [x] **Bước 2 — Test first**: viết test §3 + sửa 2 test hiện có + tham số `ContentFactory.Create(steelHasRecipe)`.
   **Kiểm chứng**: chạy EditMode → test mới **fail đúng lý do** (log null / `NotImplementedException` / giá trị mặc
   định / timeline không tiến). Dự đoán pass tầm thường ở skeleton: `Apply_SetTimescaleWithoutActiveRun_Accepted` (nếu
   skeleton trả Accept) — ghi lại thực tế.
-- [ ] **Bước 3 — Implement**: `BrewLog.Create` (validate → chụp tick → kết quả), `BrewingRules` (log trước
+- [x] **Bước 3 — Implement**: `BrewLog.Create` (validate → chụp tick → kết quả), `BrewingRules` (log trước
   `Array.Clear`), `RunStartRules`, `StateHasher` (2 field, thứ tự cố định), `SettingsRules`, `MetaState.Timescale = 1`,
   `BrewReplayTimeline`. **Kiểm chứng**: EditMode toàn bộ xanh; 0 warning CS mới (`grep "warning CS" Logs/…` trên log
   batchmode).
-- [ ] **Bước 4 — Refactor**: gộp test cùng phân vùng thành `[TestCase]`, bỏ trùng helper dựng lưới; code không đổi
+- [x] **Bước 4 — Refactor**: gộp test cùng phân vùng thành `[TestCase]`, bỏ trùng helper dựng lưới; code không đổi
   hành vi. **Kiểm chứng**: EditMode xanh, cùng số test.
-- [ ] **Bước 5 — Bằng chứng & tài liệu**: `python3 .claude/skills/unity-game-studio/scripts/check_unity_project.py .`
+- [x] **Bước 5 — Bằng chứng & tài liệu**: `python3 .claude/skills/unity-game-studio/scripts/check_unity_project.py .`
   0 lỗi (`.meta` mới do Unity sinh); TECH §3 (bảng: `BrewLog` Implemented, `Timeline` ở Runtime), §3.3 (+ `SetTimescale`,
   `SkipReplay` không là Command), §3.5 (cấu trúc `BrewLog`); brewing.md AC-7, AC-11 tick (phần Core); PLAN F-004 →
   Done (Core) + ghi chú view → F-014; F-013 ghi chú DTO mang `LastBrew` + `Timescale`; LOG.
@@ -262,8 +262,22 @@ AC-7 dựng "cùng lưới, khớp vs hỏng" bằng 2 `ContentDb` có **cùng t
 
 ## 6. Implementation Notes (điền khi làm)
 
-- **Design decisions**: - None
-- **Deviations** (lệch so với plan và lý do): - None
-- **Tradeoffs**: - None
-- **Test changes** (sửa test đã commit ở Bước 2 và lý do): - None
+- **Design decisions**:
+  - Người dùng duyệt phạm vi khi gọi `build brewlog` (view phát lại → F-014).
+  - `BrewLog` dùng hằng riêng `GridCellCount = 9` thay vì `GridRules.CellCount` → `Core/Logs` không phụ thuộc
+    `Core/Rules`. Cùng lý do với F-002 dời hằng trần sang `BrewingData`.
+  - `BrewLog.Create` ném `ArgumentNullException` khi grid/result null (ngoài 2 case `ArgumentException` của plan).
+  - `BrewReplayTimeline` kẹp tiến độ ở `TickCount` (Advance sau khi xong không làm gì).
+- **Deviations**: `BrewReplayTimeline` (Runtime) dùng `SettingsRules.MinTimescale/MaxTimescale` của Core để kiểm
+  timescale, không đặt hằng riêng. Lý do: một nguồn sự thật cho tập 1×–3×. Runtime vốn đã tham chiếu Core.
+- **Tradeoffs**: Bước 4 không đổi gì. Không có test trùng thật sự: hai test Timescale3 là 2 phía của cùng một biên,
+  kết quả khác nhau.
+- **Test changes** (chưa commit nên không vi phạm luật): trước khi implement, thêm `Is.Not.Null` vào
+  `Apply_Brew_EventCarriesStoredLog` và `Assume.That(first, Is.Not.Null)` vào `Apply_BrewWhileResultPending_LastBrewUnchanged`.
+  Ở skeleton cả hai pass tầm thường (null `SameAs` null).
+- **Test-first thực tế**: 255 test: 196 cũ xanh; 51 mới fail đúng lý do (`NotImplementedException` / giá trị mặc
+  định / không ném). 8 mới pass ở skeleton: 2 test yếu (đã sửa như trên); 6 test guard/mặc định (`ExposeNoRecipeTypes`,
+  `RunRngUnchanged`, `OutOfRange_StateHashUnchanged`, `New_Timeline…`, `LessThanOneTick`, `NotFinishedBefore…`).
+  Có 3 test fail bằng `NotImplementedException` ở bước *arrange* (`Apply_ValidStartRun_ClearsLastBrew`, mutation
+  `"last brew log"`, `Apply_BrewEmptyGrid_LastBrewUnchanged`), vì cần `BrewLog.Create` để dựng log cũ. Chấp nhận.
 - **Open questions**: - None

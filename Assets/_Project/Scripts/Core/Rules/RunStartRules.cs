@@ -50,6 +50,7 @@ namespace Crucible.Core.Rules
             System.Array.Clear(run.Grid, 0, run.Grid.Length);
             run.WorkbenchStep = WorkbenchStep.Editing;
             run.LastBrewResultUid = 0;
+            run.LastBrew = null;
 
             return CommandResult.Accept(new GameEvent[] { new RunStarted(command.Seed) });
         }

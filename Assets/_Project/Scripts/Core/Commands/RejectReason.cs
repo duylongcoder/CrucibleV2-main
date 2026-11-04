@@ -15,5 +15,6 @@ namespace Crucible.Core.Commands
         ItemNotPlaceable = 9,
         CellEmpty = 10,
         EmptyGrid = 11,
+        InvalidTimescale = 12,
     }
 }
