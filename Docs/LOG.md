@@ -10,14 +10,21 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build full-run` (F-009 phần 2 → F-009 Done). 1024/1024 EditMode xanh, 0 vi phạm bất biến qua 1.000 run. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → F-013 (Lưu & tiếp tục) — có thể mở rộng fuzz full-run thêm "save → load → hash"
+**Đang làm**: `plan F-013` (Lưu & tiếp tục) xong → `Docs/plans/save.md`, chờ người dùng duyệt D1–D12. F-009 full-run đã commit (`89aa2b8`).
+**Bước tiếp theo**: duyệt D1–D12 → `/unity-game-studio build save`
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: content Xúc tác MVP + giá + `UtilitySlotWeights` (balance); bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); `MarketPrice`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); đồng bộ IndexedDB WebGL; GDD §6.1 AC-1/AC-2 trên WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: F-013 D1–D12; content Xúc tác MVP + giá + `UtilitySlotWeights` (balance); bảng dòng khởi đầu thật + giá Kính (balance); số `SpoilsGold`/bể phần thưởng/modifier (balance); `MarketPrice`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); đồng bộ IndexedDB WebGL + `File.Replace`/`link.xml` ở build WebGL đầu; hai tab cùng mở (TBD); GDD §6.1 AC-1/AC-2 trên WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — plan save
+- **Command**: /unity-game-studio plan F-013
+- **Đã làm**: plan 12 yêu cầu — `RunSaveDto`/`MetaSaveDto` (Id chuỗi, enum chuỗi, version), `SaveMapper` (validate cấu trúc D10), `SaveSerializer` (Newtonsoft, `MissingMemberHandling.Error`), `SaveMigrator` (chuỗi JObject), `ISaveStore` (`InMemory`/`File`, ghi atomic, backup meta trong hợp đồng), `GameSession` (Execute → meta-trước-run → event; `Load` → `LoadReport`; `StartNewRun` với `IClock`/`ISeedSource`); Core thêm `BrewLog.Restore`/`BattleLog.Restore`. ~75 test EditMode + fuzz save 150 run. Không GameHost/Boot (chưa có content SO); AC-1 WebGL hoãn
+- **File**: Docs/plans/save.md (mới), PLAN.md, LOG.md
+- **Test**: không chạy (command plan)
+- **Còn lại**: người dùng duyệt D1–D12 → `build save`
 
 ### 2026-11-04 — build full-run
 - **Command**: /unity-game-studio build full-run (F-009 phần 2)
