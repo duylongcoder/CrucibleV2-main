@@ -128,7 +128,7 @@ phụ gia hợp lệ trong khoảng trống → **cùng** thành phẩm, cùng `
 
 | Tên | Công thức | Biến (khoảng) | Ví dụ |
 |---|---|---|---|
-| `Quality` | `Σ Essence × ((1 + Σ AddPotency) × Π MulPotency)` | Essence ≥ 0; AddPotency ≥ 0; MulPotency 1–5 mỗi lần; kết quả clamp ≤ 1e300 | Essence 18, +3 Potency, ×1.5 → 18 × 4 × 1.5 = **108** |
+| `Quality` | `Q₀ = Σ Essence × (1 + Σ AddPotency)`; rồi với từng `MulPotency%` **sắp tăng dần**: `Q = ⌊Q × MulPotency% / 100⌋`; mỗi bước `min(QualityCap, Q)` — số nguyên `long` (ADR-004, chốt 2026-11-04) | Essence ≥ 0; AddPotency ≥ 0; MulPotency% 100–500 mỗi lần; `QualityCap` 10¹⁵ (config) | Essence 18, +3 Potency, ×150% → 18 × 4 = 72 → ⌊72 × 150 / 100⌋ = **108** |
 | `MagicChance%` | `min(Cap, Σ_{ngl ma thuật} tier×5 + Σ_{phụ gia} MagicChance)` | Cap 90; tier 1–10; MagicChance phụ gia 1–50 | 1 ngl ma thuật tier 4 (20) + phụ gia tier 2 (20) + tier 1 (10) = **50%** |
 | Thời lượng phát lại | `(iCuối − iĐầu + 1) × BrewTickSeconds / timescale` | i 0–8; timescale 1–3 | Lưới đầy ở 1× = 27 s; ở 3× = 9 s |
 

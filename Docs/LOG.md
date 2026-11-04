@@ -9,15 +9,36 @@
 
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
-**Nhánh git**: `main`
-**Đang làm**: `setup` xong (ghi file, chưa mở Editor) — 6 asmdef, Newtonsoft 3.2.1 trong manifest, `.gitattributes`, CLAUDE.md lệnh macOS + Linux, BUILD.md
-**Bước tiếp theo**: người dùng cài Unity 6000.6.7f1 + WebGL trên Linux → mở project (import, tạo .meta, tải Newtonsoft) → chạy lại `check_unity_project.py` + test EditMode rỗng → `plan core`
-**Đang kẹt**: chưa compile được trên máy Linux (thiếu 6000.6.7f1)
-**File đang dở**: none
-**Câu hỏi mở**: Newtonsoft 3.2.1 có tương thích 6000.6 không (kiểm khi mở); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; số liệu balance; khám phá công thức mù (M0); GDD In Review
+**Nhánh git**: `develop`
+**Đang làm**: `plan brewing` — `Docs/plans/brewing.md` (F-002) Draft, chờ duyệt; F-000/F-001 xanh nhưng **chưa commit**
+**Bước tiếp theo**: commit F-000/F-001 → duyệt plan → `build brewing` → `plan magic` (F-003)
+**Đang kẹt**: không
+**File đang dở**: Docs/plans/brewing.md (Draft)
+**Câu hỏi mở**: bộ khởi đầu > sức chứa Túi?; `ProjectSettings.asset` mất define `SENTIS_ANALYTICS_ENABLED` sau batchmode (không commit); cân bằng ma thuật theo tier (balance); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — plan brewing
+- **Command**: /unity-game-studio plan brewing
+- **Đã làm**: plan F-002 — 10 yêu cầu; lưới 9 ô + `PlaceItem/RemoveFromGrid/MoveCell/Brew`, `RecipeMatcher`, `QualityFormula`, Recipe trong `ContentDb` (validate cùng hình, ≤ 1 Scrap), `BrewingData.QualityCap`; ~60 test EditMode; F-003/F-004/F-007/F-009 tách rõ
+- **Quyết định**: `Quality` = `long`, MulPotency theo %, nhân theo thứ tự tăng dần + floor mỗi bước, trần `QualityCap` 10¹⁵ (người dùng chốt) → sửa brewing.md §Formulas; "Nung khi chỉ có phụ gia" → cho phép, ra phế phẩm (theo Edge Cases)
+- **File**: Docs/plans/brewing.md (mới), Docs/design/brewing.md, Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
+
+### 2026-11-04 — build core-foundation
+- **Command**: /unity-game-studio build core-foundation
+- **Đã làm**: Core — `SplitMix64`, `Pcg32` (Lemire, `Roll` 1 lần rút), `RngStreams` (7 stream, capture/restore), `ContentDb` (ordinal), `RunState`/`MetaState`/`ItemInstance`, `CanonicalWriter` + `StateHasher` (FNV-1a 64), `GameRules` + `RunStartRules`/`StartRun`; test EditMode 6 class + `TestUtils`
+- **File**: Assets/_Project/Scripts/Core/{Random,Content,State,Commands,Rules}/*.cs (26), Assets/Tests/EditMode/{Core,TestUtils}/*.cs (9), Docs/plans/core-foundation.md, Docs/PLAN.md, Docs/TECH.md, Docs/GDD.md, Docs/LOG.md
+- **Test**: test-first 69 → 62 fail đúng lý do; implement → 68/69 (lỗi assertion `Has.Count` trên mảng, sửa test) → **69/69 xanh**, 0 warning CS mới; `check_unity_project.py` 0 lỗi
+- **Vấn đề gặp & cách xử lý**: batchmode đổi `ProjectSettings.asset` (bỏ define Sentis) — để nguyên, không commit
+- **Còn lại**: AC-2/AC-3 GDD §6.1 khi có Chợ / Chiếu chỉ; AC-1 trên WebGL
+
+### 2026-11-04 — plan core
+- **Command**: /unity-game-studio plan core
+- **Đã làm**: chia "core" (cỡ L) → plan nền F-000 + F-001; 10 yêu cầu, ~40 test EditMode (Pcg32/SplitMix64 vector chuẩn, stream độc lập, ContentDb, StartRun, StateHasher, ràng buộc assembly); 5 bước test-first
+- **File**: Docs/plans/core-foundation.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
 
 ### 2026-11-04 — setup
 - **Command**: /unity-game-studio setup (check + apply)

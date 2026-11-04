@@ -59,11 +59,11 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
 
 | Hệ thống | Class chính | Assembly | Phụ thuộc | GDD | Trạng thái |
 |---|---|---|---|---|---|
-| Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Designed |
-| State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Designed |
-| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | Designed |
-| RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Designed |
-| Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | Designed |
+| Content trong Core | `ContentDb`, `*Data`, `ItemId` | Core | — | ADR-005 | Implemented (nền: Item/Difficulty/StarterKit/Run) |
+| State | `RunState`, `MetaState`, `ItemInstance` | Core | ContentDb | GDD §6, design/* | Implemented (nền: + `IsActive`, `StartedAtUnix`; `MetaState.Renown`) |
+| Command & luật | `GameRules`, `ICommand`, `CommandResult`, `*Rules`, `RecipeMatcher`, `BattleSimulator` | Core | State, RNG | brewing, economy, run-flow, battle | In Progress (`GameRules` + `StartRun`) |
+| RNG | `Pcg32`, `RngStreams` | Core | — | GDD §6.1 | Implemented |
+| Log / View / Hash | `BrewLog`, `BattleLog`, `RunViewBuilder`, `StateHasher` | Core | State | GDD §7, ADR-007 | In Progress (`StateHasher`) |
 | Phiên chơi | `GameSession`, `GameHost`, `ISaveStore`, `FileSaveStore`, `SaveMapper`, `IClock` | Runtime | Core | GDD §6.4 | Designed |
 
 ### 3.1 Content trong Core — `ContentDb`
