@@ -10,14 +10,35 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build bag`. F-005 Done; 312/312 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → `plan market` (F-006: `Buy`/`Sell`/`Reroll`, `BagFull` qua `BagRules.HasRoom`, `CatalystSlots`) hoặc `plan run-loop` (F-009: `AckBrewResult`, `SkipTurn`)
+**Đang làm**: xong `plan run-loop` (F-009 phần 1) — chờ duyệt D1–D6. Thay đổi `build market` (F-006) vẫn **chưa commit**
+**Bước tiếp theo**: người dùng commit F-006 + duyệt `Docs/plans/run-loop.md` → `build run-loop`
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); `UtilitySlotWeights` (TBD); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: D1–D6 run-loop (D1 rút S lúc vào Decree → `StartRun` không còn S = 100); số liệu `MarketPrice` từng item + `UtilitySlotWeights` (balance); số liệu 3 bảng ma thuật theo tier (balance); phụ gia `MagicChance` field vs Effect `AddMagicChance` (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — plan run-loop
+- **Command**: /unity-game-studio plan run-loop
+- **Đã làm**: plan F-009 phần 1 — 11 yêu cầu; `SeasonRules` (`EnterDecree` rút S lúc vào Decree, `AcceptDecree`, `SkipTurn` trả lưới về cuối Túi theo ô 0→8, `AckBrewResult`; private `StartTurn` = Editing + `RefreshShop`, `EndTurn` → lượt kế hoặc Offering), `RunState.Turn` (1–N ở Workbench, 0 nơi khác), `RunData.TurnsPerSeason` (mặc định 3, validate ≥ 1), 4 sự kiện, `RejectReason.NoPendingResult`; ~60 test EditMode (unit + `RunLoopTest` + fuzz `RunLoopInvariantTest`)
+- **Quyết định (đề xuất, chờ duyệt)**: D1 rút Decree lúc vào (sửa test F-006 StartRun S = 100); D2 class `SeasonRules`; D3 vào Offering xóa hàng Chợ; D4 Ack giữ `LastBrew`; D5 Skip khi ResultPending → `GridLocked`, Ack khi Editing → `NoPendingResult`; D6 giữ 2 fuzz cũ, thêm fuzz vòng thật
+- **File**: Docs/plans/run-loop.md (mới), Docs/PLAN.md, Docs/LOG.md
+- **Test**: chưa (plan)
+
+### 2026-11-04 — build market
+- **Command**: /unity-game-studio build market
+- **Đã làm**:
+  - Duyệt D1–D6 (giữ nguyên đề xuất).
+  - Core: `MarketData`, `ItemData.MarketPrice`, `ContentDb` (+ tham số `market`, validate, bể `ShopPool`/`Lenses`/`Catalysts`), `ShopSlot`/`ShopState`, `RunState.SeasonPricePercent`/`Shop`, `PriceFormula`, `MarketRules` (giá, `RollSeasonPrice`, `RefreshShop`, `Buy`/`Sell`/`Reroll`), 3 Command + 3 sự kiện, 5 `RejectReason`, `BagRules.CountCatalysts`, `GridRules.IsPlaceable` public, `StartRun` đặt S = 100 + xóa hàng, `StateHasher` ghi Chợ.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (11 mới, 9 sửa)
+  - Assets/Tests/EditMode/** (8 mới, 9 sửa)
+  - Docs/plans/market.md, PLAN.md, TECH.md, GDD.md, design/economy.md, LOG.md
+- **Test**:
+  - Test-first: 430 → 312 cũ xanh, 116 mới fail đúng lý do, 2 pass (1 biên đã dự đoán, 1 test yếu đã sửa).
+  - Implement: 425/430 — fuzz bất biến thiếu độ phủ (vàng cạn) → harness +20 vàng/lượt giả → **430/430 xanh**; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: nối `RefreshShop`/`RollSeasonPrice` vào vòng lượt (F-009); `OnShopRefresh` (F-007); modifier giá + reroll miễn phí (F-011); bể theo Danh vọng (F-012); save DTO (F-013); view Chợ (F-014)
 
 ### 2026-11-04 — build bag
 - **Command**: /unity-game-studio build bag

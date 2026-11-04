@@ -93,6 +93,19 @@ namespace Crucible.Core.Rules
             return CommandResult.Accept(CatalystsReorderedEvents);
         }
 
+        /// <summary>Số Xúc tác trong Túi (Xúc tác không lên lưới).</summary>
+        public static int CountCatalysts(RunState run, ContentDb content)
+        {
+            var count = 0;
+            for (var i = 0; i < run.Bag.Count; i++)
+            {
+                if (IsCatalyst(run.Bag[i], content))
+                    count++;
+            }
+
+            return count;
+        }
+
         /// <summary>Chỉ số list của vật phẩm uid trong Túi; −1 = không có (kể cả khi đang trên lưới).</summary>
         public static int IndexOfUid(RunState run, int uid)
         {

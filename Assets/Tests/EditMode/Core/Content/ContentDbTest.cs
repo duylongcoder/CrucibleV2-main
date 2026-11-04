@@ -53,7 +53,8 @@ namespace Crucible.Tests.Core.Content
         private static ContentDb CreateWithItems(params string[] ids)
         {
             var items = Array.ConvertAll(ids, id => new ItemData(id, ItemKind.Mineral, 1));
-            return ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, Brewing);
+            return ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, Brewing,
+                ContentFactory.CreateMarket());
         }
     }
 }

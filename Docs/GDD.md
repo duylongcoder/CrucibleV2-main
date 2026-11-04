@@ -127,7 +127,7 @@ Xếp nguyên liệu ─▶ Nung ─▶ Thành phẩm / Phế phẩm ─▶ (Bá
 | 3 | Kích hoạt ma thuật | Core | MVP | Implemented | [design/brewing.md](design/brewing.md) §Ma thuật | 1, 2 |
 | 4 | Nhật ký lượt nung & phát lại (timescale, tua) | Core / UI | MVP | Implemented (Core + đồng hồ phát lại; view → #14) | [design/brewing.md](design/brewing.md) §BrewLog | 2 |
 | 5 | Túi | Core | MVP | Implemented (luật Túi + `ReorderCatalyst`; Mua → #6, Nới Túi → #11) | [design/economy.md](design/economy.md) §Túi | — |
-| 6 | Chợ & kinh tế | Economy | MVP | In Review | [design/economy.md](design/economy.md) §Chợ | 1, 5 |
+| 6 | Chợ & kinh tế | Economy | MVP | Implemented (giá, bày hàng, `Buy`/`Sell`/`Reroll`; nối lượt → #9, modifier → #11) | [design/economy.md](design/economy.md) §Chợ | 1, 5 |
 | 7 | Xúc tác & Effect primitive | Gameplay | MVP | In Review | [design/economy.md](design/economy.md) §Xúc tác | 2, 5 |
 | 8 | Thuộc tính ẩn & Kính soi | Gameplay | MVP | In Review | §6.2 | 1, 2, 5 |
 | 9 | Vòng Mùa (Chiếu chỉ → Bàn luyện → Dâng → Rèn & Trận → Chiến lợi phẩm) | Core | MVP | In Review | [design/run-flow.md](design/run-flow.md) | 1–8 |

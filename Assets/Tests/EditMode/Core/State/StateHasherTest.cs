@@ -27,6 +27,9 @@ namespace Crucible.Tests.Core.State
                 new ItemInstance(41, new ItemId(1)), true),
             ["item magic"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, magic: true),
             ["item quality"] = run => run.Bag[0] = new ItemInstance(run.Bag[0].Uid, run.Bag[0].ItemId, quality: 7),
+            ["season price"] = run => run.SeasonPricePercent += 1,
+            ["shop slot count"] = run => run.Shop.Slots.Add(ShopSlot.None),
+            ["shop reroll count"] = run => run.Shop.RerollCount = 1,
         };
 
         private static IEnumerable<string> MutationNames => Mutations.Keys;
@@ -51,6 +54,28 @@ namespace Crucible.Tests.Core.State
             var mutatedHash = StateHasher.Hash(mutated, new MetaState());
 
             Assert.That(mutatedHash, Is.Not.EqualTo(baselineHash));
+        }
+
+        [Test]
+        public void Hash_ShopSlotsDifferOnlyInItem_ReturnsDifferentValue()
+        {
+            var first = StateFactory.CreateActiveRun();
+            var second = StateFactory.CreateActiveRun();
+            first.Shop.Slots.Add(new ShopSlot(new ItemId(1)));
+            second.Shop.Slots.Add(new ShopSlot(new ItemId(2)));
+
+            Assert.That(StateHasher.Hash(second, new MetaState()), Is.Not.EqualTo(StateHasher.Hash(first, new MetaState())));
+        }
+
+        [Test]
+        public void Hash_ShopSlotsDifferOnlyInAvailability_ReturnsDifferentValue()
+        {
+            var first = StateFactory.CreateActiveRun();
+            var second = StateFactory.CreateActiveRun();
+            first.Shop.Slots.Add(new ShopSlot(default(ItemId)));
+            second.Shop.Slots.Add(ShopSlot.None);
+
+            Assert.That(StateHasher.Hash(second, new MetaState()), Is.Not.EqualTo(StateHasher.Hash(first, new MetaState())));
         }
 
         [Test]

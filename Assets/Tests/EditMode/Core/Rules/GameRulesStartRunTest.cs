@@ -51,6 +51,20 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_StartRun_SetsNeutralSeasonPriceAndEmptyShop()
+        {
+            _run.SeasonPricePercent = 130;
+            _run.Shop.Slots.Add(new ShopSlot(new ItemId(0)));
+            _run.Shop.RerollCount = 2;
+
+            GameRules.Apply(_run, _meta, _content, ValidStartRun());
+
+            Assert.That(_run.SeasonPricePercent, Is.EqualTo(MarketRules.NeutralPercent));
+            Assert.That(_run.Shop.Slots, Is.Empty);
+            Assert.That(_run.Shop.RerollCount, Is.EqualTo(0));
+        }
+
+        [Test]
         public void Apply_ValidStartRun_FillsBagWithStarterKitInOrder()
         {
             var expected = ContentFactory.StarterKitItems.Select(id =>

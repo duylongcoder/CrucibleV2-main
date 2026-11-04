@@ -32,6 +32,12 @@ namespace Crucible.Core.Rules
                     return BrewingRules.Brew(run, content, brew);
                 case ReorderCatalyst reorderCatalyst:
                     return BagRules.ReorderCatalyst(run, content, reorderCatalyst);
+                case Buy buy:
+                    return MarketRules.Buy(run, content, buy);
+                case Sell sell:
+                    return MarketRules.Sell(run, content, sell);
+                case Reroll reroll:
+                    return MarketRules.Reroll(run, content, reroll);
                 case SetTimescale setTimescale:
                     return SettingsRules.SetTimescale(meta, setTimescale);
                 default:

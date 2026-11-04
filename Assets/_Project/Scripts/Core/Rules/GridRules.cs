@@ -97,6 +97,7 @@ namespace Crucible.Core.Rules
 
         private static bool IsValidCell(int cell) => cell >= 0 && cell < CellCount;
 
-        private static bool IsPlaceable(ItemKind kind) => kind == ItemKind.Mineral || kind == ItemKind.Additive;
+        /// <summary>Chỉ khoáng / phụ gia đặt được lên lưới.</summary>
+        public static bool IsPlaceable(ItemKind kind) => kind == ItemKind.Mineral || kind == ItemKind.Additive;
     }
 }

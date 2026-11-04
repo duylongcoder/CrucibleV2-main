@@ -26,6 +26,7 @@ namespace Crucible.Tests.TestUtils
                 Reputation = 3,
                 BagCapacity = 8,
                 NextUid = 4,
+                SeasonPricePercent = 100,
             };
             run.Bag.Add(new ItemInstance(1, new ItemId(0)));
             run.Bag.Add(new ItemInstance(2, new ItemId(1)));
@@ -60,6 +61,15 @@ namespace Crucible.Tests.TestUtils
 
             run.NextUid = uid;
             return run;
+        }
+
+        /// <summary>Dựng hàng Chợ tay theo thứ tự ô; null = ô rỗng. Số reroll = 0.</summary>
+        public static void StockShop(RunState run, ContentDb content, params string[] slotItemIds)
+        {
+            run.Shop.Slots.Clear();
+            run.Shop.RerollCount = 0;
+            foreach (var id in slotItemIds)
+                run.Shop.Slots.Add(id == null ? ShopSlot.None : new ShopSlot(ContentFactory.IdOf(content, id)));
         }
     }
 }

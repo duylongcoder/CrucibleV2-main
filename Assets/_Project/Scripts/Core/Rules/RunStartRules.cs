@@ -51,6 +51,9 @@ namespace Crucible.Core.Rules
             run.WorkbenchStep = WorkbenchStep.Editing;
             run.LastBrewResultUid = 0;
             run.LastBrew = null;
+            run.SeasonPricePercent = MarketRules.NeutralPercent;
+            run.Shop.Slots.Clear();
+            run.Shop.RerollCount = 0;
 
             return CommandResult.Accept(new GameEvent[] { new RunStarted(command.Seed) });
         }

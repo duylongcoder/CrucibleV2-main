@@ -13,12 +13,18 @@ namespace Crucible.Core.Content
         private readonly Dictionary<string, ItemId> _itemIds;
         private readonly Dictionary<string, DifficultyData> _difficulties;
         private readonly Dictionary<string, StarterKitData> _starterKits;
+        private readonly ItemId[][] _shopPools;
 
         private ContentDb(ItemData[] items, Dictionary<string, ItemId> itemIds,
                           Dictionary<string, DifficultyData> difficulties,
                           Dictionary<string, StarterKitData> starterKits, RunData run, BrewingData brewing,
-                          Recipe[] recipes, bool hasScrap, ItemId scrapItemId)
+                          Recipe[] recipes, bool hasScrap, ItemId scrapItemId, MarketData market,
+                          ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts)
         {
+            Market = market;
+            _shopPools = shopPools;
+            Lenses = lenses;
+            Catalysts = catalysts;
             _items = items;
             _itemIds = itemIds;
             _difficulties = difficulties;
@@ -31,6 +37,7 @@ namespace Crucible.Core.Content
         }
 
         public RunData Run { get; }
+        public MarketData Market { get; }
         public BrewingData Brewing { get; }
         /// <summary>Công thức theo thứ tự <see cref="ItemId"/> thành phẩm.</summary>
         public IReadOnlyList<Recipe> Recipes { get; }
@@ -39,17 +46,20 @@ namespace Crucible.Core.Content
         public ItemId ScrapItemId { get; }
 
         public static ContentDb Create(IReadOnlyList<ItemData> items, IReadOnlyList<DifficultyData> difficulties,
-                                       IReadOnlyList<StarterKitData> kits, RunData run, BrewingData brewing)
+                                       IReadOnlyList<StarterKitData> kits, RunData run, BrewingData brewing,
+                                       MarketData market)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
             if (difficulties == null) throw new ArgumentNullException(nameof(difficulties));
             if (kits == null) throw new ArgumentNullException(nameof(kits));
             if (run == null) throw new ArgumentNullException(nameof(run));
             if (brewing == null) throw new ArgumentNullException(nameof(brewing));
+            if (market == null) throw new ArgumentNullException(nameof(market));
             if (brewing.QualityCap < 0 || brewing.QualityCap > BrewingData.MaxQualityCap)
                 throw new ArgumentOutOfRangeException(nameof(brewing), brewing.QualityCap,
                     $"QualityCap must be in [0, {BrewingData.MaxQualityCap}].");
             ValidateBag(run, kits);
+            ValidateMarket(market);
             ValidateTierTable(brewing.MagicInheritByTier, nameof(BrewingData.MagicInheritByTier));
             ValidateTierTable(brewing.MagicCapByTier, nameof(BrewingData.MagicCapByTier));
             ValidateTierTable(brewing.MagicRetainByTier, nameof(BrewingData.MagicRetainByTier));
@@ -101,8 +111,22 @@ namespace Crucible.Core.Content
             }
 
             return new ContentDb(sorted, itemIds, difficultyById, kitById, run, brewing, recipes.ToArray(), hasScrap,
-                scrapItemId);
+                scrapItemId, market, BuildShopPools(sorted, market), CollectKind(sorted, ItemKind.Lens),
+                CollectKind(sorted, ItemKind.Catalyst));
         }
+
+        /// <summary>Nguyên liệu gốc (khoáng + phụ gia, không <c>Recipe</c>) tier <paramref name="tier"/> mà Chợ bày được, tăng dần <see cref="ItemId"/>; rỗng khi tier ngoài <c>1…ShopMaxTier</c>.</summary>
+        public IReadOnlyList<ItemId> ShopPool(int tier)
+        {
+            if (tier < 1 || tier > _shopPools.Length)
+                return Array.Empty<ItemId>();
+            return _shopPools[tier - 1];
+        }
+
+        /// <summary>Mọi Kính soi, tăng dần <see cref="ItemId"/>.</summary>
+        public IReadOnlyList<ItemId> Lenses { get; }
+        /// <summary>Mọi Xúc tác, tăng dần <see cref="ItemId"/>.</summary>
+        public IReadOnlyList<ItemId> Catalysts { get; }
 
         public ItemData GetItem(ItemId id)
         {
@@ -171,6 +195,9 @@ namespace Crucible.Core.Content
 
         private static void ValidateItem(ItemData item)
         {
+            if (item.MarketPrice < 0)
+                throw new ArgumentException($"Item '{item.Id}' MarketPrice {item.MarketPrice} must not be negative.");
+
             var tiered = item.Kind == ItemKind.Mineral || item.Kind == ItemKind.Additive;
             if (tiered && (item.Tier < 1 || item.Tier > BrewingData.TierCount))
                 throw new ArgumentException($"Item '{item.Id}' ({item.Kind}) must have tier 1–{BrewingData.TierCount}.");
@@ -199,6 +226,79 @@ namespace Crucible.Core.Content
                     throw new ArgumentException(
                         $"Starter kit '{kits[i].Id}' has {count} items, more than StartingBagCapacity {run.StartingBagCapacity}.");
             }
+        }
+
+        private static void ValidateMarket(MarketData market)
+        {
+            if (market.ShopMaxTier < 1 || market.ShopMaxTier > BrewingData.TierCount)
+                throw new ArgumentException($"ShopMaxTier {market.ShopMaxTier} must be in [1, {BrewingData.TierCount}].");
+            if (market.IngredientSlotCount < 1 || market.IngredientSlotCount > MarketData.MaxShopSlots - 1)
+                throw new ArgumentException(
+                    $"IngredientSlotCount {market.IngredientSlotCount} must be in [1, {MarketData.MaxShopSlots - 1}].");
+
+            var weights = market.TierWeights;
+            if (weights == null || weights.Count != market.ShopMaxTier)
+                throw new ArgumentException($"TierWeights must have exactly ShopMaxTier = {market.ShopMaxTier} entries.");
+            var weightSum = 0L;
+            for (var i = 0; i < weights.Count; i++)
+            {
+                if (weights[i] < 0)
+                    throw new ArgumentException($"TierWeights[{i}] = {weights[i]} must not be negative.");
+                weightSum += weights[i];
+            }
+
+            if (weightSum <= 0 || weightSum > int.MaxValue)
+                throw new ArgumentException($"TierWeights sum {weightSum} must be in [1, {int.MaxValue}].");
+
+            if (market.UtilityLensWeight < 0 || market.UtilityCatalystWeight < 0 ||
+                (long)market.UtilityLensWeight + market.UtilityCatalystWeight == 0 ||
+                (long)market.UtilityLensWeight + market.UtilityCatalystWeight > int.MaxValue)
+                throw new ArgumentException(
+                    $"Utility weights ({market.UtilityLensWeight}, {market.UtilityCatalystWeight}) must be non-negative with a positive sum.");
+            if (market.SeasonPriceMin < 1 || market.SeasonPriceMin > market.SeasonPriceMax ||
+                market.SeasonPriceMax > MarketData.MaxSeasonPricePercent)
+                throw new ArgumentException(
+                    $"Season price range [{market.SeasonPriceMin}, {market.SeasonPriceMax}] must satisfy 1 ≤ min ≤ max ≤ {MarketData.MaxSeasonPricePercent}.");
+            if (market.SellRatePercent < 0 || market.SellRatePercent > 99)
+                throw new ArgumentException($"SellRatePercent {market.SellRatePercent} must be in [0, 99].");
+            if (market.RerollBase < 0 || market.RerollStep < 0 || market.ScrapSellPrice < 0)
+                throw new ArgumentException("RerollBase, RerollStep and ScrapSellPrice must not be negative.");
+            if (market.CatalystSlots < 1)
+                throw new ArgumentException($"CatalystSlots {market.CatalystSlots} must be at least 1.");
+        }
+
+        /// <summary>Bể Chợ theo tier (chỉ số = tier − 1): khoáng + phụ gia gốc, tăng dần <see cref="ItemId"/>.</summary>
+        private static ItemId[][] BuildShopPools(ItemData[] sorted, MarketData market)
+        {
+            var pools = new ItemId[market.ShopMaxTier][];
+            var buffer = new List<ItemId>();
+            for (var tier = 1; tier <= market.ShopMaxTier; tier++)
+            {
+                buffer.Clear();
+                for (var i = 0; i < sorted.Length; i++)
+                {
+                    var item = sorted[i];
+                    var ingredient = item.Kind == ItemKind.Mineral || item.Kind == ItemKind.Additive;
+                    if (ingredient && item.Recipe == null && item.Tier == tier)
+                        buffer.Add(new ItemId(i));
+                }
+
+                pools[tier - 1] = buffer.ToArray();
+            }
+
+            return pools;
+        }
+
+        private static ItemId[] CollectKind(ItemData[] sorted, ItemKind kind)
+        {
+            var result = new List<ItemId>();
+            for (var i = 0; i < sorted.Length; i++)
+            {
+                if (sorted[i].Kind == kind)
+                    result.Add(new ItemId(i));
+            }
+
+            return result.ToArray();
         }
 
         private static void ValidateTierTable(IReadOnlyList<int> table, string name)

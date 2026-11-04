@@ -55,7 +55,7 @@ namespace Crucible.Tests.Core.Content
                 new[] { new ItemData("ore_iron", ItemKind.Mineral, 1) },
                 Array.Empty<DifficultyData>(),
                 new[] { new StarterKitData(KitId, kitItems) },
-                run, Brewing);
+                run, Brewing, ContentFactory.CreateMarket());
         }
     }
 }

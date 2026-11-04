@@ -90,7 +90,7 @@ namespace Crucible.Tests.Core.Rules
                         new[] { "spark" }, 5)),
                 },
                 new DifficultyData[0], new StarterKitData[0], new RunData(3, 8, 12, 8),
-                new BrewingData(QualityCap, DefaultInherit(), Fill(100), Fill(100)));
+                new BrewingData(QualityCap, DefaultInherit(), Fill(100), Fill(100)), CreateMarket());
             var run = StateFactory.CreateWorkbenchRun(content, new string[0], new[] { "iron", "spark", "spark", "coal" });
 
             GameRules.Apply(run, _meta, content, new Brew(0));

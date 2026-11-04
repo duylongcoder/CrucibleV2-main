@@ -18,5 +18,10 @@ namespace Crucible.Core.Commands
         InvalidTimescale = 12,
         ItemNotCatalyst = 13,
         InvalidCatalystIndex = 14,
+        InvalidShopSlot = 15,
+        ShopSlotEmpty = 16,
+        NotEnoughGold = 17,
+        BagFull = 18,
+        CatalystSlotsFull = 19,
     }
 }

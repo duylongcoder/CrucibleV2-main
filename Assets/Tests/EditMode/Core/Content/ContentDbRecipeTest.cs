@@ -103,7 +103,7 @@ namespace Crucible.Tests.Core.Content
 
         private static ContentDb Create(IEnumerable<ItemData> items, long cap = Cap) =>
             ContentDb.Create(items.ToArray(), Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run,
-                ContentFactory.CreateBrewing(cap));
+                ContentFactory.CreateBrewing(cap), ContentFactory.CreateMarket());
 
         private static string Describe(RecipeSlot slot) => slot.IsGap ? "gap" : $"item {slot.Item.Index}";
     }

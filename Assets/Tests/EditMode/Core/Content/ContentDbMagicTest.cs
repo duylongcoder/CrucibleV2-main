@@ -65,6 +65,7 @@ namespace Crucible.Tests.Core.Content
             table == "retain" ? values : ContentFactory.Fill(100));
 
         private static ContentDb Create(BrewingData brewing, ItemData[] items) =>
-            ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, brewing);
+            ContentDb.Create(items, Array.Empty<DifficultyData>(), Array.Empty<StarterKitData>(), Run, brewing,
+                ContentFactory.CreateMarket());
     }
 }

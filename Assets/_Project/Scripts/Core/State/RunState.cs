@@ -31,5 +31,10 @@ namespace Crucible.Core.State
         public int LastBrewResultUid { get; set; }
         /// <summary>Nhật ký lượt Nung gần nhất (lưu cùng save để phát lại / hiện kết quả); null = chưa có.</summary>
         public BrewLog LastBrew { get; set; }
+
+        /// <summary>Hệ số giá Mùa S (%) — rút ở Chiếu chỉ (stream <c>Market</c>); 100 = trung tính.</summary>
+        public int SeasonPricePercent { get; set; }
+        /// <summary>Hàng Chợ lượt hiện tại.</summary>
+        public ShopState Shop { get; } = new ShopState();
     }
 }

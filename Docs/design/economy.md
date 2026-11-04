@@ -38,7 +38,10 @@ Nhà giả kim tháo vát: bán bớt khoáng thừa lấy vốn, săn đúng m�
   Kính soi; Xúc tác. **Không bao giờ** bán tier 4+ hay item có `Recipe`.
 - **Mua**: giá = `MarketPrice × HệSốMùa% × Modifier%`, ≥ 1. Mỗi món mua một lần (ô hàng biến mất).
 - **Bán (người chơi)**: mọi thứ, kể cả khoáng tier cao, Xúc tác. Giá bán = giá mua tương ứng × 75%, ≥ 0.
-  Phế phẩm giá cố định thấp. Giá **không** phụ thuộc thuộc tính.
+  Phế phẩm giá cố định thấp (`ScrapSellPrice`, **không** nhân hệ số Mùa — chốt 2026-11-04). Giá **không** phụ thuộc
+  thuộc tính, `Quality` hay `Magic`. Bán được cả từ lưới.
+- Bể ô nguyên liệu: khoáng + phụ gia gốc **gộp chung** trong mỗi tier; tier không có hàng bị bỏ khi rút (trọng số chia
+  lại). Xúc tác đang sở hữu **vẫn có thể** xuất hiện ở ô tiện ích. Mua kéo thẳng lên ô lưới là một lệnh (chốt 2026-11-04).
 - **Reroll**: 2 vàng, +1 mỗi lần trong cùng lượt, reset mỗi lượt.
 - **Hệ số giá Mùa**: rút ở Chiếu chỉ (stream `Market`), số nguyên % trong 70–130, áp cho cả Mùa.
 - Vàng giữ qua các lượt và Mùa; mất khi run kết thúc. Nguồn vàng: **bán** + **phần thưởng trận thắng** (Chiến lợi

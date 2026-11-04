@@ -51,6 +51,16 @@ namespace Crucible.Core.State
             writer.Write(run.LastBrewResultUid);
             WriteBrewLog(writer, run.LastBrew);
 
+            writer.Write(run.SeasonPricePercent);
+            writer.Write(run.Shop.RerollCount);
+            writer.Write(run.Shop.Slots.Count);
+            for (var i = 0; i < run.Shop.Slots.Count; i++)
+            {
+                var slot = run.Shop.Slots[i];
+                writer.Write(slot.IsAvailable);
+                writer.Write(slot.ItemId.Index);
+            }
+
             writer.Write(run.Rng != null);
             if (run.Rng != null)
             {
