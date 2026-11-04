@@ -43,6 +43,27 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_RerollFree_KeepsGoldAndCounts()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+
+            var result = GameRules.Apply(_run, _meta, _content, new Reroll());
+
+            Assert.That(result.Accepted, Is.True);
+            Assert.That(_run.Gold, Is.EqualTo(StartGold));
+            Assert.That(_run.Shop.RerollCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Apply_RerollFreeWithZeroGold_Accepted()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+            _run.Gold = 0;
+
+            Assert.That(GameRules.Apply(_run, _meta, _content, new Reroll()).Accepted, Is.True);
+        }
+
+        [Test]
         public void Apply_Reroll_RestocksSoldSlots()
         {
             Assert.That(Apply(new Buy(0)).Accepted, Is.True);

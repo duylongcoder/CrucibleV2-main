@@ -35,6 +35,8 @@ namespace Crucible.Tests.Core.State
             ["outcome"] = run => run.Outcome = RunOutcome.Won,
             ["last battle"] = run => run.LastBattle = BattleLog.Forfeit(1, default, default, default),
             ["spoils options"] = run => run.SpoilsOptions.Add(new RewardId(1)),
+            ["active modifier"] = run => run.ActiveModifier = new ModifierId(0),
+            ["next modifier"] = run => run.NextModifier = new ModifierId(0),
         };
 
         private static IEnumerable<string> MutationNames => Mutations.Keys;

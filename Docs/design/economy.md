@@ -71,9 +71,9 @@ Không có state machine riêng; Chợ sống trong trạng thái Editing của 
 
 | Tên | Công thức | Biến (khoảng) | Ví dụ |
 |---|---|---|---|
-| Giá mua | `max(1, ⌊MarketPrice × S × M / 10000⌋)` | S hệ số Mùa 70–130 %; M modifier % (giới hạn khai báo) | 10 × 120 × 100 / 10000 = 12 |
-| Giá bán | `max(0, ⌊Giá mua × SellRate / 100⌋)` | SellRate 75 % | 12 × 75 / 100 = 9 |
-| Reroll lần k (k từ 0) | `RerollBase + k` | RerollBase 2 | lần 1: 2, lần 2: 3, lần 3: 4 |
+| Giá mua | `max(1, ⌊MarketPrice × S × M / 10000⌋)` | S hệ số Mùa 70–130 %; M = modifier giá mua % (Kính soi: modifier giá Kính **thay** giá mua) 1–1000 | 10 × 120 × 100 / 10000 = 12 |
+| Giá bán | `⌊Giá mua × SellRate × M_bán / 10000⌋` | SellRate 75 %; M_bán modifier % với `SellRate × M_bán < 10000` (mua-bán luôn lỗ) | 12 × 75 × 100 / 10000 = 9 |
+| Reroll lần k (k từ 0) | `k < F` → 0; ngược lại `⌊(RerollBase + (k − F) × RerollStep) × M_reroll / 100⌋` | F reroll miễn phí 0–2 (modifier); RerollBase 2, RerollStep 1 | F = 0: 2, 3, 4; F = 2: 0, 0, 2, 3 |
 
 ## Edge Cases
 

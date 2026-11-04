@@ -90,6 +90,19 @@ namespace Crucible.Tests.TestUtils
         /// <summary><c>SpoilsGold</c> Mùa s trong <see cref="CreateSpoilsSeasons"/> = s × giá trị này.</summary>
         public const int SpoilsGoldPerSeason = 5;
 
+        // Modifier Mùa (run-flow §Modifier Mùa) — số tạm cho test. Thứ tự sắp ordinal: brutal, dear, neutral, no_sword, sword_only.
+        public const string ModBrutal = "mod_brutal";
+        public const string ModDear = "mod_dear";
+        public const string ModNeutral = "mod_neutral";
+        public const string ModNoSword = "mod_no_sword";
+        public const string ModSwordOnly = "mod_sword_only";
+        public const int DearBuyPercent = 150;
+        public const int DearSellPercent = 120;
+        public const int DearLensPercent = 50;
+        public const int DearRerollPercent = 200;
+        public const int DearFreeRerolls = 2;
+        public const int BrutalOpponentPercent = 200;
+
         /// <summary>Id đối thủ Mùa <paramref name="season"/> trong <see cref="CreateBattle"/>.</summary>
         public static string OpponentOf(int season) => "opp_" + season;
 
@@ -107,7 +120,8 @@ namespace Crucible.Tests.TestUtils
         /// <param name="opponentStatPercent">Hệ số chỉ số đối thủ của bậc khó <see cref="Difficulty"/>.</param>
         public static ContentDb Create(bool steelHasRecipe = true, MarketData market = null,
                                        int turnsPerSeason = TurnsPerSeason, BattleData battle = null,
-                                       int opponentStatPercent = 100, IReadOnlyList<RewardData> rewards = null)
+                                       int opponentStatPercent = 100, IReadOnlyList<RewardData> rewards = null,
+                                       IReadOnlyList<ModifierData> modifiers = null)
         {
             return ContentDb.Create(
                 new[]
@@ -143,7 +157,57 @@ namespace Crucible.Tests.TestUtils
                 CreateBrewing(),
                 market ?? CreateMarket(),
                 battle ?? CreateBattle(),
-                rewards ?? CreateRewards());
+                rewards ?? CreateRewards(),
+                modifiers ?? CreateModifiers());
+        }
+
+        /// <summary>
+        /// 5 modifier: trung tính; "đắt" (mua 150, bán 120, Kính 50, reroll 200, 2 reroll miễn phí); "tàn bạo" (đối thủ 200);
+        /// "không Kiếm" (trọng số Kiếm 0); "chỉ Kiếm" (Giáo/Giáp/Khiên 0).
+        /// </summary>
+        public static ModifierData[] CreateModifiers() => new[]
+        {
+            new ModifierData(ModNeutral),
+            new ModifierData(ModDear, new[]
+            {
+                new ModifierParamData(ModifierParam.BuyPrice, DearBuyPercent),
+                new ModifierParamData(ModifierParam.SellPrice, DearSellPercent),
+                new ModifierParamData(ModifierParam.LensPrice, DearLensPercent),
+                new ModifierParamData(ModifierParam.RerollPrice, DearRerollPercent),
+                new ModifierParamData(ModifierParam.FreeRerolls, DearFreeRerolls),
+            }),
+            new ModifierData(ModBrutal, new[] { new ModifierParamData(ModifierParam.OpponentStats, BrutalOpponentPercent) }),
+            new ModifierData(ModNoSword, new[] { new ModifierParamData(ModifierParam.ForgeWeight, 0, Sword) }),
+            new ModifierData(ModSwordOnly, new[]
+            {
+                new ModifierParamData(ModifierParam.ForgeWeight, 0, Spear),
+                new ModifierParamData(ModifierParam.ForgeWeight, 0, Armor),
+                new ModifierParamData(ModifierParam.ForgeWeight, 0, Shield),
+            }),
+        };
+
+        /// <summary>Như <see cref="CreateSeasons"/>, Mùa 2…N chắc chắn có modifier <paramref name="modifierId"/> (không có phần "không modifier").</summary>
+        public static SeasonData[] CreateModifierSeasons(string modifierId)
+        {
+            var seasons = CreateSeasons();
+            for (var s = 2; s <= seasons.Length; s++)
+            {
+                var data = seasons[s - 1];
+                seasons[s - 1] = new SeasonData(data.OpponentId, data.ForgePool,
+                    modifierPool: new[] { new ModifierOptionData(modifierId, 1) }, noModifierWeight: 0);
+            }
+
+            return seasons;
+        }
+
+        /// <summary>Content có Mùa 2…N luôn mang modifier <paramref name="modifierId"/>.</summary>
+        public static ContentDb CreateWithModifier(string modifierId) =>
+            Create(battle: CreateBattle(CreateModifierSeasons(modifierId)));
+
+        public static ModifierId ModifierOf(ContentDb content, string id)
+        {
+            content.TryFindModifier(id, out var modifierId);
+            return modifierId;
         }
 
         /// <summary>6 phần thưởng: Nới Túi +2, Ống bễ / Cối (Xúc tác), Kính, Mithril (tier 4), Bạc (tier 3).</summary>

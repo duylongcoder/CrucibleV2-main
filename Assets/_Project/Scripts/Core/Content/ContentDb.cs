@@ -15,6 +15,11 @@ namespace Crucible.Core.Content
         public const int MaxSpoilsOptions = 3;
         /// <summary>Trần <c>SpoilsGold</c> mỗi Mùa — chặn tràn vàng.</summary>
         public const int MaxSpoilsGold = 1_000_000;
+        /// <summary>Khoảng % của tham số Scale của modifier.</summary>
+        public const int MinModifierPercent = 1;
+        public const int MaxModifierPercent = 1000;
+        /// <summary>Trần reroll miễn phí mỗi lượt (run-flow §Modifier Mùa: 0–2).</summary>
+        public const int MaxFreeRerolls = 2;
 
         private readonly ItemData[] _items;
         private readonly Dictionary<string, ItemId> _itemIds;
@@ -26,6 +31,8 @@ namespace Crucible.Core.Content
         private readonly SeasonContent[] _seasons;
         private readonly Reward[] _rewards;
         private readonly Dictionary<string, RewardId> _rewardIds;
+        private readonly SeasonModifier[] _modifiers;
+        private readonly Dictionary<string, ModifierId> _modifierIds;
 
         private ContentDb(ItemData[] items, Dictionary<string, ItemId> itemIds,
                           Dictionary<string, DifficultyData> difficulties,
@@ -33,8 +40,11 @@ namespace Crucible.Core.Content
                           Recipe[] recipes, bool hasScrap, ItemId scrapItemId, MarketData market,
                           ItemId[][] shopPools, ItemId[] lenses, ItemId[] catalysts, BattleData battle,
                           EquipmentData[] equipment, Dictionary<string, EquipmentId> equipmentIds,
-                          SeasonContent[] seasons, Reward[] rewards, Dictionary<string, RewardId> rewardIds)
+                          SeasonContent[] seasons, Reward[] rewards, Dictionary<string, RewardId> rewardIds,
+                          SeasonModifier[] modifiers, Dictionary<string, ModifierId> modifierIds)
         {
+            _modifiers = modifiers;
+            _modifierIds = modifierIds;
             _rewards = rewards;
             _rewardIds = rewardIds;
             Battle = battle;
@@ -69,7 +79,8 @@ namespace Crucible.Core.Content
         public static ContentDb Create(IReadOnlyList<ItemData> items, IReadOnlyList<DifficultyData> difficulties,
                                        IReadOnlyList<StarterKitData> kits, RunData run, BrewingData brewing,
                                        MarketData market, BattleData battle,
-                                       IReadOnlyList<RewardData> rewards = null)
+                                       IReadOnlyList<RewardData> rewards = null,
+                                       IReadOnlyList<ModifierData> modifiers = null)
         {
             if (items == null) throw new ArgumentNullException(nameof(items));
             if (difficulties == null) throw new ArgumentNullException(nameof(difficulties));
@@ -151,12 +162,15 @@ namespace Crucible.Core.Content
             }
 
             var resolvedRewards = ResolveRewards(rewards ?? Array.Empty<RewardData>(), sorted, itemIds, out var rewardIds);
-            var seasons = ResolveSeasons(battle, run, equipmentIds, resolvedRewards, rewardIds);
+            var resolvedModifiers = ResolveModifiers(modifiers ?? Array.Empty<ModifierData>(), equipmentIds,
+                equipment.Length, market, out var modifierIds);
+            var seasons = ResolveSeasons(battle, run, equipmentIds, resolvedRewards, rewardIds, resolvedModifiers,
+                modifierIds);
 
             return new ContentDb(sorted, itemIds, difficultyById, kitById, run, brewing, recipes.ToArray(), hasScrap,
                 scrapItemId, market, BuildShopPools(sorted, market), CollectKind(sorted, ItemKind.Lens),
                 CollectKind(sorted, ItemKind.Catalyst), battle, equipment, equipmentIds, seasons, resolvedRewards,
-                rewardIds);
+                rewardIds, resolvedModifiers, modifierIds);
         }
 
         /// <summary>Nguyên liệu gốc (khoáng + phụ gia, không <c>Recipe</c>) tier <paramref name="tier"/> mà Chợ bày được, tăng dần <see cref="ItemId"/>; rỗng khi tier ngoài <c>1…ShopMaxTier</c>.</summary>
@@ -205,6 +219,20 @@ namespace Crucible.Core.Content
                 return _rewardIds.TryGetValue(id, out rewardId);
 
             rewardId = default;
+            return false;
+        }
+
+        public SeasonModifier GetModifier(ModifierId id)
+        {
+            return _modifiers[id.Index];
+        }
+
+        public bool TryFindModifier(string id, out ModifierId modifierId)
+        {
+            if (id != null)
+                return _modifierIds.TryGetValue(id, out modifierId);
+
+            modifierId = default;
             return false;
         }
 
@@ -445,7 +473,9 @@ namespace Crucible.Core.Content
         /// <summary>Đối thủ + bể trang bị theo thứ tự khai báo; <c>Dictionary</c> chỉ để tra Id (không lặp).</summary>
         private static SeasonContent[] ResolveSeasons(BattleData battle, RunData run,
                                                       Dictionary<string, EquipmentId> equipmentIds, Reward[] rewards,
-                                                      Dictionary<string, RewardId> rewardIds)
+                                                      Dictionary<string, RewardId> rewardIds,
+                                                      SeasonModifier[] modifiers,
+                                                      Dictionary<string, ModifierId> modifierIds)
         {
             var opponentById = new Dictionary<string, OpponentData>(battle.Opponents.Count, StringComparer.Ordinal);
             for (var i = 0; i < battle.Opponents.Count; i++)
@@ -491,8 +521,9 @@ namespace Crucible.Core.Content
                 if (total < 1 || total > int.MaxValue)
                     throw new ArgumentException($"Season {number}: forge weights sum {total} must be in [1, {int.MaxValue}].");
                 var rewardPool = ResolveRewardPool(data, number, number == seasons.Length, rewards, rewardIds);
+                var modifierPool = ResolveModifierPool(data, number, pool, modifiers, modifierIds, out var modifierTotal);
                 seasons[s] = new SeasonContent(opponent, pool, (int)total, data.SpoilsGold, rewardPool,
-                    data.GuaranteeCatalyst);
+                    data.GuaranteeCatalyst, modifierPool, data.NoModifierWeight, modifierTotal);
             }
 
             return seasons;
@@ -578,6 +609,143 @@ namespace Crucible.Core.Content
                 throw new ArgumentException($"Season {number}: GuaranteeCatalyst needs a catalyst reward with weight > 0.");
             return pool;
         }
+
+        /// <summary>
+        /// Modifier sắp ordinal theo Id (spoils R9, R12): mỗi tham số tối đa 1 lần (ForgeWeight: 1 lần mỗi trang bị); Scale
+        /// trong [<see cref="MinModifierPercent"/>, <see cref="MaxModifierPercent"/>] — riêng ForgeWeight cho phép 0 (loại
+        /// trang bị khỏi bể); FreeRerolls trong [0, <see cref="MaxFreeRerolls"/>]; <c>SellRate × M_bán &lt; 10000</c>.
+        /// </summary>
+        private static SeasonModifier[] ResolveModifiers(IReadOnlyList<ModifierData> modifiers,
+                                                         Dictionary<string, EquipmentId> equipmentIds,
+                                                         int equipmentCount, MarketData market,
+                                                         out Dictionary<string, ModifierId> modifierIds)
+        {
+            var sorted = new ModifierData[modifiers.Count];
+            for (var i = 0; i < sorted.Length; i++)
+                sorted[i] = modifiers[i] ?? throw new ArgumentException($"Modifiers[{i}] is null.");
+            Array.Sort(sorted, (a, b) => string.CompareOrdinal(a.Id, b.Id));
+
+            modifierIds = new Dictionary<string, ModifierId>(sorted.Length, StringComparer.Ordinal);
+            var resolved = new SeasonModifier[sorted.Length];
+            for (var m = 0; m < sorted.Length; m++)
+            {
+                var data = sorted[m];
+                AddUnique(modifierIds, data.Id, new ModifierId(m), "modifier");
+                var values = new[]
+                {
+                    SeasonModifier.NeutralPercent, SeasonModifier.NeutralPercent, SeasonModifier.NeutralPercent,
+                    SeasonModifier.NeutralPercent, SeasonModifier.NeutralPercent, 0, 0,
+                };
+                var seen = new bool[values.Length];
+                int[] forge = null;
+                bool[] forgeSeen = null;
+                var parameters = data.Parameters ?? Array.Empty<ModifierParamData>();
+                for (var p = 0; p < parameters.Count; p++)
+                {
+                    var param = parameters[p] ?? throw new ArgumentException($"Modifier '{data.Id}': parameter[{p}] is null.");
+                    if (param.Param == ModifierParam.ForgeWeight)
+                    {
+                        if (param.EquipmentId == null || !equipmentIds.TryGetValue(param.EquipmentId, out var equipment))
+                            throw new ArgumentException($"Modifier '{data.Id}': ForgeWeight needs a known equipment, got '{param.EquipmentId}'.");
+                        if (param.Value < 0 || param.Value > MaxModifierPercent)
+                            throw new ArgumentException($"Modifier '{data.Id}': ForgeWeight {param.Value} must be in [0, {MaxModifierPercent}].");
+                        if (forge == null)
+                        {
+                            forge = new int[equipmentCount];
+                            forgeSeen = new bool[equipmentCount];
+                            for (var e = 0; e < forge.Length; e++)
+                                forge[e] = SeasonModifier.NeutralPercent;
+                        }
+
+                        if (forgeSeen[equipment.Index])
+                            throw new ArgumentException($"Modifier '{data.Id}': ForgeWeight of '{param.EquipmentId}' listed twice.");
+                        forgeSeen[equipment.Index] = true;
+                        forge[equipment.Index] = param.Value;
+                        continue;
+                    }
+
+                    var index = (int)param.Param;
+                    if (index < 0 || index >= values.Length)
+                        throw new ArgumentException($"Modifier '{data.Id}': unknown parameter {param.Param}.");
+                    if (param.EquipmentId != null)
+                        throw new ArgumentException($"Modifier '{data.Id}': only ForgeWeight takes an equipment.");
+                    if (seen[index])
+                        throw new ArgumentException($"Modifier '{data.Id}': parameter {param.Param} listed twice.");
+                    seen[index] = true;
+
+                    var (min, max) = param.Param == ModifierParam.FreeRerolls
+                        ? (0, MaxFreeRerolls)
+                        : (MinModifierPercent, MaxModifierPercent);
+                    if (param.Value < min || param.Value > max)
+                        throw new ArgumentException($"Modifier '{data.Id}': {param.Param} {param.Value} must be in [{min}, {max}].");
+                    values[index] = param.Value;
+                }
+
+                var sell = values[(int)ModifierParam.SellPrice];
+                if ((long)market.SellRatePercent * sell >= 10000)
+                    throw new ArgumentException(
+                        $"Modifier '{data.Id}': SellRatePercent {market.SellRatePercent} × SellPrice {sell}% must stay below 10000 (no buy-sell profit).");
+
+                resolved[m] = new SeasonModifier(data.Id, values[(int)ModifierParam.BuyPrice], sell,
+                    values[(int)ModifierParam.LensPrice], values[(int)ModifierParam.RerollPrice],
+                    values[(int)ModifierParam.OpponentStats], values[(int)ModifierParam.FreeRerolls], forge);
+            }
+
+            return resolved;
+        }
+
+        /// <summary>
+        /// Bể modifier của Mùa <paramref name="number"/> (áp cho chính Mùa đó, rút ở Chiếu chỉ Mùa trước). Mùa 1: bể rỗng
+        /// (D6). Mùa 2…N: <c>NoModifierWeight + Σ</c> trong [1, int.MaxValue]; mọi modifier trọng số &gt; 0 giữ Σ trọng số
+        /// bể trang bị sau scale ≥ 1 (R14).
+        /// </summary>
+        private static ModifierOption[] ResolveModifierPool(SeasonData data, int number, IReadOnlyList<ForgeOption> forgePool,
+                                                            SeasonModifier[] modifiers,
+                                                            Dictionary<string, ModifierId> modifierIds, out int totalWeight)
+        {
+            var source = data.ModifierPool;
+            if (data.NoModifierWeight < 0)
+                throw new ArgumentException($"Season {number}: NoModifierWeight {data.NoModifierWeight} must not be negative.");
+            if (number == 1 && source.Count != 0)
+                throw new ArgumentException("Season 1 cannot declare modifiers (no previous decree to announce them).");
+
+            var pool = new ModifierOption[source.Count];
+            var total = (long)data.NoModifierWeight;
+            for (var i = 0; i < pool.Length; i++)
+            {
+                var option = source[i] ?? throw new ArgumentException($"Season {number}: modifier pool[{i}] is null.");
+                if (option.ModifierId == null || !modifierIds.TryGetValue(option.ModifierId, out var modifier))
+                    throw new ArgumentException($"Season {number}: unknown modifier '{option.ModifierId}'.");
+                for (var j = 0; j < i; j++)
+                {
+                    if (pool[j].Modifier == modifier)
+                        throw new ArgumentException($"Season {number}: modifier '{option.ModifierId}' listed twice.");
+                }
+
+                if (option.Weight < 0)
+                    throw new ArgumentException($"Season {number}: weight of modifier '{option.ModifierId}' must not be negative.");
+                if (option.Weight > 0)
+                {
+                    var forgeTotal = 0L;
+                    for (var f = 0; f < forgePool.Count; f++)
+                        forgeTotal += ScaleWeight(forgePool[f].Weight, modifiers[modifier.Index].ForgeWeightPercent(forgePool[f].Equipment));
+                    if (forgeTotal < 1 || forgeTotal > int.MaxValue)
+                        throw new ArgumentException(
+                            $"Season {number}: modifier '{option.ModifierId}' leaves forge weights sum {forgeTotal} outside [1, {int.MaxValue}].");
+                }
+
+                pool[i] = new ModifierOption(modifier, option.Weight);
+                total += option.Weight;
+            }
+
+            if (total > int.MaxValue || (number > 1 && total < 1))
+                throw new ArgumentException($"Season {number}: modifier weights sum {total} must be in [1, {int.MaxValue}].");
+            totalWeight = (int)total;
+            return pool;
+        }
+
+        /// <summary><c>⌊weight × percent / 100⌋</c> — trọng số bể trang bị sau modifier (dùng chung với <c>ForgeRules</c>).</summary>
+        public static long ScaleWeight(int weight, int percent) => (long)weight * percent / 100;
 
         private static void ValidateTierTable(IReadOnlyList<int> table, string name)
         {

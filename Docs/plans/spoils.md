@@ -1,6 +1,6 @@
 # Plan: Chiến lợi phẩm & modifier Mùa (F-011)
 
-> **Trạng thái**: In Progress — **Phần A Done** (741/741 EditMode xanh), Phần B chưa làm (D1–D12 duyệt 2026-11-04; D4 sửa: Bỏ qua chủ động) · **Cập nhật**: 2026-11-04
+> **Trạng thái**: Done — Phần A + Phần B (820/820 EditMode xanh; D1–D12 duyệt 2026-11-04; D4 sửa: Bỏ qua chủ động) · **Cập nhật**: 2026-11-04
 > **GDD**: `design/run-flow.md` §Chiến lợi phẩm, §Modifier Mùa, §Chiếu chỉ (modifier Mùa sau), §Trạng thái (hàng Spoils),
 > Edge Cases (cả 3 không hợp lệ), Tuning Knobs (`SpoilsGold`), AC-6/AC-6b; `design/economy.md` §Túi (Nới Túi), §Formulas
 > (M modifier), Edge Cases (chiến lợi phẩm khi Túi đầy, 6 Xúc tác); `design/battle.md` Tuning (`OpponentStatScale`);
@@ -408,19 +408,19 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
   tick phần logic; LOG + CHECKPOINT. Đề xuất commit `feat(spoils): add spoils gold, reward draw and ChooseReward/SkipReward`.
 
 ### Phần B — Modifier Mùa
-- [ ] **B1 — Skeleton**: `ModifierParam`, `ModifierParamData`, `ModifierData`, `ModifierOptionData`, `ModifierId`,
+- [x] **B1 — Skeleton**: `ModifierParam`, `ModifierParamData`, `ModifierData`, `ModifierOptionData`, `ModifierId`,
   `SeasonModifier` (+ `Neutral`), `ModifierOption`; `SeasonData`/`SeasonContent` + bể modifier; `ContentDb.Create(...,
   modifiers)`; `RunState.ActiveModifier/NextModifier`; `ModifierRules` thân trả Neutral; đổi chữ ký `PriceFormula.Sell/
   Reroll`, `BattleStats.ForOpponent` (gọi cũ truyền 100 / 0 — hành vi không đổi). Kiểm chứng: compile, test cũ xanh
   (sửa chỗ gọi chữ ký trong test cũ, không đổi kỳ vọng).
-- [ ] **B2 — Test first**: test Phần B §3; xác nhận fail đúng lý do. Lưu ý: test so sánh state RNG sau `EnterDecree`
+- [x] **B2 — Test first**: test Phần B §3; xác nhận fail đúng lý do. Lưu ý: test so sánh state RNG sau `EnterDecree`
   (`SeasonRulesEnterDecreeTest`, `GameRulesStartRunTest`, `RunLoopTest`) sẽ đổi vì thêm lần rút `Season` — sửa kỳ vọng
   ở bước này và ghi vào §6 *Test changes*.
-- [ ] **B3 — Implement**: validate, `ModifierRules`, `EnterDecree` (shift → Market → Forge → Season), giá, reroll miễn phí,
+- [x] **B3 — Implement**: validate, `ModifierRules`, `EnterDecree` (shift → Market → Forge → Season), giá, reroll miễn phí,
   forge weight, đối thủ, `StateHasher`. Kiểm chứng: toàn bộ EditMode xanh.
-- [ ] **B4 — Refactor**: bỏ `MarketRules.NeutralPercent` nếu không còn dùng; `OfferingRules.NeutralStatPercent` gom về
+- [x] **B4 — Refactor**: bỏ `MarketRules.NeutralPercent` nếu không còn dùng; `OfferingRules.NeutralStatPercent` gom về
   `SeasonModifier.Neutral`. Test xanh.
-- [ ] **B5 — Tài liệu**: PLAN.md F-011 Done (+ ghi chú F-013 DTO); TECH §3.3/§3.4 (thứ tự Market → Forge → Season, công
+- [x] **B5 — Tài liệu**: PLAN.md F-011 Done (+ ghi chú F-013 DTO); TECH §3.3/§3.4 (thứ tự Market → Forge → Season, công
   thức giá có modifier); economy.md §Formulas (bán × M_bán, reroll miễn phí — D7/D8); GDD Systems Index #11 Implemented;
   LOG + CHECKPOINT. Đề xuất commit `feat(season): add season modifiers for prices, rerolls, opponents and forge pool`.
 
@@ -447,6 +447,14 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
   - (A) `ClaimReason` theo thứ tự của `Buy`: `CatalystSlotsFull` trước `BagFull`.
   - (A) `Pick` không rút RNG khi không có ứng viên phù hợp (guarantee mà không còn Xúc tác nhận được) — D12 chỉ áp cho lượt có ≥ 1 ứng viên.
   - (A) Phần thưởng Item tạo `ItemInstance(NextUid++, item)` với `Magic = false`, `Quality = 0` (nguyên liệu gốc — D2).
+  - (B) `ForgeWeight` cho phép **0** (khoảng [0, 1000]) — plan ghi Scale ∈ [1, 1000] cho mọi tham số, nhưng "loại một trang bị
+    khỏi bể" cần 0; validator R14 vẫn chặn trường hợp bể về Σ = 0. Tham số Scale khác giữ [1, 1000].
+  - (B) Rút modifier: phần "không modifier" đứng **trước** bể (`roll < NoModifierWeight` → null). `RollNext` đặt
+    `NextModifier = null` trước khi chọn.
+  - (B) `ContentDb.ScaleWeight(weight, percent)` (public static) dùng chung cho validator R14 và `ForgeRules` để hai bên
+    không lệch công thức.
+  - (B) `BattleStats.ForOpponent` nhân `diff × mod` trong `long` rồi `MulDivFloor(v, diff × mod, 10000)` — với mod = 100
+    cho kết quả bằng hệt công thức cũ (đã kiểm: test cũ không đổi).
 - **Deviations** (lệch so với plan và lý do):
   - (A) Gộp chạy test của Bước 1 vào Bước 2 (một lần batchmode cho skeleton + test mới) — mỗi lần batchmode ~1 phút; skeleton
     compile sạch, 665 test cũ xanh trong cùng lần chạy.
@@ -454,6 +462,12 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
     `Apply_SameSeedThroughSpoils_SameHash` đặt ở `RunLoopInvariantTest` / `RunLoopTest` như plan; `WinSeason` thêm tay Sắt + Than
     vào Túi mỗi Mùa rồi nung Thép thật (đối thủ HP 1 / ATK 0).
   - (A) `RunLoopTest.Record` giờ assert lệnh được chấp nhận (chặt hơn; test cũ vẫn xanh).
+  - (B) `PriceFormula.Sell/Reroll` và `BattleStats.ForOpponent` thêm tham số **có giá trị mặc định** (100 / 0) thay vì bắt
+    buộc — chỗ gọi cũ trong test giữ nguyên, hành vi trung tính không đổi. `ContentDb.Create(..., modifiers = null)` tùy chọn
+    như `rewards`.
+  - (B) Bước B2 dự kiến phải sửa kỳ vọng RNG của test cũ (`GameRulesStartRunTest`, `RunLoopTest`) — thực tế **không** test
+    nào vỡ vì các test này dự đoán từng stream riêng; chỉ `EnterDecree_OnlyAdvancesMarketAndForgeStreams` được đổi (dưới).
+  - (B) Giữ `MarketRules.NeutralPercent` (B4 dự kiến bỏ) — còn là hệ số S trung tính và được `SeasonRulesEnterDecreeTest` dùng.
 - **Tradeoffs**:
   - (A) Ở skeleton có 11 test phủ định pass "trống" (không bày lựa chọn nào → không vi phạm): `Enter_EmptyPool_*`,
     `Enter_ZeroWeightOption_*`, `Enter_BagAtMaxCapacity_*`, `Enter_WithoutGuarantee_*`, `Spoils_EveryOfferedOptionIsClaimable`,
@@ -464,4 +478,6 @@ R15 → StateHasherTest + `EnterDecree_ShiftsNextModifierToActive`.
     validator mới từ chối đúng vì bể tùy chỉnh không có Xúc tác) — 4 test `SpoilsRulesTest` lỗi arrange.
   - (A) `Enter_BagFull_OffersOnlyExpandBag`: Túi 8/8 thay vì 14/14 (14 > trần 12 → Nới Túi không nhận được — lỗi arrange).
   - (A) Bỏ case `"guarantee"` của `Create_LastSeasonDeclaresSpoils_Throws` trước khi chạy (case này fail vì 2 lý do cùng lúc, không phân biệt được).
+  - (B) `SeasonRulesEnterDecreeTest.EnterDecree_OnlyAdvancesMarketAndForgeStreams` → `EnterDecree_BeforeLastSeason_OnlyAdvancesMarketForgeAndSeasonStreams`
+    (R10 thêm lần rút `Season` — sửa ở B2 như plan dự kiến, trước khi implement).
 - **Open questions**: - None

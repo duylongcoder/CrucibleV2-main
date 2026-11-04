@@ -10,14 +10,27 @@
 <!-- CHECKPOINT -->
 **Cập nhật**: 2026-11-04
 **Nhánh git**: `develop`
-**Đang làm**: xong `build spoils` **Phần A** (F-011 Spoils). 741/741 EditMode xanh. **Chưa commit** (message đề xuất trong báo cáo)
-**Bước tiếp theo**: người dùng commit → `build spoils` Phần B (modifier Mùa) hoặc F-009 phần 2 (RandomAgent 1.000 run tới RunEnd — đã hết ngõ cụt) hoặc F-008
+**Đang làm**: xong `build spoils` **Phần B** — F-011 Done. 820/820 EditMode xanh. **Chưa commit** Phần B (message đề xuất trong báo cáo)
+**Bước tiếp theo**: người dùng commit → F-009 phần 2 (RandomAgent 1.000 run tới RunEnd) hoặc F-008 (dòng thuộc tính → SB/PD/HT)
 **Đang kẹt**: không
 **File đang dở**: không
-**Câu hỏi mở**: số `SpoilsGold`/bể phần thưởng/modifier thật (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
+**Câu hỏi mở**: số `SpoilsGold`/bể phần thưởng/danh sách modifier + khoảng an toàn (balance); số liệu `MarketPrice` + `UtilitySlotWeights`, 3 bảng ma thuật, chỉ số đối thủ/★/bể trang bị (balance); phụ gia `MagicChance` field vs Effect (F-007); đồng bộ IndexedDB WebGL; ART A2/A3; battle Open Questions; màn Kết thúc run; GDD In Review
 <!-- /CHECKPOINT -->
 
 ## Session Log
+
+### 2026-11-04 — build spoils (Phần B)
+- **Command**: /unity-game-studio build spoils (F-011 Phần B — modifier Mùa)
+- **Đã làm**:
+  - Core: `ModifierParam`/`ModifierParamData`/`ModifierData`/`ModifierOptionData`/`ModifierId`/`ModifierOption`/`SeasonModifier`; `SeasonData`/`SeasonContent` + bể modifier; `ContentDb` resolve + validate (khoảng tham số, trùng, bán không lãi, Mùa 1 rỗng, bể trang bị không về 0), `GetModifier`/`TryFindModifier`, `ScaleWeight`; `ModifierRules` (`Active`, `RollNext`); `EnterDecree` shift → Market → Forge → Season; `ForgeRules` trọng số theo modifier; `MarketRules` giá mua/Kính/bán/reroll + reroll miễn phí; `PriceFormula.Sell/Reroll` + `BattleStats.ForOpponent` thêm tham số mặc định; `OfferingRules` truyền modifier đối thủ; `RunState.ActiveModifier/NextModifier` + `StateHasher`.
+- **File**:
+  - Assets/_Project/Scripts/Core/** (8 mới, 11 sửa)
+  - Assets/Tests/EditMode/** (2 mới, 9 sửa)
+  - Docs/plans/spoils.md, PLAN.md, TECH.md, GDD.md, design/economy.md, LOG.md
+- **Test**:
+  - Skeleton + test-first (1 lần chạy): 820 → 63 fail đúng lý do (NRE do `GetModifier` skeleton trả `null`), 757 xanh (741 cũ + 16 mới pass trống/biên).
+  - Implement: **820/820 xanh** lần đầu; refactor 820/820; 0 warning CS; `check_unity_project.py` 0 lỗi.
+- **Còn lại**: F-013 DTO mang `SpoilsOptions`/`ActiveModifier`/`NextModifier`; view Chiến lợi phẩm + dòng modifier ở Chiếu chỉ (F-014/F-015); số thật (balance); F-009 phần 2
 
 ### 2026-11-04 — build spoils (Phần A)
 - **Command**: /unity-game-studio build spoils (F-011 Phần A — Chiến lợi phẩm)

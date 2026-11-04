@@ -64,5 +64,53 @@ namespace Crucible.Tests.Core.Rules
 
             Assert.That(MarketRules.RerollPrice(_run, _content), Is.EqualTo(expected));
         }
+
+        [Test]
+        public void BuyPrice_ActiveBuyModifier_Applies()
+        {
+            _run.SeasonPricePercent = 120;
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+
+            // ⌊12 × 120 × 150 / 10000⌋ = 21
+            Assert.That(MarketRules.BuyPrice(_run, _content, IdOf(_content, Steel)), Is.EqualTo(21));
+        }
+
+        [Test]
+        public void BuyPrice_Lens_UsesLensModifierNotBuy()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+
+            // ⌊6 × 100 × 50 / 10000⌋ = 3
+            Assert.That(MarketRules.BuyPrice(_run, _content, IdOf(_content, Lens)), Is.EqualTo(3));
+        }
+
+        [Test]
+        public void SellPrice_ActiveSellModifier_Applies()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+
+            // mua ⌊12 × 150 / 100⌋ = 18 → bán ⌊18 × 75 × 120 / 10000⌋ = 16
+            Assert.That(MarketRules.SellPrice(_run, _content, IdOf(_content, Steel)), Is.EqualTo(16));
+        }
+
+        [Test]
+        public void SellPrice_Scrap_IgnoresModifier()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+
+            Assert.That(MarketRules.SellPrice(_run, _content, IdOf(_content, Scrap)), Is.EqualTo(ScrapSellPrice));
+        }
+
+        [TestCase(0, 0)]
+        [TestCase(1, 0)]
+        [TestCase(2, 4)]
+        [TestCase(3, 6)]
+        public void RerollPrice_ActiveFreeRerolls_FreeThenScaled(int rerollCount, int expected)
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModDear);
+            _run.Shop.RerollCount = rerollCount;
+
+            Assert.That(MarketRules.RerollPrice(_run, _content), Is.EqualTo(expected));
+        }
     }
 }

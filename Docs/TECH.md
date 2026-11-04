@@ -85,7 +85,7 @@ Graph URP 2D map 4 chỉ số xám → 4 màu `EquipmentRamp`, truyền bằng `
   `Phase` (`Decree · Workbench · Offering · Battle · Spoils · Ended`); `Turn` (1…`RunData.TurnsPerSeason` ở Workbench, 0 ở phase khác); `WorkbenchStep` (`Editing ·
   ResultPending`); vàng, Uy tín, sức chứa Túi; `Bag: List<ItemInstance>` (thứ tự list = thứ tự Xúc tác); `Grid:
   ItemInstance?[9]`; `SeasonPricePercent` (S, 100 tới khi rút ở Decree); `Shop` (`ShopState`: `List<ShopSlot>` 4 nguyên liệu + 1
-  tiện ích, `ShopSlot.None` = rỗng/đã bán; `RerollCount`); `DecreeEquipment` (`EquipmentId`, rút ở Decree); `LastBrew`, `LastBattle` (giữ sau `AckBattle`), `SpoilsOptions` (`List<RewardId>`, thứ tự khai báo bể, rỗng ngoài Spoils); `Outcome` (`None · Won · Exiled`; run `Ended` giữ `IsActive = true`);
+  tiện ích, `ShopSlot.None` = rỗng/đã bán; `RerollCount`); `DecreeEquipment` (`EquipmentId`, rút ở Decree); `ActiveModifier`/`NextModifier` (`ModifierId?`); `LastBrew`, `LastBattle` (giữ sau `AckBattle`), `SpoilsOptions` (`List<RewardId>`, thứ tự khai báo bể, rỗng ngoài Spoils); `Outcome` (`None · Won · Exiled`; run `Ended` giữ `IsActive = true`);
   `NextUid`.
 - **`ItemInstance`**: `Uid` (tăng dần, không tái dùng), `ItemId`, `Magic`, `Quality`, `Lines: StatLine[]`,
   `RevealedMask`.
@@ -137,6 +137,14 @@ public static class GameRules {
   `InvalidRewardIndex` → `CatalystSlotsFull`/`BagFull`/`BagAtMaxCapacity`; Item → cuối Túi (`NextUid++`), ExpandBag →
   `BagRules.Expand`; `RewardChosen`. `SkipReward` luôn hợp lệ ở Spoils (`RewardSkipped`). Cả hai → `StartNextSeason`.
   `StateHasher` ghi `SpoilsOptions`.
+- **Modifier Mùa** (F-011 Phần B): content `ModifierData` (`ModifierParamData`: `BuyPrice`/`SellPrice`/`LensPrice`/`RerollPrice`/
+  `OpponentStats` Scale 1–1000 %, `ForgeWeight` 0–1000 % theo trang bị, `FreeRerolls` 0–2) → `SeasonModifier` (tra O(1),
+  `Neutral`); `SeasonData.ModifierPool` + `NoModifierWeight` (bể của chính Mùa đó; Mùa 1 rỗng). Validator: `SellRate × M_bán
+  < 10000`, mọi modifier trọng số > 0 giữ Σ trọng số bể trang bị sau scale ≥ 1. `RunState.ActiveModifier` / `NextModifier`
+  (`ModifierId?`). `EnterDecree`: `Active = Next`, `Next = null` → Market → Forge (trọng số `⌊w × ForgeWeight% / 100⌋`) →
+  `ModifierRules.RollNext` (Mùa < cuối: 1 `NextInt(NoModifierWeight + Σ)` stream `Season`, "không modifier" đứng trước).
+  Áp: `MarketRules` (mua / Kính / bán / reroll + miễn phí), `BattleStats.ForOpponent(opp, diff%, mod%)` = `⌊v × diff × mod /
+  10000⌋`. `StateHasher` ghi `ActiveModifier`, `NextModifier`.
 - Handler gọi luật thuần (static, không state): `RecipeMatcher`, `BrewingRules`, `CatalystRunner`, `MarketRules`,
   `InspectRules`, `SeasonRules`, `BattleSimulator`, `SpoilsRules`, `RenownRules`.
 - **Luật**: validate mọi điều kiện **trước** khi chạm state / RNG; bị từ chối → `Rejected(reason)`, không đổi gì.

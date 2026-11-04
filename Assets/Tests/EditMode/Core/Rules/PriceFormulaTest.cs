@@ -39,6 +39,36 @@ namespace Crucible.Tests.Core.Rules
             Assert.That(PriceFormula.Sell(12, 75), Is.EqualTo(9));
         }
 
+        [TestCase(12, 75, 100, 9)]
+        [TestCase(12, 75, 50, 4)]
+        [TestCase(12, 75, 120, 10)]
+        public void Sell_WithModifier_FloorsProduct(int buy, int rate, int modifier, int expected)
+        {
+            Assert.That(PriceFormula.Sell(buy, rate, modifier), Is.EqualTo(expected));
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        public void Reroll_WithinFreeRerolls_ReturnsZero(int rerollCount)
+        {
+            Assert.That(PriceFormula.Reroll(2, 1, rerollCount, 2, 100), Is.EqualTo(0));
+        }
+
+        [TestCase(2, 2)]
+        [TestCase(3, 3)]
+        public void Reroll_AfterFreeRerolls_StartsAtBase(int rerollCount, int expected)
+        {
+            Assert.That(PriceFormula.Reroll(2, 1, rerollCount, 2, 100), Is.EqualTo(expected));
+        }
+
+        [TestCase(0, 200, 4)]
+        [TestCase(2, 150, 6)]
+        [TestCase(1, 50, 1)]
+        public void Reroll_WithModifier_ScalesPrice(int rerollCount, int modifier, int expected)
+        {
+            Assert.That(PriceFormula.Reroll(2, 1, rerollCount, 0, modifier), Is.EqualTo(expected));
+        }
+
         [Test]
         public void Sell_BuyPriceOne_ReturnsZero()
         {

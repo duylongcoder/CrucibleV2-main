@@ -72,6 +72,19 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_OfferWithOpponentModifier_ScalesOpponentInLog()
+        {
+            _run.ActiveModifier = ModifierOf(_content, ModBrutal);
+            var expected = BattleStats.ForOpponent(_content.Season(1).Opponent, 100, BrutalOpponentPercent);
+
+            Apply(new Offer(SteelUid));
+
+            Assert.That(_run.LastBattle.Opponent.Hp, Is.EqualTo(expected.Hp));
+            Assert.That(_run.LastBattle.Opponent.Atk, Is.EqualTo(expected.Atk));
+            Assert.That(_run.LastBattle.Opponent.Hp, Is.EqualTo(_content.Season(1).Opponent.Hp * 2), "arrange");
+        }
+
+        [Test]
         public void Apply_OfferProduct_EmitsItemOfferedThenBattleStarted()
         {
             var result = Apply(new Offer(SteelUid));

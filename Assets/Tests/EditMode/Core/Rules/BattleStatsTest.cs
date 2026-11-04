@@ -72,6 +72,38 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void ForOpponent_DifficultyAndModifier_MultiplyFloor()
+        {
+            var opponent = BattleStats.ForOpponent(new OpponentData("o", 1, BattleKind.War, 101, 7, 3, 5, 9), 150, 120);
+
+            // ⌊v × 150 × 120 / 10000⌋ = ⌊v × 1.8⌋
+            Assert.That(opponent.Hp, Is.EqualTo(181));
+            Assert.That(opponent.Atk, Is.EqualTo(12));
+            Assert.That(opponent.Sharpness, Is.EqualTo(5));
+            Assert.That(opponent.Reflect, Is.EqualTo(9));
+            Assert.That(opponent.Absorb, Is.EqualTo(16));
+        }
+
+        [Test]
+        public void ForOpponent_MaxStatsAtMaxPercents_DoesNotOverflow()
+        {
+            var max = BattleData.MaxStatValue;
+            var opponent = BattleStats.ForOpponent(new OpponentData("o", 1, BattleKind.War, max, max, max, max, max),
+                ContentDb.MaxOpponentStatPercent, ContentDb.MaxModifierPercent);
+
+            Assert.That(opponent.Hp, Is.EqualTo(max * 100L));
+            Assert.That(opponent.Sharpness, Is.EqualTo(max * 100));
+        }
+
+        [Test]
+        public void ForOpponent_ModifierShrinksHpBelowOne_ClampsHpToOne()
+        {
+            var opponent = BattleStats.ForOpponent(new OpponentData("o", 1, BattleKind.War, 1, 0, 0, 0, 0), 100, 50);
+
+            Assert.That(opponent.Hp, Is.EqualTo(1));
+        }
+
+        [Test]
         public void ForOpponent_Percent100_ReturnsDefStats()
         {
             var opponent = BattleStats.ForOpponent(new OpponentData("o", 1, BattleKind.War, 101, 7, 3, 5, 9), 100);

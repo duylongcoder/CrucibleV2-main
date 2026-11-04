@@ -1,4 +1,5 @@
 using System;
+using Crucible.Core.Content;
 using Crucible.Core.Logs;
 using Crucible.Core.Random;
 
@@ -68,6 +69,8 @@ namespace Crucible.Core.State
             writer.Write(run.SpoilsOptions.Count);
             for (var i = 0; i < run.SpoilsOptions.Count; i++)
                 writer.Write(run.SpoilsOptions[i].Index);
+            WriteModifier(writer, run.ActiveModifier);
+            WriteModifier(writer, run.NextModifier);
 
             writer.Write(run.Rng != null);
             if (run.Rng != null)
@@ -79,6 +82,12 @@ namespace Crucible.Core.State
                     writer.Write(state.Inc);
                 }
             }
+        }
+
+        private static void WriteModifier(CanonicalWriter writer, ModifierId? modifier)
+        {
+            writer.Write(modifier.HasValue);
+            writer.Write(modifier.HasValue ? modifier.Value.Index : 0);
         }
 
         private static void WriteItem(CanonicalWriter writer, ItemInstance item)

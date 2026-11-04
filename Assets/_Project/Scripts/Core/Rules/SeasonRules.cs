@@ -13,16 +13,21 @@ namespace Crucible.Core.Rules
     public static class SeasonRules
     {
         /// <summary>
-        /// Vào Chiếu chỉ của <c>run.Season</c>: <c>Phase = Decree</c>, <c>Turn = 0</c>, rút hệ số giá Mùa (stream
-        /// <c>Market</c>) rồi loại trang bị (stream <c>Forge</c>); F-011: + modifier Mùa sau (stream <c>Season</c>) — giữ
-        /// thứ tự Market → Forge → Season (hợp đồng replay). Không validate — người gọi đảm bảo run đang active.
+        /// Vào Chiếu chỉ của <c>run.Season</c>: <c>Phase = Decree</c>, <c>Turn = 0</c>; modifier đã công bố thành modifier
+        /// đang áp; rút hệ số giá Mùa (stream <c>Market</c>) → loại trang bị (stream <c>Forge</c>, có áp modifier) → modifier
+        /// Mùa sau (stream <c>Season</c>, trừ Mùa cuối) — giữ thứ tự Market → Forge → Season (hợp đồng replay). Không
+        /// validate — người gọi đảm bảo run đang active.
         /// </summary>
         public static void EnterDecree(RunState run, ContentDb content)
         {
             run.Phase = RunPhase.Decree;
             run.Turn = 0;
+            run.ActiveModifier = run.NextModifier;
+            run.NextModifier = null;
             MarketRules.RollSeasonPrice(run, content);
             ForgeRules.RollEquipment(run, content);
+            if (run.Season < content.Run.SeasonCount)
+                ModifierRules.RollNext(run, content);
         }
 
         public static CommandResult AcceptDecree(RunState run, ContentDb content, AcceptDecree command)

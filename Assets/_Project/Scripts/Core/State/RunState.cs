@@ -48,5 +48,9 @@ namespace Crucible.Core.State
         public RunOutcome Outcome { get; set; }
         /// <summary>Lựa chọn Chiến lợi phẩm đang bày (thứ tự = thứ tự khai báo bể); rỗng ngoài <see cref="RunPhase.Spoils"/>.</summary>
         public List<RewardId> SpoilsOptions { get; } = new List<RewardId>(ContentDb.MaxSpoilsOptions);
+        /// <summary>Modifier áp cho Mùa hiện tại (đã công bố ở Chiếu chỉ Mùa trước); null = không modifier.</summary>
+        public ModifierId? ActiveModifier { get; set; }
+        /// <summary>Modifier Mùa sau — rút ở Chiếu chỉ (stream <c>Season</c>), hiện ở Chiếu chỉ; null = không có / Mùa cuối.</summary>
+        public ModifierId? NextModifier { get; set; }
     }
 }

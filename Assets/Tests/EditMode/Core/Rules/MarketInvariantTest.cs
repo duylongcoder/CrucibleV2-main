@@ -100,6 +100,26 @@ namespace Crucible.Tests.Core.Rules
         }
 
         [Test]
+        public void Apply_BuyThenSellSameItem_LosesGoldUnderAnyModifier(
+            [Values(ModNeutral, ModDear, ModBrutal, ModNoSword, ModSwordOnly)] string modifier,
+            [Values(70, 130)] int seasonPercent)
+        {
+            for (var slot = 0; slot < IngredientSlotCount + 1; slot++)
+            {
+                var run = StateFactory.CreateWorkbenchRun(_content, new string[0]);
+                run.Gold = 100;
+                run.SeasonPricePercent = seasonPercent;
+                run.ActiveModifier = ModifierOf(_content, modifier);
+                StateFactory.StockShop(run, _content, Iron, Bone, Silver, Sand, Lens);
+
+                Assert.That(Apply(run, new Buy(slot)).Accepted, Is.True, $"slot {slot}");
+                Assert.That(Apply(run, new Sell(run.Bag.Last().Uid)).Accepted, Is.True, $"slot {slot}");
+
+                Assert.That(run.Gold, Is.LessThan(100), $"slot {slot}");
+            }
+        }
+
+        [Test]
         public void Apply_SameSeedSameCommands_SameHash()
         {
             var first = CreateRun(7);

@@ -8,8 +8,6 @@ namespace Crucible.Core.Rules
     /// <summary>Dâng (run-flow §Dâng; ui-season §B): dâng 1 thành phẩm đạt chuẩn → mô phỏng Trận, hoặc để cận thần ra về.</summary>
     public static class OfferingRules
     {
-        private const int NeutralStatPercent = 100;
-
         /// <summary>Đạt chuẩn = khoáng có công thức (thành phẩm). Nguyên liệu gốc, phế phẩm, phụ gia, Kính, Xúc tác → không.</summary>
         public static bool IsOfferable(ItemData item)
         {
@@ -77,8 +75,9 @@ namespace Crucible.Core.Rules
         private static Combatant Opponent(RunState run, ContentDb content)
         {
             content.TryFindDifficulty(run.DifficultyId, out var difficulty);
-            var percent = difficulty?.OpponentStatPercent ?? NeutralStatPercent;
-            return BattleStats.ForOpponent(content.Season(run.Season).Opponent, percent);
+            var percent = difficulty?.OpponentStatPercent ?? SeasonModifier.NeutralPercent;
+            return BattleStats.ForOpponent(content.Season(run.Season).Opponent, percent,
+                ModifierRules.Active(run, content).OpponentStatPercent);
         }
 
         private static CommandResult EnterBattle(RunState run, BattleLog log, GameEvent first)

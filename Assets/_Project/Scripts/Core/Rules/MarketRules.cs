@@ -13,27 +13,34 @@ namespace Crucible.Core.Rules
     /// </summary>
     public static class MarketRules
     {
-        /// <summary>Hệ số % trung tính: S trước khi rút ở Decree; modifier giá M tới khi có modifier Mùa (F-011).</summary>
+        /// <summary>Hệ số % trung tính của S trước khi rút ở Decree.</summary>
         public const int NeutralPercent = 100;
 
+        /// <summary>M = modifier giá mua của Mùa; Kính soi dùng modifier giá Kính thay giá mua (spoils D7).</summary>
         public static int BuyPrice(RunState run, ContentDb content, ItemId item)
         {
-            // F-011: thay NeutralPercent bằng modifier giá mua của Mùa.
-            return PriceFormula.Buy(content.GetItem(item).MarketPrice, run.SeasonPricePercent, NeutralPercent);
+            var data = content.GetItem(item);
+            var modifier = ModifierRules.Active(run, content);
+            var percent = data.Kind == ItemKind.Lens ? modifier.LensPercent : modifier.BuyPercent;
+            return PriceFormula.Buy(data.MarketPrice, run.SeasonPricePercent, percent);
         }
 
-        /// <summary>Không phụ thuộc <c>Quality</c> / <c>Magic</c> / thuộc tính (AC-3). Phế phẩm: giá cố định.</summary>
+        /// <summary>Không phụ thuộc <c>Quality</c> / <c>Magic</c> / thuộc tính (AC-3). Phế phẩm: giá cố định, không modifier.</summary>
         public static int SellPrice(RunState run, ContentDb content, ItemId item)
         {
             if (content.GetItem(item).Kind == ItemKind.Scrap)
                 return content.Market.ScrapSellPrice;
-            return PriceFormula.Sell(BuyPrice(run, content, item), content.Market.SellRatePercent);
+            return PriceFormula.Sell(BuyPrice(run, content, item), content.Market.SellRatePercent,
+                ModifierRules.Active(run, content).SellPercent);
         }
 
+        /// <summary>Reroll miễn phí của modifier trước, rồi giá bậc thang × modifier giá reroll (spoils D8).</summary>
         public static int RerollPrice(RunState run, ContentDb content)
         {
             var market = content.Market;
-            return PriceFormula.Reroll(market.RerollBase, market.RerollStep, run.Shop.RerollCount);
+            var modifier = ModifierRules.Active(run, content);
+            return PriceFormula.Reroll(market.RerollBase, market.RerollStep, run.Shop.RerollCount, modifier.FreeRerolls,
+                modifier.RerollPercent);
         }
 
         /// <summary>Rút hệ số giá Mùa đều trong <c>[SeasonPriceMin, SeasonPriceMax]</c> từ stream <c>Market</c> (đúng 1 lần rút).</summary>

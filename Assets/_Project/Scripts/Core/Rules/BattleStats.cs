@@ -23,16 +23,20 @@ namespace Crucible.Core.Rules
                 ApplyAffinity(absorb, StatKind.Absorb, equipment, data));
         }
 
-        /// <summary>Đối thủ × <paramref name="statPercent"/> / 100 (floor); HP sau scale ≥ 1 (forge-battle D10).</summary>
-        public static Combatant ForOpponent(OpponentData opponent, int statPercent)
+        /// <summary>
+        /// Đối thủ × <paramref name="statPercent"/> (bậc khó) × <paramref name="modifierPercent"/> (modifier Mùa) / 10000
+        /// (floor); HP sau scale ≥ 1 (forge-battle D10).
+        /// </summary>
+        public static Combatant ForOpponent(OpponentData opponent, int statPercent, int modifierPercent = 100)
         {
-            var hp = BattleMath.MulDivFloor(opponent.Hp, statPercent, Percent);
+            var num = (long)statPercent * modifierPercent;
+            var hp = BattleMath.MulDivFloor(opponent.Hp, num, Percent * Percent);
             return new Combatant(
                 hp < 1 ? 1 : hp,
-                BattleMath.MulDivFloor(opponent.Atk, statPercent, Percent),
-                Scale(opponent.Sharpness, statPercent),
-                Scale(opponent.Reflect, statPercent),
-                Scale(opponent.Absorb, statPercent));
+                BattleMath.MulDivFloor(opponent.Atk, num, Percent * Percent),
+                (int)BattleMath.MulDivFloor(opponent.Sharpness, num, Percent * Percent),
+                (int)BattleMath.MulDivFloor(opponent.Reflect, num, Percent * Percent),
+                (int)BattleMath.MulDivFloor(opponent.Absorb, num, Percent * Percent));
         }
 
         private static int ApplyAffinity(int value, StatKind stat, EquipmentData equipment, BattleData data)
@@ -41,7 +45,7 @@ namespace Crucible.Core.Rules
             return Scale(value, affinity);
         }
 
-        /// <summary>Giá trị ≤ <c>MaxStatValue</c> × 1000% vẫn vừa <c>int</c>.</summary>
+        /// <summary>Giá trị ≤ <c>MaxStatValue</c> × 1000% × 1000% vẫn vừa <c>int</c>.</summary>
         private static int Scale(int value, int percent) => (int)BattleMath.MulDivFloor(value, percent, Percent);
     }
 }
